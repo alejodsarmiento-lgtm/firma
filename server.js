@@ -1109,6 +1109,64 @@ app.get('/api/admin/verificacion/:hash', requireAdmin, (req, res) => {
   res.json(entry);
 });
 
+
+// POST /api/admin/planilla-test — crear planilla de prueba sin upload externo
+app.post('/api/admin/planilla-test', requireAdmin, (req, res) => {
+  const { inspId, mes, year } = req.body;
+  if (!inspId || mes === undefined || !year)
+    return res.status(400).json({ error: 'Faltan datos' });
+  const planillas = db.read('planillas_asignadas.json');
+  if (planillas.some(p => p.inspId === inspId && parseInt(p.mes) === parseInt(mes) && p.year === year && !p.firmada))
+    return res.status(409).json({ error: 'Ya existe una planilla pendiente para ese período' });
+
+  // Crear PDF de prueba con pdf-lib
+  const { PDFDocument, StandardFonts, rgb } = require('pdf-lib');
+  (async () => {
+    try {
+      const doc = await PDFDocument.create();
+      const page = doc.addPage([612, 1008]);
+      const font = await doc.embedFont(StandardFonts.HelveticaBold);
+      const fontR = await doc.embedFont(StandardFonts.Helvetica);
+      const { inspectores = [] } = db.read('usuarios.json');
+      const insp = inspectores.find(i => i.id === inspId);
+      const nombre = insp ? `${insp.apellido}, ${insp.nombre}` : 'Inspector';
+      const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+      page.drawText('PLANILLA DE VIÁTICOS', {x:180,y:950,size:16,font,color:rgb(0,0,0.4)});
+      page.drawText(`Subsecretaría de Inspección del Trabajo — PBA`, {x:120,y:925,size:10,font:fontR});
+      page.drawText(`Inspector: ${nombre}`, {x:50,y:880,size:11,font});
+      page.drawText(`Período: ${meses[parseInt(mes)]} ${year}`, {x:50,y:860,size:11,font});
+      page.drawText('Resumen de viáticos y movilidad correspondientes al período indicado.', {x:50,y:820,size:10,font:fontR});
+      page.drawText('Total General: $ 242,112.00', {x:400,y:260,size:11,font});
+      // Zona 1 firma
+      page.drawText('Firma del agente', {x:78,y:200,size:9,font:fontR,color:rgb(0.4,0.4,0.4)});
+      page.drawLine({start:{x:78,y:215},end:{x:210,y:215},thickness:0.5,color:rgb(0,0,0)});
+      // Zona 2 firma + DNI
+      page.drawText('Firma del agente y N° de DNI', {x:243,y:80,size:9,font:fontR,color:rgb(0.4,0.4,0.4)});
+      page.drawLine({start:{x:243,y:91},end:{x:375,y:91},thickness:0.5,color:rgb(0,0,0)});
+
+      const pdfBytes = await doc.save();
+      const fname = `planilla_${inspId}_${year}_${String(parseInt(mes)+1).padStart(2,'0')}_${Date.now()}.pdf`;
+      fs.writeFileSync(path.join(PLANILLAS_DIR, fname), pdfBytes);
+
+      const plan = {
+        id: `p${Date.now()}`,
+        inspId,
+        mes: parseInt(mes),
+        year,
+        filename: fname,
+        subidaTs: new Date().toISOString(),
+        firmada: false
+      };
+      planillas.push(plan);
+      db.write('planillas_asignadas.json', planillas);
+      res.json({ ok: true, planillaId: plan.id, mensaje: `Planilla de prueba creada para ${nombre}` });
+    } catch(e) {
+      res.status(500).json({ error: e.message });
+    }
+  })();
+});
+
 // ── SPA fallback ───────────────────────────────────────────────
 app.get('*', (req, res) => {
   res.sendFile(path.join(PUBLIC_DIR, 'index.html'));
