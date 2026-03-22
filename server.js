@@ -935,6 +935,68 @@ app.get('/api/admin/analytics', requireAdmin, (req, res) => {
   });
 });
 
+
+// POST /api/admin/seed-demo — inyectar sesiones de prueba para ver analytics
+app.post('/api/admin/seed-demo', requireAdmin, (req, res) => {
+  const now = new Date();
+  const devices = ['mobile','mobile','desktop','desktop','mobile','tablet','desktop'];
+  const browsers = ['Chrome','Safari','Chrome','Firefox','Chrome','Safari','Chrome'];
+  const oss = ['Android','iOS','Windows','Windows','Android','iOS','Windows'];
+  const inspectores = [
+    {id:'601806',username:'yangulo',nombre:'Angulo Estrada, Yamila'},
+    {id:'602455',username:'cabalos',nombre:'Abalos, Christian'},
+    {id:'601641',username:'nabba',nombre:'Abba, Nelson'},
+    {id:'601659',username:'maguerriberry',nombre:'Aguerriberry, Mariana'},
+    {id:'800097',username:'gaguilar',nombre:'Aguilar, Guillermo'},
+    {id:'601111',username:'jagustine',nombre:'Augustine, Juan'},
+    {id:'602086',username:'oahlefeldt',nombre:'Ahlefeldt, Osvaldo'},
+  ];
+  const sessions = JSON.parse(fs.readFileSync(SESSIONS_FILE,'utf8'));
+  // Generar 40 sesiones de los últimos 14 días
+  for(let d=0;d<14;d++){
+    const dia = new Date(now - d*86400000);
+    const cuantas = Math.floor(Math.random()*5)+1;
+    for(let s=0;s<cuantas;s++){
+      const insp = inspectores[Math.floor(Math.random()*inspectores.length)];
+      const hora = Math.floor(Math.random()*10)+8; // 8-17hs
+      const start = new Date(dia.setHours(hora, Math.floor(Math.random()*60)));
+      const dur = Math.floor(Math.random()*480)+30; // 30s a 8min
+      const firmo = Math.random() > 0.4;
+      sessions.push({
+        id: `sdemo${Date.now()}${Math.random().toString(36).slice(2,6)}`,
+        userId: insp.id,
+        username: insp.username,
+        role: 'inspector',
+        nombre: insp.nombre,
+        startTs: start.toISOString(),
+        endTs: new Date(start.getTime()+dur*1000).toISOString(),
+        duration: dur,
+        device: devices[Math.floor(Math.random()*devices.length)],
+        browser: browsers[Math.floor(Math.random()*browsers.length)],
+        os: oss[Math.floor(Math.random()*oss.length)],
+        ua: '',
+        ip: '186.x.x.x',
+        actions: Math.floor(Math.random()*8)+1,
+        firmó: firmo
+      });
+    }
+  }
+  // Agregar algunas sesiones de admin
+  for(let i=0;i<5;i++){
+    const start = new Date(now - Math.floor(Math.random()*14)*86400000);
+    sessions.push({
+      id: `sademo${Date.now()}${i}`,
+      userId:'admin',username:'admin',role:'admin',nombre:'Administrador',
+      startTs: start.toISOString(),
+      endTs: new Date(start.getTime()+600000).toISOString(),
+      duration: 600,
+      device:'desktop',browser:'Chrome',os:'Windows',ua:'',ip:'local',actions:15,firmó:false
+    });
+  }
+  fs.writeFileSync(SESSIONS_FILE, JSON.stringify(sessions));
+  res.json({ok:true, sesionesAgregadas: sessions.length});
+});
+
 // ── SPA fallback ───────────────────────────────────────────────
 app.get('*', (req, res) => {
   res.sendFile(path.join(PUBLIC_DIR, 'index.html'));
