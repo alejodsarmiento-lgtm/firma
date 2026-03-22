@@ -288,23 +288,31 @@ canvas.sp{display:block;width:100%;touch-action:none;cursor:crosshair}
   </div>
 
 
-  <!-- CAMBIAR CONTRASEÑA -->
-  <div class="card" style="margin-top:6px">
-    <div class="ctit">🔑 Cambiar contraseña</div>
-    <div class="fg">
-      <label>Contraseña actual</label>
-      <input type="password" id="pwActual" placeholder="Tu contraseña actual" autocomplete="current-password">
+  <!-- CAMBIAR CONTRASEÑA (colapsable, máx 2 veces) -->
+  <div class="card" style="margin-top:6px" id="cardPwd">
+    <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="togglePwd()">
+      <div class="ctit" style="margin:0">🔑 Cambiar contraseña</div>
+      <span id="pwdToggleIco" style="font-size:16px;color:#888">▼</span>
     </div>
-    <div class="fg">
-      <label>Contraseña nueva</label>
-      <input type="password" id="pwNueva" placeholder="Mínimo 4 caracteres" autocomplete="new-password">
+    <div id="pwdForm" style="display:none;margin-top:14px">
+      <div style="background:#EBF4FB;border-radius:9px;padding:10px 13px;font-size:12px;color:#1F5FA6;margin-bottom:12px">
+        Podés cambiar tu contraseña hasta <strong>2 veces</strong>. Cambios usados: <strong id="pwdCambios">—</strong>/2
+      </div>
+      <div class="fg">
+        <label>Contraseña actual</label>
+        <input type="password" id="pwActual" placeholder="Tu contraseña actual" autocomplete="current-password">
+      </div>
+      <div class="fg">
+        <label>Contraseña nueva</label>
+        <input type="password" id="pwNueva" placeholder="Mínimo 4 caracteres" autocomplete="new-password">
+      </div>
+      <div class="fg">
+        <label>Repetir contraseña nueva</label>
+        <input type="password" id="pwNueva2" placeholder="Repetir contraseña" autocomplete="new-password">
+      </div>
+      <button class="bs bsv" style="width:100%;padding:11px;font-size:13px" id="btnCambiarPwd" onclick="cambiarPassword()">💾 Guardar nueva contraseña</button>
+      <div class="st" id="stPwd"></div>
     </div>
-    <div class="fg">
-      <label>Repetir contraseña nueva</label>
-      <input type="password" id="pwNueva2" placeholder="Repetir contraseña" autocomplete="new-password">
-    </div>
-    <button class="bs bsv" style="width:100%;padding:11px;font-size:13px" onclick="cambiarPassword()">💾 Guardar nueva contraseña</button>
-    <div class="st" id="stPwd"></div>
   </div>
 
 </div>
@@ -418,6 +426,33 @@ canvas.sp{display:block;width:100%;touch-action:none;cursor:crosshair}
   <div id="tab3" style="display:none">
     <div class="card">
       <div class="ctit">📋 Historial completo (<span id="cHist">0</span>)</div>
+      <!-- Filtros -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+        <div class="fg" style="margin:0">
+          <label>Mes</label>
+          <select id="hFiltMes" onchange="renderAdminHist()" style="font-size:13px">
+            <option value="">Todos los meses</option>
+            <option value="0">Enero</option><option value="1">Febrero</option>
+            <option value="2">Marzo</option><option value="3">Abril</option>
+            <option value="4">Mayo</option><option value="5">Junio</option>
+            <option value="6">Julio</option><option value="7">Agosto</option>
+            <option value="8">Septiembre</option><option value="9">Octubre</option>
+            <option value="10">Noviembre</option><option value="11">Diciembre</option>
+          </select>
+        </div>
+        <div class="fg" style="margin:0">
+          <label>Año</label>
+          <select id="hFiltYear" onchange="renderAdminHist()" style="font-size:13px">
+            <option value="">Todos</option>
+            <option value="2025">2025</option>
+            <option value="2026" selected>2026</option>
+            <option value="2027">2027</option>
+          </select>
+        </div>
+      </div>
+      <div class="fg" style="margin-bottom:10px">
+        <input type="text" id="hFiltQ" placeholder="Buscar por nombre, legajo o DNI…" oninput="renderAdminHist()" style="font-size:13px">
+      </div>
       <div id="listHist"><div class="spin-dark"></div></div>
     </div>
   </div>
@@ -683,6 +718,30 @@ async function delPlan(id){
 
 
 // ── Cambiar contraseña ──────────────────────────────────────────
+function togglePwd(){
+  const form=document.getElementById('pwdForm');
+  const ico=document.getElementById('pwdToggleIco');
+  const open=form.style.display==='none';
+  form.style.display=open?'block':'none';
+  ico.textContent=open?'▲':'▼';
+  if(open) cargarContadorPwd();
+}
+
+async function cargarContadorPwd(){
+  const r=await api('GET','/api/inspector/cambios-password');
+  if(r.error) return;
+  const el=document.getElementById('pwdCambios');
+  if(el) el.textContent=r.cambios;
+  const btn=document.getElementById('btnCambiarPwd');
+  if(r.cambios>=r.limite && btn){
+    btn.disabled=true;
+    btn.textContent='Límite alcanzado';
+    btn.style.background='#B0BEC5';
+    setSt('stPwd','warn',
+      '⚠️ Ya usaste los 2 cambios disponibles. Para cambiar tu contraseña contactá a la asesoría por WhatsApp: +54 9 221 380-2016');
+  }
+}
+
 async function cambiarPassword(){
   const actual  = document.getElementById('pwActual').value;
   const nueva   = document.getElementById('pwNueva').value;
@@ -691,11 +750,21 @@ async function cambiarPassword(){
   if(nueva!==nueva2){setSt('stPwd','err','❌ Las contraseñas nuevas no coinciden.');return;}
   if(nueva.length<4){setSt('stPwd','err','❌ La contraseña debe tener al menos 4 caracteres.');return;}
   const r=await api('POST','/api/cambiar-password',{actual,nueva});
-  if(r.error){setSt('stPwd','err','❌ '+r.error);return;}
+  if(r.error){
+    if(r.limite){
+      setSt('stPwd','warn','⚠️ '+r.error);
+      document.getElementById('btnCambiarPwd').disabled=true;
+      document.getElementById('btnCambiarPwd').textContent='Límite alcanzado';
+    } else {
+      setSt('stPwd','err','❌ '+r.error);
+    }
+    return;
+  }
   setSt('stPwd','ok','✅ Contraseña cambiada correctamente.');
   document.getElementById('pwActual').value='';
   document.getElementById('pwNueva').value='';
   document.getElementById('pwNueva2').value='';
+  cargarContadorPwd();
 }
 
 // ── Backup de firmas ────────────────────────────────────────────
@@ -784,9 +853,17 @@ function filtrarInsp(){renderAdminInsp();}
 
 async function renderAdminHist(){
   const el=document.getElementById('listHist');
-  const hist=await api('GET','/api/admin/historial');
+  const mes   = document.getElementById('hFiltMes')?.value  ?? '';
+  const year  = document.getElementById('hFiltYear')?.value ?? '';
+  const q     = document.getElementById('hFiltQ')?.value    ?? '';
+  const params= new URLSearchParams();
+  if(mes!=='')   params.set('mes',mes);
+  if(year!=='')  params.set('year',year);
+  if(q.trim()!=='') params.set('q',q.trim());
+  const hist=await api('GET','/api/admin/historial?'+params.toString());
+  if(hist.error){el.innerHTML='<div class="empty">'+hist.error+'</div>';return;}
   document.getElementById('cHist').textContent=hist.length;
-  if(!hist.length){el.innerHTML='<div class="empty">Sin planillas firmadas todavía.</div>';return;}
+  if(!hist.length){el.innerHTML='<div class="empty">No hay registros con esos filtros.</div>';return;}
   el.innerHTML='<table class="ht"><thead><tr><th>Inspector</th><th>DNI · Legajo</th><th>Período</th><th>Firmado</th><th></th></tr></thead><tbody>'+
     hist.map(h=>`<tr>
       <td><b>${h.inspNombre}</b></td>
