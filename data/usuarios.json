@@ -1,0 +1,2094 @@
+{
+  "inspectores": [
+    {
+      "id": "602455",
+      "apellido": "ABALOS",
+      "nombre": "CHRISTIAN HERNAN",
+      "legajo": "602455",
+      "dni": "30133176",
+      "username": "cabalos",
+      "password": "602455",
+      "firma": null
+    },
+    {
+      "id": "601641",
+      "apellido": "ABBA",
+      "nombre": "NELSON JAVIER",
+      "legajo": "601641",
+      "dni": "22671057",
+      "username": "nabba",
+      "password": "601641",
+      "firma": null
+    },
+    {
+      "id": "601659",
+      "apellido": "AGUERRIBERRY",
+      "nombre": "MARIANA",
+      "legajo": "601659",
+      "dni": "28460554",
+      "username": "maguerriberry",
+      "password": "601659",
+      "firma": null
+    },
+    {
+      "id": "800097",
+      "apellido": "AGUILAR",
+      "nombre": "GUILLERMO NESTOR",
+      "legajo": "800097",
+      "dni": "16790913",
+      "username": "gaguilar",
+      "password": "800097",
+      "firma": null
+    },
+    {
+      "id": "601111",
+      "apellido": "AGUSTINE",
+      "nombre": "JUAN CARLOS",
+      "legajo": "601111",
+      "dni": "21956085",
+      "username": "jagustine",
+      "password": "601111",
+      "firma": null
+    },
+    {
+      "id": "602086",
+      "apellido": "AHLEFELDT",
+      "nombre": "OSVALDO LUIS",
+      "legajo": "602086",
+      "dni": "26425038",
+      "username": "oahlefeldt",
+      "password": "602086",
+      "firma": null
+    },
+    {
+      "id": "602683",
+      "apellido": "ALEGRE",
+      "nombre": "LAURA JACQUELINE",
+      "legajo": "602683",
+      "dni": "35609930",
+      "username": "lalegre",
+      "password": "602683",
+      "firma": null
+    },
+    {
+      "id": "260522",
+      "apellido": "ALLUSSON",
+      "nombre": "JORGE ALBERTO",
+      "legajo": "260522",
+      "dni": "16287242",
+      "username": "jallusson",
+      "password": "260522",
+      "firma": null
+    },
+    {
+      "id": "601132",
+      "apellido": "ALVAREZ",
+      "nombre": "BRENDA ITATI",
+      "legajo": "601132",
+      "dni": "37549348",
+      "username": "balvarez",
+      "password": "601132",
+      "firma": null
+    },
+    {
+      "id": "260996",
+      "apellido": "AMATO",
+      "nombre": "FERNANDO RODOLFO",
+      "legajo": "260996",
+      "dni": "13908679",
+      "username": "famato",
+      "password": "260996",
+      "firma": null
+    },
+    {
+      "id": "602057",
+      "apellido": "ANDRADA",
+      "nombre": "CAMILA",
+      "legajo": "602057",
+      "dni": "39486184",
+      "username": "candrada",
+      "password": "602057",
+      "firma": null
+    },
+    {
+      "id": "601806",
+      "apellido": "ANGULO ESTRADA",
+      "nombre": "YAMILA HEBE",
+      "legajo": "601806",
+      "dni": "31743827",
+      "username": "yangulo",
+      "password": "601806",
+      "firma": null
+    },
+    {
+      "id": "601115",
+      "apellido": "ARRAYAGO",
+      "nombre": "GERMAN EDUARDO",
+      "legajo": "601115",
+      "dni": "23688617",
+      "username": "garrayago",
+      "password": "601115",
+      "firma": null
+    },
+    {
+      "id": "602347",
+      "apellido": "ARZUAGA",
+      "nombre": "JUAN MANUEL",
+      "legajo": "602347",
+      "dni": "27776998",
+      "username": "jarzuaga",
+      "password": "602347",
+      "firma": null
+    },
+    {
+      "id": "316136",
+      "apellido": "ASCONIGA",
+      "nombre": "MARCELA ANDREA",
+      "legajo": "316136",
+      "dni": "18360176",
+      "username": "masconiga",
+      "password": "316136",
+      "firma": null
+    },
+    {
+      "id": "601117",
+      "apellido": "ATELA",
+      "nombre": "AGUSTINA",
+      "legajo": "601117",
+      "dni": "35414451",
+      "username": "aatela",
+      "password": "601117",
+      "firma": null
+    },
+    {
+      "id": "602121",
+      "apellido": "AUZA",
+      "nombre": "ELIANA LILIAN",
+      "legajo": "602121",
+      "dni": "39485929",
+      "username": "eauza",
+      "password": "602121",
+      "firma": null
+    },
+    {
+      "id": "601697",
+      "apellido": "AVILA",
+      "nombre": "KARINA HAYDEE",
+      "legajo": "601697",
+      "dni": "30621691",
+      "username": "kavila",
+      "password": "601697",
+      "firma": null
+    },
+    {
+      "id": "602672",
+      "apellido": "AYALA",
+      "nombre": "CLAUDIO DANIEL",
+      "legajo": "602672",
+      "dni": "30616277",
+      "username": "cayala",
+      "password": "602672",
+      "firma": null
+    },
+    {
+      "id": "601118",
+      "apellido": "BAEZ",
+      "nombre": "DANIELA ALEJANDRA",
+      "legajo": "601118",
+      "dni": "32324527",
+      "username": "dbaez",
+      "password": "601118",
+      "firma": null
+    },
+    {
+      "id": "311774",
+      "apellido": "BALDA",
+      "nombre": "OSCAR PEDRO",
+      "legajo": "311774",
+      "dni": "12278108",
+      "username": "obalda",
+      "password": "311774",
+      "firma": null
+    },
+    {
+      "id": "601062",
+      "apellido": "BARDONE",
+      "nombre": "WALTER DARIO",
+      "legajo": "601062",
+      "dni": "27290318",
+      "username": "wbardone",
+      "password": "601062",
+      "firma": null
+    },
+    {
+      "id": "601119",
+      "apellido": "BARNECHE",
+      "nombre": "MARCELO FABIAN",
+      "legajo": "601119",
+      "dni": "34488145",
+      "username": "mbarneche",
+      "password": "601119",
+      "firma": null
+    },
+    {
+      "id": "298677",
+      "apellido": "BARRAZA",
+      "nombre": "DANIELA VERONICA",
+      "legajo": "298677",
+      "dni": "23766778",
+      "username": "dbarraza",
+      "password": "298677",
+      "firma": null
+    },
+    {
+      "id": "338968",
+      "apellido": "BARRETO",
+      "nombre": "GABRIEL ELISANDRO",
+      "legajo": "338968",
+      "dni": "24481361",
+      "username": "gbarreto",
+      "password": "338968",
+      "firma": null
+    },
+    {
+      "id": "600047",
+      "apellido": "BATYI ZOURELLI",
+      "nombre": "DIEGO ANDRES",
+      "legajo": "600047",
+      "dni": "92629202",
+      "username": "dbatyi",
+      "password": "600047",
+      "firma": null
+    },
+    {
+      "id": "601547",
+      "apellido": "BENITEZ",
+      "nombre": "LIDIA BEATRIZ",
+      "legajo": "601547",
+      "dni": "21724560",
+      "username": "lbenitez",
+      "password": "601547",
+      "firma": null
+    },
+    {
+      "id": "601121",
+      "apellido": "BESSONE",
+      "nombre": "MARIELA ALEJANDRA",
+      "legajo": "601121",
+      "dni": "29638596",
+      "username": "mbessone",
+      "password": "601121",
+      "firma": null
+    },
+    {
+      "id": "601120",
+      "apellido": "BOCOS",
+      "nombre": "SOLANGE PAMELA",
+      "legajo": "601120",
+      "dni": "31163796",
+      "username": "sbocos",
+      "password": "601120",
+      "firma": null
+    },
+    {
+      "id": "338969",
+      "apellido": "BOGGIA",
+      "nombre": "BARBARA ELIZABETH",
+      "legajo": "338969",
+      "dni": "17875724",
+      "username": "bboggia",
+      "password": "338969",
+      "firma": null
+    },
+    {
+      "id": "340159",
+      "apellido": "BOTHIN",
+      "nombre": "JAVIER EDUARDO",
+      "legajo": "340159",
+      "dni": "17649198",
+      "username": "jbothin",
+      "password": "340159",
+      "firma": null
+    },
+    {
+      "id": "602269",
+      "apellido": "BRETZ",
+      "nombre": "MAXIMILIANO",
+      "legajo": "602269",
+      "dni": "35775401",
+      "username": "mbretz",
+      "password": "602269",
+      "firma": null
+    },
+    {
+      "id": "443552",
+      "apellido": "BRITOS",
+      "nombre": "DAMIAN ADALBERTO",
+      "legajo": "443552",
+      "dni": "23219152",
+      "username": "dbritos",
+      "password": "443552",
+      "firma": null
+    },
+    {
+      "id": "443546",
+      "apellido": "CABEZALI",
+      "nombre": "JUAN MANUEL",
+      "legajo": "443546",
+      "dni": "23711966",
+      "username": "jcabezali",
+      "password": "443546",
+      "firma": null
+    },
+    {
+      "id": "601531",
+      "apellido": "CAFFE",
+      "nombre": "CRISTIAN FEDERICO",
+      "legajo": "601531",
+      "dni": "25190776",
+      "username": "ccaffe",
+      "password": "601531",
+      "firma": null
+    },
+    {
+      "id": "602165",
+      "apellido": "CAMPBELL",
+      "nombre": "RODRIGO",
+      "legajo": "602165",
+      "dni": "38124255",
+      "username": "rcampbell",
+      "password": "602165",
+      "firma": null
+    },
+    {
+      "id": "317828",
+      "apellido": "CARNEVALE",
+      "nombre": "GABRIEL MARTIN",
+      "legajo": "317828",
+      "dni": "25720528",
+      "username": "gcarnevale",
+      "password": "317828",
+      "firma": null
+    },
+    {
+      "id": "601157",
+      "apellido": "CARRIZO",
+      "nombre": "CLARA FATIMA",
+      "legajo": "601157",
+      "dni": "14638776",
+      "username": "ccarrizo",
+      "password": "601157",
+      "firma": null
+    },
+    {
+      "id": "311779",
+      "apellido": "CASCALES",
+      "nombre": "CLAUDIO MARTIN",
+      "legajo": "311779",
+      "dni": "25824492",
+      "username": "ccascales",
+      "password": "311779",
+      "firma": null
+    },
+    {
+      "id": "602358",
+      "apellido": "CASTELLA",
+      "nombre": "JUAN IGNACIO",
+      "legajo": "602358",
+      "dni": "28728001",
+      "username": "jcastella",
+      "password": "602358",
+      "firma": null
+    },
+    {
+      "id": "602113",
+      "apellido": "CASTILLO",
+      "nombre": "ERNESTO OMAR",
+      "legajo": "602113",
+      "dni": "21982281",
+      "username": "ecastillo",
+      "password": "602113",
+      "firma": null
+    },
+    {
+      "id": "297043",
+      "apellido": "CASTILLO",
+      "nombre": "GLADYS MARCELA",
+      "legajo": "297043",
+      "dni": "18621494",
+      "username": "gcastillo",
+      "password": "297043",
+      "firma": null
+    },
+    {
+      "id": "261019",
+      "apellido": "CASTILLO",
+      "nombre": "MARIA ALEJANDRA",
+      "legajo": "261019",
+      "dni": "17666452",
+      "username": "mcastillo",
+      "password": "261019",
+      "firma": null
+    },
+    {
+      "id": "261476",
+      "apellido": "CATTONI",
+      "nombre": "MIGUEL ANGEL",
+      "legajo": "261476",
+      "dni": "16147599",
+      "username": "mcattoni",
+      "password": "261476",
+      "firma": null
+    },
+    {
+      "id": "340075",
+      "apellido": "CELAYA",
+      "nombre": "ERICA DANIELA",
+      "legajo": "340075",
+      "dni": "21567161",
+      "username": "ecelaya",
+      "password": "340075",
+      "firma": null
+    },
+    {
+      "id": "602480",
+      "apellido": "CERDA",
+      "nombre": "GERARDO DANIEL",
+      "legajo": "602480",
+      "dni": "35399982",
+      "username": "gcerda",
+      "password": "602480",
+      "firma": null
+    },
+    {
+      "id": "338971",
+      "apellido": "CERRUDO",
+      "nombre": "DIEGO ISMAEL",
+      "legajo": "338971",
+      "dni": "23166496",
+      "username": "dcerrudo",
+      "password": "338971",
+      "firma": null
+    },
+    {
+      "id": "601023",
+      "apellido": "CIPOLLONE",
+      "nombre": "MARIA FLORENCIA",
+      "legajo": "601023",
+      "dni": "32538684",
+      "username": "mcipollone",
+      "password": "601023",
+      "firma": null
+    },
+    {
+      "id": "601676",
+      "apellido": "CLEMENCEAU",
+      "nombre": "GUILLERMO ALBERTO",
+      "legajo": "601676",
+      "dni": "14913482",
+      "username": "gclemenceau",
+      "password": "601676",
+      "firma": null
+    },
+    {
+      "id": "602188",
+      "apellido": "COÑOMILLA",
+      "nombre": "GUSTAVO EUGENIO",
+      "legajo": "602188",
+      "dni": "37056148",
+      "username": "gconomilla",
+      "password": "602188",
+      "firma": null
+    },
+    {
+      "id": "600305",
+      "apellido": "CORVALAN",
+      "nombre": "CRISTIAN LEONARDO",
+      "legajo": "600305",
+      "dni": "26106287",
+      "username": "ccorvalan",
+      "password": "600305",
+      "firma": null
+    },
+    {
+      "id": "601127",
+      "apellido": "COTEJA",
+      "nombre": "DORIS IVONE",
+      "legajo": "601127",
+      "dni": "20642689",
+      "username": "dcoteja",
+      "password": "601127",
+      "firma": null
+    },
+    {
+      "id": "601128",
+      "apellido": "CUCCI",
+      "nombre": "NICOLAS",
+      "legajo": "601128",
+      "dni": "36858403",
+      "username": "ncucci",
+      "password": "601128",
+      "firma": null
+    },
+    {
+      "id": "601007",
+      "apellido": "D ELIA",
+      "nombre": "JULIO CESAR",
+      "legajo": "601007",
+      "dni": "20233823",
+      "username": "jd",
+      "password": "601007",
+      "firma": null
+    },
+    {
+      "id": "316145",
+      "apellido": "DE BLASI",
+      "nombre": "ROBERTO",
+      "legajo": "316145",
+      "dni": "22355733",
+      "username": "rde",
+      "password": "316145",
+      "firma": null
+    },
+    {
+      "id": "602234",
+      "apellido": "DE LEON",
+      "nombre": "EMANUEL NICOLAS",
+      "legajo": "602234",
+      "dni": "40183675",
+      "username": "ede",
+      "password": "602234",
+      "firma": null
+    },
+    {
+      "id": "340076",
+      "apellido": "DEL SORDO",
+      "nombre": "DONATO LUIS MARCOS",
+      "legajo": "340076",
+      "dni": "18474318",
+      "username": "ddel",
+      "password": "340076",
+      "firma": null
+    },
+    {
+      "id": "601161",
+      "apellido": "DELEO",
+      "nombre": "CONRADO",
+      "legajo": "601161",
+      "dni": "34090334",
+      "username": "cdeleo",
+      "password": "601161",
+      "firma": null
+    },
+    {
+      "id": "601129",
+      "apellido": "DI PARDO GALLI",
+      "nombre": "JUAN IGNACIO",
+      "legajo": "601129",
+      "dni": "36374152",
+      "username": "jdi",
+      "password": "601129",
+      "firma": null
+    },
+    {
+      "id": "601031",
+      "apellido": "DIACINTI",
+      "nombre": "MARIA FLORENCIA",
+      "legajo": "601031",
+      "dni": "27677321",
+      "username": "mdiacinti",
+      "password": "601031",
+      "firma": null
+    },
+    {
+      "id": "316141",
+      "apellido": "DICUNZOLO",
+      "nombre": "ANALIA RUTH",
+      "legajo": "316141",
+      "dni": "17188668",
+      "username": "adicunzolo",
+      "password": "316141",
+      "firma": null
+    },
+    {
+      "id": "601141",
+      "apellido": "DIPARDO",
+      "nombre": "MAURICIO ANDRES",
+      "legajo": "601141",
+      "dni": "31114563",
+      "username": "mdipardo",
+      "password": "601141",
+      "firma": null
+    },
+    {
+      "id": "295893",
+      "apellido": "DIPARDO GONZALEZ",
+      "nombre": "GABRIELA MARIA LUJAN",
+      "legajo": "295893",
+      "dni": "21676106",
+      "username": "gdipardo",
+      "password": "295893",
+      "firma": null
+    },
+    {
+      "id": "260772",
+      "apellido": "DORREGO",
+      "nombre": "OMAR HORACIO",
+      "legajo": "260772",
+      "dni": "11596057",
+      "username": "odorrego",
+      "password": "260772",
+      "firma": null
+    },
+    {
+      "id": "602474",
+      "apellido": "DOS REIS PEREIRA",
+      "nombre": "PEDRO",
+      "legajo": "602474",
+      "dni": "38866454",
+      "username": "pdos",
+      "password": "602474",
+      "firma": null
+    },
+    {
+      "id": "289564",
+      "apellido": "DRAMAJO",
+      "nombre": "CARLOS ALBERTO",
+      "legajo": "289564",
+      "dni": "10534952",
+      "username": "cdramajo",
+      "password": "289564",
+      "firma": null
+    },
+    {
+      "id": "340077",
+      "apellido": "ESPONDA",
+      "nombre": "MARIA EMILCE",
+      "legajo": "340077",
+      "dni": "29261935",
+      "username": "mesponda",
+      "password": "340077",
+      "firma": null
+    },
+    {
+      "id": "601130",
+      "apellido": "EXPOSITO",
+      "nombre": "FEDERICO EZEQUIEL",
+      "legajo": "601130",
+      "dni": "36216942",
+      "username": "fexposito",
+      "password": "601130",
+      "firma": null
+    },
+    {
+      "id": "304433",
+      "apellido": "FADON",
+      "nombre": "JUAN PABLO",
+      "legajo": "304433",
+      "dni": "22185101",
+      "username": "jfadon",
+      "password": "304433",
+      "firma": null
+    },
+    {
+      "id": "312040",
+      "apellido": "FAGUNDEZ",
+      "nombre": "SARA NOELIA",
+      "legajo": "312040",
+      "dni": "23705698",
+      "username": "sfagundez",
+      "password": "312040",
+      "firma": null
+    },
+    {
+      "id": "600029",
+      "apellido": "FERNANDEZ",
+      "nombre": "ESTEBAN ANDRES",
+      "legajo": "600029",
+      "dni": "25980326",
+      "username": "efernandez",
+      "password": "600029",
+      "firma": null
+    },
+    {
+      "id": "340078",
+      "apellido": "FERRARI",
+      "nombre": "SILVINA CLAUDIA",
+      "legajo": "340078",
+      "dni": "30528237",
+      "username": "sferrari",
+      "password": "340078",
+      "firma": null
+    },
+    {
+      "id": "600316",
+      "apellido": "FIGUEROLA",
+      "nombre": "CECILIA MARIA",
+      "legajo": "600316",
+      "dni": "17684812",
+      "username": "cfiguerola",
+      "password": "600316",
+      "firma": null
+    },
+    {
+      "id": "602638",
+      "apellido": "FLORES",
+      "nombre": "BRAIAN DAVID",
+      "legajo": "602638",
+      "dni": "40705773",
+      "username": "bflores",
+      "password": "602638",
+      "firma": null
+    },
+    {
+      "id": "601133",
+      "apellido": "FLORES",
+      "nombre": "RAMIRO GONZALO",
+      "legajo": "601133",
+      "dni": "34928749",
+      "username": "rflores",
+      "password": "601133",
+      "firma": null
+    },
+    {
+      "id": "602681",
+      "apellido": "FLORES ASSET",
+      "nombre": "ROCIO SOLEDAD",
+      "legajo": "602681",
+      "dni": "41784908",
+      "username": "rflores2",
+      "password": "602681",
+      "firma": null
+    },
+    {
+      "id": "443526",
+      "apellido": "FORIGO",
+      "nombre": "MELINA ANABEL",
+      "legajo": "443526",
+      "dni": "35043120",
+      "username": "mforigo",
+      "password": "443526",
+      "firma": null
+    },
+    {
+      "id": "602236",
+      "apellido": "FRANCO",
+      "nombre": "MARIA FERNANDA",
+      "legajo": "602236",
+      "dni": "26289621",
+      "username": "mfranco",
+      "password": "602236",
+      "firma": null
+    },
+    {
+      "id": "602072",
+      "apellido": "FUENTES",
+      "nombre": "LUCIANA MERCEDES",
+      "legajo": "602072",
+      "dni": "32696922",
+      "username": "lfuentes",
+      "password": "602072",
+      "firma": null
+    },
+    {
+      "id": "601134",
+      "apellido": "FURLAN",
+      "nombre": "GASTON",
+      "legajo": "601134",
+      "dni": "32999244",
+      "username": "gfurlan",
+      "password": "601134",
+      "firma": null
+    },
+    {
+      "id": "801373",
+      "apellido": "GALEANO",
+      "nombre": "MATIAS HUMBERTO",
+      "legajo": "801373",
+      "dni": "28811948",
+      "username": "mgaleano",
+      "password": "801373",
+      "firma": null
+    },
+    {
+      "id": "600409",
+      "apellido": "GALLI",
+      "nombre": "ESTEBAN GUILLERMO",
+      "legajo": "600409",
+      "dni": "25720429",
+      "username": "egalli",
+      "password": "600409",
+      "firma": null
+    },
+    {
+      "id": "443536",
+      "apellido": "GARAY",
+      "nombre": "CINTIA LETICIA",
+      "legajo": "443536",
+      "dni": "28484077",
+      "username": "cgaray",
+      "password": "443536",
+      "firma": null
+    },
+    {
+      "id": "260377",
+      "apellido": "GARAY",
+      "nombre": "MARITZA ZULMA",
+      "legajo": "260377",
+      "dni": "13948905",
+      "username": "mgaray",
+      "password": "260377",
+      "firma": null
+    },
+    {
+      "id": "601651",
+      "apellido": "GARCIA",
+      "nombre": "NESTOR GABRIEL",
+      "legajo": "601651",
+      "dni": "18481429",
+      "username": "ngarcia",
+      "password": "601651",
+      "firma": null
+    },
+    {
+      "id": "602104",
+      "apellido": "GARCIA MASTANTUONO",
+      "nombre": "FAUSTO",
+      "legajo": "602104",
+      "dni": "36036452",
+      "username": "fgarcia",
+      "password": "602104",
+      "firma": null
+    },
+    {
+      "id": "601135",
+      "apellido": "GARCIA VIDELA",
+      "nombre": "SAMUEL",
+      "legajo": "601135",
+      "dni": "33990528",
+      "username": "sgarcia",
+      "password": "601135",
+      "firma": null
+    },
+    {
+      "id": "601143",
+      "apellido": "GERBALDO",
+      "nombre": "ESTELA ELISABET",
+      "legajo": "601143",
+      "dni": "17082819",
+      "username": "egerbaldo",
+      "password": "601143",
+      "firma": null
+    },
+    {
+      "id": "600253",
+      "apellido": "GIGENA",
+      "nombre": "MARIA LUJAN",
+      "legajo": "600253",
+      "dni": "24402015",
+      "username": "mgigena",
+      "password": "600253",
+      "firma": null
+    },
+    {
+      "id": "602134",
+      "apellido": "GIOVANNETTI",
+      "nombre": "MANUELA VICTORIA",
+      "legajo": "602134",
+      "dni": "34751508",
+      "username": "mgiovannetti",
+      "password": "602134",
+      "firma": null
+    },
+    {
+      "id": "601156",
+      "apellido": "GONZALEZ",
+      "nombre": "JESICA MARIANELA",
+      "legajo": "601156",
+      "dni": "35076228",
+      "username": "jgonzalez",
+      "password": "601156",
+      "firma": null
+    },
+    {
+      "id": "601730",
+      "apellido": "GONZALEZ",
+      "nombre": "SILVINA ALEJANDRA",
+      "legajo": "601730",
+      "dni": "22971981",
+      "username": "sgonzalez",
+      "password": "601730",
+      "firma": null
+    },
+    {
+      "id": "600320",
+      "apellido": "GRAFF",
+      "nombre": "RUBEN DARIO",
+      "legajo": "600320",
+      "dni": "23118015",
+      "username": "rgraff",
+      "password": "600320",
+      "firma": null
+    },
+    {
+      "id": "600284",
+      "apellido": "GUERRA",
+      "nombre": "MARCELA CARINA",
+      "legajo": "600284",
+      "dni": "21924750",
+      "username": "mguerra",
+      "password": "600284",
+      "firma": null
+    },
+    {
+      "id": "601598",
+      "apellido": "GUERRA",
+      "nombre": "MAURO EZEQUIEL",
+      "legajo": "601598",
+      "dni": "31259593",
+      "username": "mguerra2",
+      "password": "601598",
+      "firma": null
+    },
+    {
+      "id": "340170",
+      "apellido": "GUERRA",
+      "nombre": "PAMELA LORENA",
+      "legajo": "340170",
+      "dni": "27933379",
+      "username": "pguerra",
+      "password": "340170",
+      "firma": null
+    },
+    {
+      "id": "601153",
+      "apellido": "GUTIERREZ",
+      "nombre": "MILENA",
+      "legajo": "601153",
+      "dni": "36499862",
+      "username": "mgutierrez",
+      "password": "601153",
+      "firma": null
+    },
+    {
+      "id": "601025",
+      "apellido": "GUZMAN JIBAJA",
+      "nombre": "GABRIEL ANTONIO",
+      "legajo": "601025",
+      "dni": "18845261",
+      "username": "gguzman",
+      "password": "601025",
+      "firma": null
+    },
+    {
+      "id": "601026",
+      "apellido": "HIDALGO",
+      "nombre": "PABLO GERMAN",
+      "legajo": "601026",
+      "dni": "25711082",
+      "username": "phidalgo",
+      "password": "601026",
+      "firma": null
+    },
+    {
+      "id": "299583",
+      "apellido": "HUCEDO VELOSO",
+      "nombre": "ELENA MABEL",
+      "legajo": "299583",
+      "dni": "22204000",
+      "username": "ehucedo",
+      "password": "299583",
+      "firma": null
+    },
+    {
+      "id": "338983",
+      "apellido": "IRIARTE",
+      "nombre": "AGUSTIN JOSE",
+      "legajo": "338983",
+      "dni": "29227311",
+      "username": "airiarte",
+      "password": "338983",
+      "firma": null
+    },
+    {
+      "id": "601622",
+      "apellido": "ISASMENDI",
+      "nombre": "GONZALO",
+      "legajo": "601622",
+      "dni": "27616916",
+      "username": "gisasmendi",
+      "password": "601622",
+      "firma": null
+    },
+    {
+      "id": "601137",
+      "apellido": "JOFRE",
+      "nombre": "MONICA FABIANA",
+      "legajo": "601137",
+      "dni": "20639151",
+      "username": "mjofre",
+      "password": "601137",
+      "firma": null
+    },
+    {
+      "id": "602324",
+      "apellido": "JUAREZ",
+      "nombre": "MARIA BELEN",
+      "legajo": "602324",
+      "dni": "31153476",
+      "username": "mjuarez",
+      "password": "602324",
+      "firma": null
+    },
+    {
+      "id": "600233",
+      "apellido": "JULIANELLI",
+      "nombre": "ERICA",
+      "legajo": "600233",
+      "dni": "29575205",
+      "username": "ejulianelli",
+      "password": "600233",
+      "firma": null
+    },
+    {
+      "id": "602217",
+      "apellido": "LACARBONARO",
+      "nombre": "MARTIN HERNAN",
+      "legajo": "602217",
+      "dni": "30169902",
+      "username": "mlacarbonaro",
+      "password": "602217",
+      "firma": null
+    },
+    {
+      "id": "600176",
+      "apellido": "LARA",
+      "nombre": "SILVIO DANIEL",
+      "legajo": "600176",
+      "dni": "20036423",
+      "username": "slara",
+      "password": "600176",
+      "firma": null
+    },
+    {
+      "id": "260544",
+      "apellido": "LEDESMA",
+      "nombre": "POMPEYA BEATRIZ",
+      "legajo": "260544",
+      "dni": "5895183",
+      "username": "pledesma",
+      "password": "260544",
+      "firma": null
+    },
+    {
+      "id": "601150",
+      "apellido": "LEOTTA INSUA",
+      "nombre": "ELIN MARILINA",
+      "legajo": "601150",
+      "dni": "27821389",
+      "username": "eleotta",
+      "password": "601150",
+      "firma": null
+    },
+    {
+      "id": "258739",
+      "apellido": "LESCANO",
+      "nombre": "SERGIO ABEL",
+      "legajo": "258739",
+      "dni": "13898412",
+      "username": "slescano",
+      "password": "258739",
+      "firma": null
+    },
+    {
+      "id": "306874",
+      "apellido": "LESSI",
+      "nombre": "MARTIN RUBEN",
+      "legajo": "306874",
+      "dni": "24163438",
+      "username": "mlessi",
+      "password": "306874",
+      "firma": null
+    },
+    {
+      "id": "601131",
+      "apellido": "LEVANDOWSKY",
+      "nombre": "SERGIO GUSTAVO",
+      "legajo": "601131",
+      "dni": "23472678",
+      "username": "slevandowsky",
+      "password": "601131",
+      "firma": null
+    },
+    {
+      "id": "602034",
+      "apellido": "LIBERATTI",
+      "nombre": "FRANCO NICOLAS",
+      "legajo": "602034",
+      "dni": "34730221",
+      "username": "fliberatti",
+      "password": "602034",
+      "firma": null
+    },
+    {
+      "id": "284115",
+      "apellido": "LISSONI",
+      "nombre": "LUIS DANTE",
+      "legajo": "284115",
+      "dni": "20017230",
+      "username": "llissoni",
+      "password": "284115",
+      "firma": null
+    },
+    {
+      "id": "602132",
+      "apellido": "LOCOCO",
+      "nombre": "NOELIA LOURDES",
+      "legajo": "602132",
+      "dni": "34437072",
+      "username": "nlococo",
+      "password": "602132",
+      "firma": null
+    },
+    {
+      "id": "601064",
+      "apellido": "LOMANTO",
+      "nombre": "MATIAS",
+      "legajo": "601064",
+      "dni": "29684770",
+      "username": "mlomanto",
+      "password": "601064",
+      "firma": null
+    },
+    {
+      "id": "602487",
+      "apellido": "LOMBARDO",
+      "nombre": "GUILLERMO TOMAS",
+      "legajo": "602487",
+      "dni": "40706093",
+      "username": "glombardo",
+      "password": "602487",
+      "firma": null
+    },
+    {
+      "id": "259275",
+      "apellido": "LOPES GUERREIRO",
+      "nombre": "RICARDO DANIEL",
+      "legajo": "259275",
+      "dni": "16026115",
+      "username": "rlopes",
+      "password": "259275",
+      "firma": null
+    },
+    {
+      "id": "262596",
+      "apellido": "LOPEZ",
+      "nombre": "DANIEL GUSTAVO",
+      "legajo": "262596",
+      "dni": "13975489",
+      "username": "dlopez",
+      "password": "262596",
+      "firma": null
+    },
+    {
+      "id": "602348",
+      "apellido": "LOPEZ",
+      "nombre": "FANNY",
+      "legajo": "602348",
+      "dni": "31215866",
+      "username": "flopez",
+      "password": "602348",
+      "firma": null
+    },
+    {
+      "id": "600223",
+      "apellido": "LOPEZ",
+      "nombre": "RICARDO JAVIER",
+      "legajo": "600223",
+      "dni": "25309829",
+      "username": "rlopez",
+      "password": "600223",
+      "firma": null
+    },
+    {
+      "id": "342364",
+      "apellido": "LOPEZ MOLINA",
+      "nombre": "VERONICA ELIZABET",
+      "legajo": "342364",
+      "dni": "28296675",
+      "username": "vlopez",
+      "password": "342364",
+      "firma": null
+    },
+    {
+      "id": "601074",
+      "apellido": "LOPEZ RUMI",
+      "nombre": "FEDERICO NAHUEL",
+      "legajo": "601074",
+      "dni": "30958028",
+      "username": "flopez2",
+      "password": "601074",
+      "firma": null
+    },
+    {
+      "id": "601149",
+      "apellido": "LOZANO",
+      "nombre": "SEBASTIAN RUBEN",
+      "legajo": "601149",
+      "dni": "29650574",
+      "username": "slozano",
+      "password": "601149",
+      "firma": null
+    },
+    {
+      "id": "601071",
+      "apellido": "MACELLARI",
+      "nombre": "ANIBAL CARLOS",
+      "legajo": "601071",
+      "dni": "12906008",
+      "username": "amacellari",
+      "password": "601071",
+      "firma": null
+    },
+    {
+      "id": "601146",
+      "apellido": "MAGALLANES",
+      "nombre": "JONATAN LEANDRO",
+      "legajo": "601146",
+      "dni": "34760758",
+      "username": "jmagallanes",
+      "password": "601146",
+      "firma": null
+    },
+    {
+      "id": "123460",
+      "apellido": "MAGGI",
+      "nombre": "AGUSTIN CONRADO",
+      "legajo": "123460",
+      "dni": "31750289",
+      "username": "amaggi",
+      "password": "123460",
+      "firma": null
+    },
+    {
+      "id": "297278",
+      "apellido": "MALCUN",
+      "nombre": "JUAN DOMINGO",
+      "legajo": "297278",
+      "dni": "12964705",
+      "username": "jmalcun",
+      "password": "297278",
+      "firma": null
+    },
+    {
+      "id": "602325",
+      "apellido": "MALIN",
+      "nombre": "ROMAN DANIEL",
+      "legajo": "602325",
+      "dni": "32594809",
+      "username": "rmalin",
+      "password": "602325",
+      "firma": null
+    },
+    {
+      "id": "601160",
+      "apellido": "MANSILLA",
+      "nombre": "MIGUEL ANGEL",
+      "legajo": "601160",
+      "dni": "20585450",
+      "username": "mmansilla",
+      "password": "601160",
+      "firma": null
+    },
+    {
+      "id": "340084",
+      "apellido": "MARCATELLI",
+      "nombre": "VERONICA EULALIA",
+      "legajo": "340084",
+      "dni": "25262680",
+      "username": "vmarcatelli",
+      "password": "340084",
+      "firma": null
+    },
+    {
+      "id": "284119",
+      "apellido": "MARCHI",
+      "nombre": "MARCELO JESUS",
+      "legajo": "284119",
+      "dni": "18055501",
+      "username": "mmarchi",
+      "password": "284119",
+      "firma": null
+    },
+    {
+      "id": "707358",
+      "apellido": "MARZILLI",
+      "nombre": "GUSTAVO EUGENIO",
+      "legajo": "707358",
+      "dni": "16603857",
+      "username": "gmarzilli",
+      "password": "707358",
+      "firma": null
+    },
+    {
+      "id": "342365",
+      "apellido": "MATARAZZO",
+      "nombre": "MAURO MARTIN",
+      "legajo": "342365",
+      "dni": "29510825",
+      "username": "mmatarazzo",
+      "password": "342365",
+      "firma": null
+    },
+    {
+      "id": "443525",
+      "apellido": "MATOS",
+      "nombre": "MARINA BELEN",
+      "legajo": "443525",
+      "dni": "37274966",
+      "username": "mmatos",
+      "password": "443525",
+      "firma": null
+    },
+    {
+      "id": "601791",
+      "apellido": "MENDIETA GALEANO",
+      "nombre": "LUZ MONSERRAT",
+      "legajo": "601791",
+      "dni": "19053903",
+      "username": "lmendieta",
+      "password": "601791",
+      "firma": null
+    },
+    {
+      "id": "602123",
+      "apellido": "MENDOZA",
+      "nombre": "LUCAS GONZALO",
+      "legajo": "602123",
+      "dni": "26183703",
+      "username": "lmendoza",
+      "password": "602123",
+      "firma": null
+    },
+    {
+      "id": "601105",
+      "apellido": "MERLO",
+      "nombre": "MARIA FERNANDA",
+      "legajo": "601105",
+      "dni": "25583835",
+      "username": "mmerlo",
+      "password": "601105",
+      "firma": null
+    },
+    {
+      "id": "600242",
+      "apellido": "MILLA",
+      "nombre": "VIVIANA ESTER",
+      "legajo": "600242",
+      "dni": "18220885",
+      "username": "vmilla",
+      "password": "600242",
+      "firma": null
+    },
+    {
+      "id": "601152",
+      "apellido": "MOLINA",
+      "nombre": "ALEJANDRA NORA",
+      "legajo": "601152",
+      "dni": "34730329",
+      "username": "amolina",
+      "password": "601152",
+      "firma": null
+    },
+    {
+      "id": "900212",
+      "apellido": "MORANO",
+      "nombre": "ADRIAN JOSE",
+      "legajo": "900212",
+      "dni": "22032397",
+      "username": "amorano",
+      "password": "900212",
+      "firma": null
+    },
+    {
+      "id": "602378",
+      "apellido": "MORANO",
+      "nombre": "MIGUEL ANGEL",
+      "legajo": "602378",
+      "dni": "23064895",
+      "username": "mmorano",
+      "password": "602378",
+      "firma": null
+    },
+    {
+      "id": "340060",
+      "apellido": "MORENO",
+      "nombre": "MARIANO PABLO",
+      "legajo": "340060",
+      "dni": "24041312",
+      "username": "mmoreno",
+      "password": "340060",
+      "firma": null
+    },
+    {
+      "id": "601562",
+      "apellido": "NAVARRO",
+      "nombre": "FEDERICO MANUEL",
+      "legajo": "601562",
+      "dni": "31195820",
+      "username": "fnavarro",
+      "password": "601562",
+      "firma": null
+    },
+    {
+      "id": "340089",
+      "apellido": "NEGRE",
+      "nombre": "GABRIELA ELIZABETH",
+      "legajo": "340089",
+      "dni": "25579079",
+      "username": "gnegre",
+      "password": "340089",
+      "firma": null
+    },
+    {
+      "id": "602238",
+      "apellido": "NEIRA MARTIN",
+      "nombre": "ALFONSO JAVIER",
+      "legajo": "602238",
+      "dni": "37356755",
+      "username": "aneira",
+      "password": "602238",
+      "firma": null
+    },
+    {
+      "id": "602330",
+      "apellido": "NICOSIA",
+      "nombre": "YAMILA BELEN",
+      "legajo": "602330",
+      "dni": "42101038",
+      "username": "ynicosia",
+      "password": "602330",
+      "firma": null
+    },
+    {
+      "id": "258377",
+      "apellido": "NIETO",
+      "nombre": "LUIS RAFAEL",
+      "legajo": "258377",
+      "dni": "13758585",
+      "username": "lnieto",
+      "password": "258377",
+      "firma": null
+    },
+    {
+      "id": "263840",
+      "apellido": "NOGUERA",
+      "nombre": "JULIO DANIEL",
+      "legajo": "263840",
+      "dni": "16100143",
+      "username": "jnoguera",
+      "password": "263840",
+      "firma": null
+    },
+    {
+      "id": "601789",
+      "apellido": "NOTAR",
+      "nombre": "NICOLAS ADRIAN",
+      "legajo": "601789",
+      "dni": "33113851",
+      "username": "nnotar",
+      "password": "601789",
+      "firma": null
+    },
+    {
+      "id": "601138",
+      "apellido": "NUÑEZ",
+      "nombre": "HECTOR JOSE",
+      "legajo": "601138",
+      "dni": "27810006",
+      "username": "hnunez",
+      "password": "601138",
+      "firma": null
+    },
+    {
+      "id": "600230",
+      "apellido": "NUÑEZ",
+      "nombre": "NORMA INES",
+      "legajo": "600230",
+      "dni": "13750021",
+      "username": "nnunez",
+      "password": "600230",
+      "firma": null
+    },
+    {
+      "id": "602637",
+      "apellido": "ORTEGA",
+      "nombre": "JIMENA GUADALUPE",
+      "legajo": "602637",
+      "dni": "28514787",
+      "username": "jortega",
+      "password": "602637",
+      "firma": null
+    },
+    {
+      "id": "602103",
+      "apellido": "OVEJERO",
+      "nombre": "AIME NATALIA",
+      "legajo": "602103",
+      "dni": "38827138",
+      "username": "aovejero",
+      "password": "602103",
+      "firma": null
+    },
+    {
+      "id": "602484",
+      "apellido": "PACHECO",
+      "nombre": "BRENDA MACARENA",
+      "legajo": "602484",
+      "dni": "34250591",
+      "username": "bpacheco",
+      "password": "602484",
+      "firma": null
+    },
+    {
+      "id": "342369",
+      "apellido": "PAGLIALUNGA",
+      "nombre": "LORENA MABEL",
+      "legajo": "342369",
+      "dni": "28113498",
+      "username": "lpaglialunga",
+      "password": "342369",
+      "firma": null
+    },
+    {
+      "id": "313056",
+      "apellido": "PALERMO",
+      "nombre": "GERMAN OMAR",
+      "legajo": "313056",
+      "dni": "20015807",
+      "username": "gpalermo",
+      "password": "313056",
+      "firma": null
+    },
+    {
+      "id": "601067",
+      "apellido": "PANOZO",
+      "nombre": "MIGUEL ANGEL",
+      "legajo": "601067",
+      "dni": "24999172",
+      "username": "mpanozo",
+      "password": "601067",
+      "firma": null
+    },
+    {
+      "id": "601575",
+      "apellido": "PARDO",
+      "nombre": "JORGE ESTEBAN",
+      "legajo": "601575",
+      "dni": "20296476",
+      "username": "jpardo",
+      "password": "601575",
+      "firma": null
+    },
+    {
+      "id": "601029",
+      "apellido": "PAREDES",
+      "nombre": "FERNANDO DANIEL",
+      "legajo": "601029",
+      "dni": "31531587",
+      "username": "fparedes",
+      "password": "601029",
+      "firma": null
+    },
+    {
+      "id": "306618",
+      "apellido": "PARRA",
+      "nombre": "MONICA ELISABETH",
+      "legajo": "306618",
+      "dni": "20312027",
+      "username": "mparra",
+      "password": "306618",
+      "firma": null
+    },
+    {
+      "id": "601567",
+      "apellido": "PASUCHIO",
+      "nombre": "NADIA PAOLA",
+      "legajo": "601567",
+      "dni": "30338032",
+      "username": "npasuchio",
+      "password": "601567",
+      "firma": null
+    },
+    {
+      "id": "801240",
+      "apellido": "PAVISKOV",
+      "nombre": "DAMIAN OSCAR",
+      "legajo": "801240",
+      "dni": "27824638",
+      "username": "dpaviskov",
+      "password": "801240",
+      "firma": null
+    },
+    {
+      "id": "281343",
+      "apellido": "PEDICINO",
+      "nombre": "CLAUDIO JORGE",
+      "legajo": "281343",
+      "dni": "16211103",
+      "username": "cpedicino",
+      "password": "281343",
+      "firma": null
+    },
+    {
+      "id": "707285",
+      "apellido": "PEREZ",
+      "nombre": "MARCELA PATRICIA",
+      "legajo": "707285",
+      "dni": "21056577",
+      "username": "mperez",
+      "password": "707285",
+      "firma": null
+    },
+    {
+      "id": "600328",
+      "apellido": "PEREZ",
+      "nombre": "NAHUEL",
+      "legajo": "600328",
+      "dni": "23494554",
+      "username": "nperez",
+      "password": "600328",
+      "firma": null
+    },
+    {
+      "id": "601569",
+      "apellido": "PODASCHEVSKY",
+      "nombre": "NICOLAS CARLOS",
+      "legajo": "601569",
+      "dni": "30996787",
+      "username": "npodaschevsky",
+      "password": "601569",
+      "firma": null
+    },
+    {
+      "id": "601144",
+      "apellido": "POLERO",
+      "nombre": "ANDRES ENRIQUE",
+      "legajo": "601144",
+      "dni": "27815016",
+      "username": "apolero",
+      "password": "601144",
+      "firma": null
+    },
+    {
+      "id": "602133",
+      "apellido": "QUINTEROS RAMIREZ",
+      "nombre": "GABRIELA FERNANDA",
+      "legajo": "602133",
+      "dni": "25355877",
+      "username": "gquinteros",
+      "password": "602133",
+      "firma": null
+    },
+    {
+      "id": "340182",
+      "apellido": "RAGGIO",
+      "nombre": "MARIA CECILIA",
+      "legajo": "340182",
+      "dni": "23960918",
+      "username": "mraggio",
+      "password": "340182",
+      "firma": null
+    },
+    {
+      "id": "601114",
+      "apellido": "RAMIREZ",
+      "nombre": "ANDREA VALERIA",
+      "legajo": "601114",
+      "dni": "32014101",
+      "username": "aramirez",
+      "password": "601114",
+      "firma": null
+    },
+    {
+      "id": "602100",
+      "apellido": "REINAUDO",
+      "nombre": "CRISTINA NOELIA",
+      "legajo": "602100",
+      "dni": "37669005",
+      "username": "creinaudo",
+      "password": "602100",
+      "firma": null
+    },
+    {
+      "id": "600322",
+      "apellido": "RICCIARDI",
+      "nombre": "MARIA BELEN",
+      "legajo": "600322",
+      "dni": "25789874",
+      "username": "mricciardi",
+      "password": "600322",
+      "firma": null
+    },
+    {
+      "id": "601802",
+      "apellido": "RICHARDELLO",
+      "nombre": "MARIA JOSE",
+      "legajo": "601802",
+      "dni": "29031279",
+      "username": "mrichardello",
+      "password": "601802",
+      "firma": null
+    },
+    {
+      "id": "601793",
+      "apellido": "ROCHA",
+      "nombre": "LEONARDO",
+      "legajo": "601793",
+      "dni": "26708701",
+      "username": "lrocha",
+      "password": "601793",
+      "firma": null
+    },
+    {
+      "id": "602143",
+      "apellido": "ROCHA",
+      "nombre": "MARIA AGUSTINA",
+      "legajo": "602143",
+      "dni": "32773135",
+      "username": "mrocha",
+      "password": "602143",
+      "firma": null
+    },
+    {
+      "id": "600283",
+      "apellido": "RODRIGUES",
+      "nombre": "FERNANDO GASTON",
+      "legajo": "600283",
+      "dni": "28483868",
+      "username": "frodrigues",
+      "password": "600283",
+      "firma": null
+    },
+    {
+      "id": "600411",
+      "apellido": "RODRIGUEZ",
+      "nombre": "DIEGO MANUEL",
+      "legajo": "600411",
+      "dni": "21529690",
+      "username": "drodriguez",
+      "password": "600411",
+      "firma": null
+    },
+    {
+      "id": "311804",
+      "apellido": "RODRIGUEZ",
+      "nombre": "FRANCISCA ALBINA",
+      "legajo": "311804",
+      "dni": "16048936",
+      "username": "frodriguez",
+      "password": "311804",
+      "firma": null
+    },
+    {
+      "id": "560240",
+      "apellido": "ROLHAISER",
+      "nombre": "MATIAS EZEQUIEL",
+      "legajo": "560240",
+      "dni": "34032692",
+      "username": "mrolhaiser",
+      "password": "560240",
+      "firma": null
+    },
+    {
+      "id": "301914",
+      "apellido": "ROMAN",
+      "nombre": "NOEMI RAQUEL",
+      "legajo": "301914",
+      "dni": "23916473",
+      "username": "nroman",
+      "password": "301914",
+      "firma": null
+    },
+    {
+      "id": "284076",
+      "apellido": "ROMERO",
+      "nombre": "CLAUDIA ANALIA",
+      "legajo": "284076",
+      "dni": "20961160",
+      "username": "cromero",
+      "password": "284076",
+      "firma": null
+    },
+    {
+      "id": "285376",
+      "apellido": "RUBINO",
+      "nombre": "GUSTAVO DANIEL",
+      "legajo": "285376",
+      "dni": "14997864",
+      "username": "grubino",
+      "password": "285376",
+      "firma": null
+    },
+    {
+      "id": "443524",
+      "apellido": "SALVO TROCCOLI",
+      "nombre": "NOELIA TAMARA",
+      "legajo": "443524",
+      "dni": "34645670",
+      "username": "nsalvo",
+      "password": "443524",
+      "firma": null
+    },
+    {
+      "id": "601151",
+      "apellido": "SAN MILLAN",
+      "nombre": "FERNANDA DEL MAR",
+      "legajo": "601151",
+      "dni": "30196216",
+      "username": "fsan",
+      "password": "601151",
+      "firma": null
+    },
+    {
+      "id": "602114",
+      "apellido": "SAN MILLAN",
+      "nombre": "MARTIN ROBERTO",
+      "legajo": "602114",
+      "dni": "28728393",
+      "username": "msan",
+      "password": "602114",
+      "firma": null
+    },
+    {
+      "id": "342372",
+      "apellido": "SANCHEZ",
+      "nombre": "BEATRIZ LORENA",
+      "legajo": "342372",
+      "dni": "27873212",
+      "username": "bsanchez",
+      "password": "342372",
+      "firma": null
+    },
+    {
+      "id": "283826",
+      "apellido": "SANCHEZ",
+      "nombre": "CLAUDIO RENE",
+      "legajo": "283826",
+      "dni": "14249195",
+      "username": "csanchez",
+      "password": "283826",
+      "firma": null
+    },
+    {
+      "id": "601147",
+      "apellido": "SEPICH",
+      "nombre": "IGNACIO",
+      "legajo": "601147",
+      "dni": "35995010",
+      "username": "isepich",
+      "password": "601147",
+      "firma": null
+    },
+    {
+      "id": "600248",
+      "apellido": "SOLALINDE",
+      "nombre": "JUAN GABRIEL",
+      "legajo": "600248",
+      "dni": "27547359",
+      "username": "jsolalinde",
+      "password": "600248",
+      "firma": null
+    },
+    {
+      "id": "261553",
+      "apellido": "SPATARO DEL POPOLO",
+      "nombre": "FELIPE LUIS",
+      "legajo": "261553",
+      "dni": "16243663",
+      "username": "fspataro",
+      "password": "261553",
+      "firma": null
+    },
+    {
+      "id": "602212",
+      "apellido": "SQUAGLIA",
+      "nombre": "ROMINA LORENA",
+      "legajo": "602212",
+      "dni": "27162273",
+      "username": "rsquaglia",
+      "password": "602212",
+      "firma": null
+    },
+    {
+      "id": "601155",
+      "apellido": "TARSETTI",
+      "nombre": "AGOSTINA",
+      "legajo": "601155",
+      "dni": "32330658",
+      "username": "atarsetti",
+      "password": "601155",
+      "firma": null
+    },
+    {
+      "id": "123461",
+      "apellido": "TEYELDIN",
+      "nombre": "SANDRA DANIELA",
+      "legajo": "123461",
+      "dni": "16415608",
+      "username": "steyeldin",
+      "password": "123461",
+      "firma": null
+    },
+    {
+      "id": "342373",
+      "apellido": "TISORIERO",
+      "nombre": "PABLO SEBASTIAN",
+      "legajo": "342373",
+      "dni": "28573133",
+      "username": "ptisoriero",
+      "password": "342373",
+      "firma": null
+    },
+    {
+      "id": "488872",
+      "apellido": "TOLEDO",
+      "nombre": "MARIBEL MONSERRAT",
+      "legajo": "488872",
+      "dni": "27650563",
+      "username": "mtoledo",
+      "password": "488872",
+      "firma": null
+    },
+    {
+      "id": "601154",
+      "apellido": "TORTOSSA",
+      "nombre": "JULIAN",
+      "legajo": "601154",
+      "dni": "32992381",
+      "username": "jtortossa",
+      "password": "601154",
+      "firma": null
+    },
+    {
+      "id": "443547",
+      "apellido": "TOUCEDA",
+      "nombre": "HERNAN DIEGO",
+      "legajo": "443547",
+      "dni": "30575057",
+      "username": "htouceda",
+      "password": "443547",
+      "firma": null
+    },
+    {
+      "id": "601144",
+      "apellido": "TRAVERSA",
+      "nombre": "GONZALO GABRIEL",
+      "legajo": "601144",
+      "dni": "32666411",
+      "username": "gtraversa",
+      "password": "601144",
+      "firma": null
+    },
+    {
+      "id": "601770",
+      "apellido": "URQUIA SALA",
+      "nombre": "CARLOS MARTIN",
+      "legajo": "601770",
+      "dni": "29930696",
+      "username": "curquia",
+      "password": "601770",
+      "firma": null
+    },
+    {
+      "id": "258735",
+      "apellido": "VENTURA",
+      "nombre": "JOSE MARIA",
+      "legajo": "258735",
+      "dni": "12707545",
+      "username": "jventura",
+      "password": "258735",
+      "firma": null
+    },
+    {
+      "id": "602076",
+      "apellido": "VERDON",
+      "nombre": "GERMAN FEDERICO",
+      "legajo": "602076",
+      "dni": "29723828",
+      "username": "gverdon",
+      "password": "602076",
+      "firma": null
+    },
+    {
+      "id": "602674",
+      "apellido": "VILLEGAS",
+      "nombre": "FERNANDO GABRIEL",
+      "legajo": "602674",
+      "dni": "24042411",
+      "username": "fvillegas",
+      "password": "602674",
+      "firma": null
+    },
+    {
+      "id": "601043",
+      "apellido": "VIÑUELA",
+      "nombre": "DIEGO SEBASTIAN",
+      "legajo": "601043",
+      "dni": "28447313",
+      "username": "dvinuela",
+      "password": "601043",
+      "firma": null
+    },
+    {
+      "id": "601795",
+      "apellido": "VIVAS",
+      "nombre": "DIEGO OSCAR",
+      "legajo": "601795",
+      "dni": "26746295",
+      "username": "dvivas",
+      "password": "601795",
+      "firma": null
+    },
+    {
+      "id": "300362",
+      "apellido": "WALLACE",
+      "nombre": "GUSTAVO",
+      "legajo": "300362",
+      "dni": "21664568",
+      "username": "gwallace",
+      "password": "300362",
+      "firma": null
+    },
+    {
+      "id": "601576",
+      "apellido": "ZARLENGA",
+      "nombre": "CONSTANZA ANAHI",
+      "legajo": "601576",
+      "dni": "30927367",
+      "username": "czarlenga",
+      "password": "601576",
+      "firma": null
+    }
+  ],
+  "admins": [
+    {
+      "username": "admin",
+      "password": "admin2026",
+      "nombre": "Administrador",
+      "role": "admin"
+    },
+    {
+      "username": "directora",
+      "password": "dir2026",
+      "nombre": "Directora Provincial",
+      "role": "admin"
+    },
+    {
+      "username": "asesoria",
+      "password": "ases2026",
+      "nombre": "Asesoría",
+      "role": "admin"
+    }
+  ]
+}
