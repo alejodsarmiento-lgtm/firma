@@ -163,54 +163,10 @@ canvas.sp{display:block;width:100%;touch-action:none;cursor:crosshair}
   <button class="lbtn" id="lBtn" onclick="doLogin()">Ingresar al sistema</button>
   <div class="lerr" id="lErr"></div>
 
-  <!-- TAB 4: ANALYTICS -->
-  <div id="tab4" style="display:none">
+</div>
 
-    <!-- Filtro de fechas -->
-    <div class="card">
-      <div class="ctit">📊 Control de Calidad — Analytics de Sesiones</div>
-      <div class="frow" style="margin-bottom:10px">
-        <div class="fg" style="margin:0">
-          <label>Desde</label>
-          <input type="date" id="aDesde" style="font-size:13px" onchange="cargarAnalytics()">
-        </div>
-        <div class="fg" style="margin:0">
-          <label>Hasta</label>
-          <input type="date" id="aHasta" style="font-size:13px" onchange="cargarAnalytics()">
-        </div>
-      </div>
-      <button class="bs bsv" style="padding:9px 16px;font-size:12px" onclick="cargarAnalytics()">🔄 Actualizar</button>
-    </div>
-
-    <!-- KPIs principales -->
-    <div id="aKpis" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px"></div>
-
-    <!-- Gráficos fila 1 -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
-      <div id="chartDispositivos" class="card"></div>
-      <div id="chartBrowsers" class="card"></div>
-    </div>
-
-    <!-- Sesiones por día -->
-    <div id="chartDias" class="card" style="margin-bottom:14px"></div>
-
-    <!-- Horas pico -->
-    <div id="chartHoras" class="card" style="margin-bottom:14px"></div>
-
-    <!-- Top inspectores -->
-    <div class="card" style="margin-bottom:14px">
-      <div class="ctit">🏆 Inspectores más activos</div>
-      <div id="aTopInsp"></div>
-    </div>
-
-    <!-- Últimas sesiones -->
-    <div class="card">
-      <div class="ctit">🕐 Últimas 20 sesiones</div>
-      <div id="aUltimas" style="overflow-x:auto"></div>
-    </div>
-
-  </div>
-
+</body>
+</html>
 </div>
 </div>
 
@@ -509,6 +465,54 @@ canvas.sp{display:block;width:100%;touch-action:none;cursor:crosshair}
       </div>
       <div id="listHist"><div class="spin-dark"></div></div>
     </div>
+  </div>
+
+  <!-- TAB 4: ANALYTICS -->
+  <div id="tab4" style="display:none">
+
+    <!-- Filtro de fechas -->
+    <div class="card">
+      <div class="ctit">📊 Control de Calidad — Analytics de Sesiones</div>
+      <div class="frow" style="margin-bottom:10px">
+        <div class="fg" style="margin:0">
+          <label>Desde</label>
+          <input type="date" id="aDesde" style="font-size:13px" onchange="cargarAnalytics()">
+        </div>
+        <div class="fg" style="margin:0">
+          <label>Hasta</label>
+          <input type="date" id="aHasta" style="font-size:13px" onchange="cargarAnalytics()">
+        </div>
+      </div>
+      <button class="bs bsv" style="padding:9px 16px;font-size:12px" onclick="cargarAnalytics()">🔄 Actualizar</button>
+    </div>
+
+    <!-- KPIs principales -->
+    <div id="aKpis" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px"></div>
+
+    <!-- Gráficos fila 1 -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+      <div id="chartDispositivos" class="card"></div>
+      <div id="chartBrowsers" class="card"></div>
+    </div>
+
+    <!-- Sesiones por día -->
+    <div id="chartDias" class="card" style="margin-bottom:14px"></div>
+
+    <!-- Horas pico -->
+    <div id="chartHoras" class="card" style="margin-bottom:14px"></div>
+
+    <!-- Top inspectores -->
+    <div class="card" style="margin-bottom:14px">
+      <div class="ctit">🏆 Inspectores más activos</div>
+      <div id="aTopInsp"></div>
+    </div>
+
+    <!-- Últimas sesiones -->
+    <div class="card">
+      <div class="ctit">🕐 Últimas 20 sesiones</div>
+      <div id="aUltimas" style="overflow-x:auto"></div>
+    </div>
+
   </div>
 
 </div>
@@ -1485,7 +1489,3 @@ window.addEventListener('load',()=>{
 
     </div>
   </div>
-</div>
-
-</body>
-</html>
