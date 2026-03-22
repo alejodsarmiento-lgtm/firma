@@ -997,6 +997,14 @@ app.post('/api/admin/seed-demo', requireAdmin, (req, res) => {
   res.json({ok:true, sesionesAgregadas: sessions.length});
 });
 
+
+// POST /api/admin/reset-analytics — limpiar todos los datos de analytics
+app.post('/api/admin/reset-analytics', requireAdmin, (req, res) => {
+  fs.writeFileSync(SESSIONS_FILE, '[]');
+  fs.writeFileSync(EVENTS_FILE, '[]');
+  res.json({ ok: true, mensaje: 'Analytics reseteado. Contador en cero.' });
+});
+
 // ── SPA fallback ───────────────────────────────────────────────
 app.get('*', (req, res) => {
   res.sendFile(path.join(PUBLIC_DIR, 'index.html'));
