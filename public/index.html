@@ -187,27 +187,15 @@ canvas.sp{display:block;width:100%;touch-action:none;cursor:crosshair}
 
     <!-- Gráficos fila 1 -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
-      <div class="card">
-        <div class="ctit">📱 Dispositivos</div>
-        <canvas id="chartDispositivos" height="180"></canvas>
-      </div>
-      <div class="card">
-        <div class="ctit">🌐 Navegadores</div>
-        <canvas id="chartBrowsers" height="180"></canvas>
-      </div>
+      <div id="chartDispositivos" class="card"></div>
+      <div id="chartBrowsers" class="card"></div>
     </div>
 
     <!-- Sesiones por día -->
-    <div class="card" style="margin-bottom:14px">
-      <div class="ctit">📅 Sesiones por día</div>
-      <canvas id="chartDias" height="120"></canvas>
-    </div>
+    <div id="chartDias" class="card" style="margin-bottom:14px"></div>
 
     <!-- Horas pico -->
-    <div class="card" style="margin-bottom:14px">
-      <div class="ctit">⏰ Distribución horaria (horas pico)</div>
-      <canvas id="chartHoras" height="100"></canvas>
-    </div>
+    <div id="chartHoras" class="card" style="margin-bottom:14px"></div>
 
     <!-- Top inspectores -->
     <div class="card" style="margin-bottom:14px">
@@ -1259,12 +1247,12 @@ async function cargarAnalytics() {
       <div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-top:3px">${k.label}</div>
     </div>`).join('');
 
-  // Gráfico dispositivos (barras SVG simples)
+  // Gráfico dispositivos
   const disp = r.dispositivos;
   const dispTotal = Math.max(1, Object.values(disp).reduce((a,b)=>a+b,0));
   const dispColors = {mobile:'#1F5FA6', tablet:'#27AE60', desktop:'#E67E22'};
   const dispLabels = {mobile:'📱 Mobile', tablet:'📟 Tablet', desktop:'🖥️ Desktop'};
-  document.getElementById('chartDispositivos').parentElement.innerHTML =
+  document.getElementById('chartDispositivos').innerHTML =
     '<div class="ctit">📱 Dispositivos</div>' +
     Object.entries(disp).map(([k,v])=>`
       <div style="margin-bottom:10px">
@@ -1279,7 +1267,7 @@ async function cargarAnalytics() {
   // Gráfico browsers
   const brTotal = Math.max(1, Object.values(r.browsers).reduce((a,b)=>a+b,0));
   const brColors = ['#003366','#1F5FA6','#27AE60','#E67E22','#7B3FA0','#888'];
-  document.getElementById('chartBrowsers').parentElement.innerHTML =
+  document.getElementById('chartBrowsers').innerHTML =
     '<div class="ctit">🌐 Navegadores</div>' +
     Object.entries(r.browsers).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([k,v],i)=>`
       <div style="margin-bottom:8px">
@@ -1294,7 +1282,7 @@ async function cargarAnalytics() {
   // Sesiones por día
   const dias = Object.entries(r.porDia).sort(([a],[b])=>a.localeCompare(b)).slice(-14);
   const maxDia = Math.max(1,...dias.map(([,v])=>v));
-  document.getElementById('chartDias').parentElement.innerHTML =
+  document.getElementById('chartDias').innerHTML =
     '<div class="ctit">📅 Sesiones por día (últimas 2 semanas)</div>' +
     '<div style="display:flex;align-items:flex-end;gap:6px;height:80px;padding:8px 0">' +
     dias.map(([d,v])=>`
@@ -1307,7 +1295,7 @@ async function cargarAnalytics() {
 
   // Horas pico
   const maxH = Math.max(1,...r.porHora);
-  document.getElementById('chartHoras').parentElement.innerHTML =
+  document.getElementById('chartHoras').innerHTML =
     '<div class="ctit">⏰ Distribución horaria</div>' +
     '<div style="display:flex;align-items:flex-end;gap:2px;height:60px;padding:4px 0">' +
     r.porHora.map((v,h)=>`
