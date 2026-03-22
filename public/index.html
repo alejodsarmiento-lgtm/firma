@@ -162,6 +162,67 @@ canvas.sp{display:block;width:100%;touch-action:none;cursor:crosshair}
   </div>
   <button class="lbtn" id="lBtn" onclick="doLogin()">Ingresar al sistema</button>
   <div class="lerr" id="lErr"></div>
+
+  <!-- TAB 4: ANALYTICS -->
+  <div id="tab4" style="display:none">
+
+    <!-- Filtro de fechas -->
+    <div class="card">
+      <div class="ctit">📊 Control de Calidad — Analytics de Sesiones</div>
+      <div class="frow" style="margin-bottom:10px">
+        <div class="fg" style="margin:0">
+          <label>Desde</label>
+          <input type="date" id="aDesde" style="font-size:13px" onchange="cargarAnalytics()">
+        </div>
+        <div class="fg" style="margin:0">
+          <label>Hasta</label>
+          <input type="date" id="aHasta" style="font-size:13px" onchange="cargarAnalytics()">
+        </div>
+      </div>
+      <button class="bs bsv" style="padding:9px 16px;font-size:12px" onclick="cargarAnalytics()">🔄 Actualizar</button>
+    </div>
+
+    <!-- KPIs principales -->
+    <div id="aKpis" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px"></div>
+
+    <!-- Gráficos fila 1 -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+      <div class="card">
+        <div class="ctit">📱 Dispositivos</div>
+        <canvas id="chartDispositivos" height="180"></canvas>
+      </div>
+      <div class="card">
+        <div class="ctit">🌐 Navegadores</div>
+        <canvas id="chartBrowsers" height="180"></canvas>
+      </div>
+    </div>
+
+    <!-- Sesiones por día -->
+    <div class="card" style="margin-bottom:14px">
+      <div class="ctit">📅 Sesiones por día</div>
+      <canvas id="chartDias" height="120"></canvas>
+    </div>
+
+    <!-- Horas pico -->
+    <div class="card" style="margin-bottom:14px">
+      <div class="ctit">⏰ Distribución horaria (horas pico)</div>
+      <canvas id="chartHoras" height="100"></canvas>
+    </div>
+
+    <!-- Top inspectores -->
+    <div class="card" style="margin-bottom:14px">
+      <div class="ctit">🏆 Inspectores más activos</div>
+      <div id="aTopInsp"></div>
+    </div>
+
+    <!-- Últimas sesiones -->
+    <div class="card">
+      <div class="ctit">🕐 Últimas 20 sesiones</div>
+      <div id="aUltimas" style="overflow-x:auto"></div>
+    </div>
+
+  </div>
+
 </div>
 </div>
 
@@ -332,6 +393,7 @@ canvas.sp{display:block;width:100%;touch-action:none;cursor:crosshair}
     <button class="tab on" id="t1" onclick="aTab(1)">📤 Subir planilla</button>
     <button class="tab"    id="t2" onclick="aTab(2)">👥 Inspectores</button>
     <button class="tab"    id="t3" onclick="aTab(3)">📋 Historial</button>
+    <button class="tab"    id="t4" onclick="aTab(4)">📊 Analytics</button>
   </div>
 
   <!-- TAB 1: SUBIR PLANILLA -->
@@ -407,6 +469,10 @@ canvas.sp{display:block;width:100%;touch-action:none;cursor:crosshair}
       <div class="st" id="stBackup"></div>
     </div>
     <!-- Lista con filtros -->
+    <!-- Botón agregar + modal -->
+    <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
+      <button onclick="abrirNuevoInsp()" style="background:#1A7A3C;color:#fff;border:none;border-radius:9px;padding:10px 16px;font-size:13px;font-weight:700;cursor:pointer">➕ Agregar inspector</button>
+    </div>
     <div class="card">
       <div class="ctit">👥 Inspectores habilitados (<span id="cInsp">207</span>)</div>
       <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">
@@ -493,6 +559,7 @@ async function doLogin() {
   }
 }
 async function doLogout(){
+  await fetch('/api/analytics/session/end',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'}).catch(()=>{});
   await api('POST','/api/logout');
   me=null;perfilInsp=null;planillaInfo=null;firmaDataURL=null;
   document.getElementById('lU').value='';
@@ -663,9 +730,15 @@ async function buildAdmin(){
 }
 
 async function aTab(n){
-  [1,2,3].forEach(i=>{document.getElementById('tab'+i).style.display=i===n?'block':'none';document.getElementById('t'+i).classList.toggle('on',i===n);});
+  [1,2,3,4].forEach(i=>{
+    const tab=document.getElementById('tab'+i);
+    const btn=document.getElementById('t'+i);
+    if(tab) tab.style.display=i===n?'block':'none';
+    if(btn) btn.classList.toggle('on',i===n);
+  });
   if(n===2){await cargarEstadoFirmas();renderAdminInsp();}
   if(n===3) renderAdminHist();
+  if(n===4) cargarAnalytics();
 }
 
 function aPDFLoad(e){
@@ -847,7 +920,8 @@ async function renderAdminInsp(){
       </div>
       <span style="font-size:10px;font-weight:700;margin-right:6px;${i.tieneFirma?'color:#1A7A3C':'color:#ccc'}">${i.tieneFirma?'✓ Firma':'Sin firma'}</span>
       ${i.pendiente?'<span class="tag" style="background:#FEF3E2;color:#E67E22;margin-right:6px">Pendiente</span>':''}
-      <button onclick="abrirPerfil('${i.id}')" style="background:#003366;color:#fff;border:none;border-radius:7px;padding:5px 10px;font-size:11px;font-weight:600;cursor:pointer">⚙️ Gestionar</button>
+      <button onclick="abrirPerfil('${i.id}')" style="background:#003366;color:#fff;border:none;border-radius:7px;padding:5px 10px;font-size:11px;font-weight:600;cursor:pointer;margin-right:4px">⚙️ Gestionar</button>
+      <button onclick="eliminarInsp('${i.id}','${i.nombre}')" style="background:#FDECEA;color:#C0392B;border:1px solid #F5A8A3;border-radius:7px;padding:5px 8px;font-size:11px;cursor:pointer" title="Quitar de la nómina">🗑</button>
     </div>`).join('');
 }
 function filtrarInsp(){renderAdminInsp();}
@@ -1065,6 +1139,194 @@ document.addEventListener('click', e => {
   if (modal && e.target === modal) cerrarPerfil();
 });
 
+
+// ══════════════════════════════════════════
+//  GESTIÓN DE NÓMINA (agregar/quitar)
+// ══════════════════════════════════════════
+function abrirNuevoInsp() {
+  ['niApellido','niNombre','niLegajo','niDni','niUser','niPass'].forEach(id=>{
+    const e=document.getElementById(id); if(e) e.value='';
+  });
+  const st=document.getElementById('stNuevoInsp');
+  if(st){st.className='st';st.textContent='';}
+  document.getElementById('modalNuevo').style.display='block';
+  document.body.style.overflow='hidden';
+  setTimeout(()=>document.getElementById('niApellido')?.focus(),100);
+}
+function cerrarNuevoInsp() {
+  document.getElementById('modalNuevo').style.display='none';
+  document.body.style.overflow='';
+}
+async function guardarNuevoInsp() {
+  const apellido = (document.getElementById('niApellido').value||'').trim().toUpperCase();
+  const nombre   = (document.getElementById('niNombre').value||'').trim().toUpperCase();
+  const legajo   = (document.getElementById('niLegajo').value||'').trim();
+  const dni      = (document.getElementById('niDni').value||'').trim();
+  const username = (document.getElementById('niUser').value||'').trim();
+  const password = (document.getElementById('niPass').value||'').trim();
+  if(!apellido||!nombre||!legajo||!dni){setSt('stNuevoInsp','err','❌ Apellido, nombre, legajo y DNI son obligatorios.');return;}
+  const r=await api('POST','/api/admin/inspector',{apellido,nombre,legajo,dni,username,password});
+  if(r.error){setSt('stNuevoInsp','err','❌ '+r.error);return;}
+  setSt('stNuevoInsp','ok','✅ '+r.mensaje);
+  document.getElementById('cInsp').textContent = parseInt(document.getElementById('cInsp').textContent||'0')+1;
+  // Recargar lista
+  const inspsResp = await api('GET','/api/admin/inspectores');
+  allInspAdm = inspsResp.error ? allInspAdm : inspsResp;
+  const sel=document.getElementById('pSel');
+  if(sel){
+    sel.innerHTML='<option value="">— Seleccioná el inspector —</option>'+
+      allInspAdm.map(i=>`<option value="${i.id}">${i.nombre} (Leg. ${i.legajo})</option>`).join('');
+  }
+  renderAdminInsp();
+  setTimeout(()=>cerrarNuevoInsp(),1800);
+}
+async function eliminarInsp(id, nombre) {
+  if(!confirm(`¿Eliminar a ${nombre} de la nómina?\n\nEsta acción eliminará al inspector del sistema. Sus planillas pendientes serán canceladas.`)) return;
+  const r=await api('DELETE','/api/admin/inspector/'+id);
+  if(r.error){alert('❌ '+r.error);return;}
+  // Actualizar lista local
+  allInspAdm=allInspAdm.filter(i=>i.id!==id);
+  document.getElementById('cInsp').textContent=allInspAdm.length;
+  renderAdminInsp();
+  renderAdminPend();
+  alert('✅ '+r.mensaje);
+}
+
+// ══════════════════════════════════════════
+//  ANALYTICS
+// ══════════════════════════════════════════
+function fmtSeg(s) {
+  if(!s||s<0) return '—';
+  if(s<60) return s+'s';
+  if(s<3600) return Math.floor(s/60)+'m '+( s%60)+'s';
+  return Math.floor(s/3600)+'h '+Math.floor((s%3600)/60)+'m';
+}
+
+async function cargarAnalytics() {
+  const desde = document.getElementById('aDesde')?.value||'';
+  const hasta = document.getElementById('aHasta')?.value||'';
+  let url = '/api/admin/analytics';
+  const params=[];
+  if(desde) params.push('desde='+desde);
+  if(hasta) params.push('hasta='+hasta);
+  if(params.length) url+='?'+params.join('&');
+
+  const r = await api('GET', url);
+  if(r.error){document.getElementById('aKpis').innerHTML='<div class="empty">'+r.error+'</div>';return;}
+
+  // KPIs
+  const kpiDefs = [
+    {label:'Total sesiones',    val: r.resumen.total,              color:'#003366', icon:'👥'},
+    {label:'Completadas',       val: r.resumen.completadas,        color:'#1A7A3C', icon:'✅'},
+    {label:'Duración promedio', val: fmtSeg(r.resumen.durPromedio),color:'#1F5FA6', icon:'⏱'},
+    {label:'Duración máxima',   val: fmtSeg(r.resumen.durMax),     color:'#7B3FA0', icon:'📈'},
+    {label:'Tasa de firma',     val: r.resumen.tasaFirma+'%',      color:'#27AE60', icon:'✍️'},
+    {label:'Eventos totales',   val: r.totalEventos,               color:'#E67E22', icon:'📌'},
+  ];
+  document.getElementById('aKpis').innerHTML = kpiDefs.map(k=>`
+    <div style="background:#fff;border-radius:12px;padding:14px 16px;border:1px solid #D0DCE8;box-shadow:0 2px 10px rgba(0,51,102,.08);text-align:center">
+      <div style="font-size:24px;margin-bottom:4px">${k.icon}</div>
+      <div style="font-size:22px;font-weight:800;color:${k.color}">${k.val}</div>
+      <div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-top:3px">${k.label}</div>
+    </div>`).join('');
+
+  // Gráfico dispositivos (barras SVG simples)
+  const disp = r.dispositivos;
+  const dispTotal = Math.max(1, Object.values(disp).reduce((a,b)=>a+b,0));
+  const dispColors = {mobile:'#1F5FA6', tablet:'#27AE60', desktop:'#E67E22'};
+  const dispLabels = {mobile:'📱 Mobile', tablet:'📟 Tablet', desktop:'🖥️ Desktop'};
+  document.getElementById('chartDispositivos').parentElement.innerHTML =
+    '<div class="ctit">📱 Dispositivos</div>' +
+    Object.entries(disp).map(([k,v])=>`
+      <div style="margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px">
+          <span>${dispLabels[k]||k}</span><span style="font-weight:700">${v} (${Math.round(v/dispTotal*100)}%)</span>
+        </div>
+        <div style="background:#F0F4F8;border-radius:10px;height:12px;overflow:hidden">
+          <div style="height:100%;width:${Math.round(v/dispTotal*100)}%;background:${dispColors[k]||'#888'};border-radius:10px;transition:width .5s"></div>
+        </div>
+      </div>`).join('');
+
+  // Gráfico browsers
+  const brTotal = Math.max(1, Object.values(r.browsers).reduce((a,b)=>a+b,0));
+  const brColors = ['#003366','#1F5FA6','#27AE60','#E67E22','#7B3FA0','#888'];
+  document.getElementById('chartBrowsers').parentElement.innerHTML =
+    '<div class="ctit">🌐 Navegadores</div>' +
+    Object.entries(r.browsers).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([k,v],i)=>`
+      <div style="margin-bottom:8px">
+        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:2px">
+          <span>${k}</span><span style="font-weight:700">${v}</span>
+        </div>
+        <div style="background:#F0F4F8;border-radius:10px;height:10px;overflow:hidden">
+          <div style="height:100%;width:${Math.round(v/brTotal*100)}%;background:${brColors[i]};border-radius:10px"></div>
+        </div>
+      </div>`).join('');
+
+  // Sesiones por día
+  const dias = Object.entries(r.porDia).sort(([a],[b])=>a.localeCompare(b)).slice(-14);
+  const maxDia = Math.max(1,...dias.map(([,v])=>v));
+  document.getElementById('chartDias').parentElement.innerHTML =
+    '<div class="ctit">📅 Sesiones por día (últimas 2 semanas)</div>' +
+    '<div style="display:flex;align-items:flex-end;gap:6px;height:80px;padding:8px 0">' +
+    dias.map(([d,v])=>`
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px" title="${d}: ${v} sesiones">
+        <div style="font-size:10px;font-weight:700;color:#003366">${v}</div>
+        <div style="width:100%;background:#1F5FA6;border-radius:4px 4px 0 0;height:${Math.round(v/maxDia*50)+4}px;min-height:4px"></div>
+        <div style="font-size:9px;color:#888;transform:rotate(-30deg);white-space:nowrap">${d.slice(5)}</div>
+      </div>`).join('') +
+    '</div>';
+
+  // Horas pico
+  const maxH = Math.max(1,...r.porHora);
+  document.getElementById('chartHoras').parentElement.innerHTML =
+    '<div class="ctit">⏰ Distribución horaria</div>' +
+    '<div style="display:flex;align-items:flex-end;gap:2px;height:60px;padding:4px 0">' +
+    r.porHora.map((v,h)=>`
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:1px" title="${h}:00 — ${v} sesiones">
+        <div style="width:100%;background:${v===maxH?'#E67E22':'#4A90D9'};border-radius:2px 2px 0 0;height:${Math.round(v/maxH*40)+2}px;min-height:2px;opacity:${0.4+v/maxH*0.6}"></div>
+        <div style="font-size:8px;color:#888">${h}</div>
+      </div>`).join('') +
+    '</div>';
+
+  // Top inspectores
+  const topEl = document.getElementById('aTopInsp');
+  if(!r.topInspectores.length){topEl.innerHTML='<div class="empty">Sin sesiones de inspectores registradas aún.</div>';}
+  else{
+    topEl.innerHTML='<table class="ht"><thead><tr><th>Inspector</th><th>Usuario</th><th>Sesiones</th><th>Firmas</th><th>Acciones</th></tr></thead><tbody>'+
+      r.topInspectores.map(i=>`<tr>
+        <td><b>${i.nombre}</b></td>
+        <td style="font-family:monospace;font-size:11px">${i.username}</td>
+        <td style="text-align:center">${i.sesiones}</td>
+        <td style="text-align:center;color:#1A7A3C;font-weight:700">${i.firmas}</td>
+        <td style="text-align:center">${i.acciones}</td>
+      </tr>`).join('')+
+    '</tbody></table>';
+  }
+
+  // Últimas sesiones
+  const ulEl = document.getElementById('aUltimas');
+  if(!r.ultimas.length){ulEl.innerHTML='<div class="empty">Sin sesiones registradas aún.</div>';}
+  else{
+    ulEl.innerHTML='<table class="ht" style="min-width:600px"><thead><tr><th>Usuario</th><th>Rol</th><th>Dispositivo</th><th>Browser</th><th>Duración</th><th>Firmó</th><th>Inicio</th></tr></thead><tbody>'+
+      r.ultimas.map(s=>`<tr>
+        <td><b>${s.username}</b></td>
+        <td style="font-size:11px">${s.role==='admin'?'👤 Admin':'🔍 Inspector'}</td>
+        <td style="font-size:11px">${s.device==='mobile'?'📱':s.device==='tablet'?'📟':'🖥️'} ${s.device}</td>
+        <td style="font-size:11px">${s.browser}</td>
+        <td style="font-size:11px">${fmtSeg(s.duration)}</td>
+        <td style="text-align:center">${s.firmó?'✅':'—'}</td>
+        <td style="font-size:10px">${fmtDt(new Date(s.startTs))}</td>
+      </tr>`).join('')+
+    '</tbody></table>';
+  }
+}
+
+// Cerrar modal nuevo inspector al hacer clic fuera
+document.addEventListener('click', e => {
+  const m=document.getElementById('modalNuevo');
+  if(m && e.target===m) cerrarNuevoInsp();
+});
+
 function fmtDt(d){const z=n=>('0'+n).slice(-2);return z(d.getDate())+'/'+z(d.getMonth()+1)+'/'+d.getFullYear()+' '+z(d.getHours())+':'+z(d.getMinutes());}
 
 // Enter en login
@@ -1072,6 +1334,11 @@ window.addEventListener('load',()=>{
   document.getElementById('lU').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('lP').focus();});
   document.getElementById('lP').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
   document.getElementById('lU').focus();
+  // Inicializar fechas de analytics (últimos 30 días)
+  const hoy=new Date(), hace30=new Date(hoy-30*86400000);
+  const fmt=d=>d.toISOString().slice(0,10);
+  if(document.getElementById('aDesde')) document.getElementById('aDesde').value=fmt(hace30);
+  if(document.getElementById('aHasta')) document.getElementById('aHasta').value=fmt(hoy);
   // Aviso solo en Render gratuito (el servidor puede tardar en despertar)
   if(location.hostname.includes('onrender.com')){
     const hint=document.createElement('div');
@@ -1113,6 +1380,32 @@ window.addEventListener('load',()=>{
   </svg>
   Soporte WhatsApp
 </a>
+
+
+<!-- MODAL NUEVO INSPECTOR -->
+<div id="modalNuevo" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100;overflow-y:auto;padding:20px">
+  <div style="background:#fff;border-radius:16px;max-width:480px;margin:0 auto;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+    <div style="background:linear-gradient(135deg,#1A7A3C,#27AE60);padding:18px 20px;display:flex;align-items:center;justify-content:space-between;border-radius:16px 16px 0 0">
+      <div style="font-size:17px;font-weight:800;color:#fff">➕ Agregar nuevo inspector</div>
+      <button onclick="cerrarNuevoInsp()" style="background:rgba(255,255,255,.2);border:none;color:#fff;width:30px;height:30px;border-radius:8px;font-size:16px;cursor:pointer">✕</button>
+    </div>
+    <div style="padding:20px">
+      <div class="fg"><label>Apellido <span style="color:red">*</span></label><input type="text" id="niApellido" placeholder="GARCIA" style="font-size:14px;text-transform:uppercase"></div>
+      <div class="fg"><label>Nombre <span style="color:red">*</span></label><input type="text" id="niNombre" placeholder="JUAN CARLOS" style="font-size:14px;text-transform:uppercase"></div>
+      <div class="frow">
+        <div class="fg"><label>Legajo <span style="color:red">*</span></label><input type="text" id="niLegajo" placeholder="601234" style="font-size:14px"></div>
+        <div class="fg"><label>DNI <span style="color:red">*</span></label><input type="text" id="niDni" placeholder="25123456" style="font-size:14px"></div>
+      </div>
+      <div class="fg"><label>Usuario (opcional — se genera automático)</label><input type="text" id="niUser" placeholder="jgarcia" style="font-size:14px"></div>
+      <div class="fg"><label>Contraseña inicial (opcional — por defecto: legajo)</label><input type="text" id="niPass" placeholder="dejar vacío = legajo como clave" style="font-size:14px"></div>
+      <div style="background:#EBF4FB;border-radius:9px;padding:10px 13px;font-size:12px;color:#1F5FA6;margin-bottom:12px">
+        💡 Si no completás usuario y contraseña, se generan automáticamente: usuario = inicial+apellido, clave = legajo
+      </div>
+      <button onclick="guardarNuevoInsp()" class="bs bsv" style="width:100%;padding:13px;font-size:14px">✅ Agregar a la nómina</button>
+      <div class="st" id="stNuevoInsp"></div>
+    </div>
+  </div>
+</div>
 
 <!-- MODAL PERFIL INSPECTOR (admin) -->
 <div id="modalPerfil" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100;overflow-y:auto;padding:20px">
