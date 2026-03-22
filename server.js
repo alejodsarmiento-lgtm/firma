@@ -287,7 +287,7 @@ app.post('/api/inspector/firmar', requireAuth, async (req, res) => {
 
     // ── QR de verificación ────────────────────────────────────
     // Hash provisional para generar la URL del QR
-    const provisionalHash = crypto.createHash('sha256').update(Buffer.from(signedBytes)).digest('hex');
+    const provisionalHash = nodeCrypto.createHash('sha256').update(Buffer.from(signedBytes)).digest('hex');
     const verifyUrl = `${BASE_URL}/verificar/${provisionalHash}`;
 
     // Generar QR como PNG
@@ -315,7 +315,7 @@ app.post('/api/inspector/firmar', requireAuth, async (req, res) => {
     signedBytes = await pdfDocQR.save();
 
     // Hash final del PDF con QR incluido
-    const finalHash = crypto.createHash('sha256').update(Buffer.from(signedBytes)).digest('hex');
+    const finalHash = nodeCrypto.createHash('sha256').update(Buffer.from(signedBytes)).digest('hex');
     const signedPath = path.join(FIRMADAS_DIR, signedName);
     fs.writeFileSync(signedPath, signedBytes);
     // Marcar planilla como firmada
