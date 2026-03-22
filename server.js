@@ -306,6 +306,15 @@ app.post('/api/inspector/firmar', requireAuth, async (req, res) => {
       signedFile: signedName
     });
     db.write('historial.json', hist);
+    // Trackear firma en analytics
+    const sid = req.session.analyticsSessionId;
+    if (sid) {
+      try {
+        const sess = JSON.parse(fs.readFileSync(SESSIONS_FILE, 'utf8'));
+        const sidx = sess.findIndex(s => s.id === sid);
+        if (sidx >= 0) { sess[sidx].firmó = true; sess[sidx].actions = (sess[sidx].actions||0)+1; fs.writeFileSync(SESSIONS_FILE, JSON.stringify(sess)); }
+      } catch(e) {}
+    }
     // Devolver PDF firmado
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition',
@@ -704,6 +713,226 @@ app.post('/api/admin/inspector/:id/planilla-firmada/:mes/:year', requireAdmin, (
   planillas[idx].signedFile = null;
   db.write('planillas_asignadas.json', planillas);
   res.json({ ok: true, mensaje: `Planilla de ${MESES[mes]} ${year} reabierta. El inspector puede volver a firmarla.` });
+});
+
+
+// ═══════════════════════════════════════════════════════════════
+//  GESTIÓN DE NÓMINA (agregar/quitar inspectores)
+// ═══════════════════════════════════════════════════════════════
+
+// POST /api/admin/inspector — agregar nuevo inspector
+app.post('/api/admin/inspector', requireAdmin, (req, res) => {
+  const { apellido, nombre, legajo, dni, username, password } = req.body;
+  if (!apellido || !nombre || !legajo || !dni)
+    return res.status(400).json({ error: 'Faltan campos obligatorios: apellido, nombre, legajo, DNI' });
+  const data = db.read('usuarios.json');
+  // Verificar duplicados
+  if (data.inspectores.find(i => i.legajo === String(legajo)))
+    return res.status(409).json({ error: `Ya existe un inspector con el legajo ${legajo}` });
+  if (data.inspectores.find(i => i.dni === String(dni)))
+    return res.status(409).json({ error: `Ya existe un inspector con el DNI ${dni}` });
+  // Generar username automático si no se provee
+  const genUser = () => {
+    const base = (nombre.split(' ')[0][0] + apellido.split(' ')[0])
+      .normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9]/g,'').toLowerCase();
+    if (!data.inspectores.find(i => i.username === base)) return base;
+    let n = 2;
+    while (data.inspectores.find(i => i.username === base+n)) n++;
+    return base + n;
+  };
+  const newInsp = {
+    id:       String(legajo),
+    apellido: apellido.trim().toUpperCase(),
+    nombre:   nombre.trim().toUpperCase(),
+    legajo:   String(legajo).trim(),
+    dni:      String(dni).trim(),
+    username: username ? username.trim().toLowerCase() : genUser(),
+    password: password || String(legajo).trim(),
+    firma:    null,
+    passwordCambios: 0
+  };
+  data.inspectores.push(newInsp);
+  // Ordenar por apellido
+  data.inspectores.sort((a,b) => a.apellido.localeCompare(b.apellido));
+  db.write('usuarios.json', data);
+  res.json({ ok: true, inspector: newInsp, mensaje: `Inspector ${cap(newInsp.apellido)}, ${cap(newInsp.nombre)} agregado. Usuario: ${newInsp.username} / Clave: ${newInsp.password}` });
+});
+
+// DELETE /api/admin/inspector/:id — quitar inspector de la nómina
+app.delete('/api/admin/inspector/:id', requireAdmin, (req, res) => {
+  const data = db.read('usuarios.json');
+  const idx = data.inspectores.findIndex(i => i.id === req.params.id);
+  if (idx < 0) return res.status(404).json({ error: 'Inspector no encontrado' });
+  const insp = data.inspectores[idx];
+  data.inspectores.splice(idx, 1);
+  db.write('usuarios.json', data);
+  // Eliminar planillas pendientes del inspector
+  let planillas = db.read('planillas_asignadas.json');
+  planillas = planillas.filter(p => p.inspId !== req.params.id);
+  db.write('planillas_asignadas.json', planillas);
+  res.json({ ok: true, mensaje: `Inspector ${cap(insp.apellido)}, ${cap(insp.nombre)} eliminado de la nómina.` });
+});
+
+
+// ═══════════════════════════════════════════════════════════════
+//  ANALYTICS — Control de Calidad
+// ═══════════════════════════════════════════════════════════════
+
+const SESSIONS_FILE = path.join(DATA_DIR, 'sessions.json');
+const EVENTS_FILE   = path.join(DATA_DIR, 'events.json');
+
+// Inicializar archivos de analytics si no existen
+if (!fs.existsSync(SESSIONS_FILE)) fs.writeFileSync(SESSIONS_FILE, '[]');
+if (!fs.existsSync(EVENTS_FILE))   fs.writeFileSync(EVENTS_FILE,   '[]');
+
+// POST /api/analytics/event — registrar evento desde el cliente
+app.post('/api/analytics/event', requireAuth, (req, res) => {
+  const { type, data: evtData } = req.body;
+  const events = JSON.parse(fs.readFileSync(EVENTS_FILE, 'utf8'));
+  events.push({
+    id:        `ev${Date.now()}${Math.random().toString(36).slice(2,6)}`,
+    type,
+    userId:    req.session.user.id || req.session.user.username,
+    role:      req.session.user.role,
+    ts:        new Date().toISOString(),
+    data:      evtData || {}
+  });
+  // Mantener solo últimos 5000 eventos
+  if (events.length > 5000) events.splice(0, events.length - 5000);
+  fs.writeFileSync(EVENTS_FILE, JSON.stringify(events));
+  res.json({ ok: true });
+});
+
+// POST /api/analytics/session/start — inicio de sesión
+app.post('/api/analytics/session/start', requireAuth, (req, res) => {
+  const ua = req.headers['user-agent'] || '';
+  const isMobile = /iPhone|iPad|Android|Mobile/i.test(ua);
+  const isTablet = /iPad|Android(?!.*Mobile)/i.test(ua);
+  const device = isTablet ? 'tablet' : isMobile ? 'mobile' : 'desktop';
+  const browser = ua.match(/(Chrome|Firefox|Safari|Edge|Opera)[\/]([\d.]+)/)?.[1] || 'Desconocido';
+  const os = ua.match(/(Windows|Mac OS|Linux|Android|iOS)/i)?.[1] || 'Desconocido';
+
+  const sessions = JSON.parse(fs.readFileSync(SESSIONS_FILE, 'utf8'));
+  const sess = {
+    id:        `s${Date.now()}${Math.random().toString(36).slice(2,6)}`,
+    userId:    req.session.user.id || req.session.user.username,
+    username:  req.session.user.username,
+    role:      req.session.user.role,
+    nombre:    req.session.user.nombre || req.session.user.username,
+    startTs:   new Date().toISOString(),
+    endTs:     null,
+    duration:  null, // segundos
+    device,
+    browser,
+    os,
+    ua:        ua.slice(0, 200),
+    ip:        req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress || 'N/A',
+    actions:   0, // se incrementa con eventos
+    firmó:     false
+  };
+  sessions.push(sess);
+  // Mantener solo últimas 2000 sesiones
+  if (sessions.length > 2000) sessions.splice(0, sessions.length - 2000);
+  fs.writeFileSync(SESSIONS_FILE, JSON.stringify(sessions));
+  req.session.analyticsSessionId = sess.id;
+  res.json({ ok: true, sessionId: sess.id });
+});
+
+// POST /api/analytics/session/end — cierre de sesión
+app.post('/api/analytics/session/end', requireAuth, (req, res) => {
+  const sid = req.session.analyticsSessionId;
+  if (!sid) return res.json({ ok: true });
+  const sessions = JSON.parse(fs.readFileSync(SESSIONS_FILE, 'utf8'));
+  const idx = sessions.findIndex(s => s.id === sid);
+  if (idx >= 0) {
+    const now = new Date();
+    sessions[idx].endTs = now.toISOString();
+    sessions[idx].duration = Math.round((now - new Date(sessions[idx].startTs)) / 1000);
+    fs.writeFileSync(SESSIONS_FILE, JSON.stringify(sessions));
+  }
+  res.json({ ok: true });
+});
+
+// PATCH /api/analytics/session/action — incrementar contador de acciones
+app.patch('/api/analytics/session/action', requireAuth, (req, res) => {
+  const sid = req.session.analyticsSessionId;
+  if (!sid) return res.json({ ok: true });
+  const { firmó } = req.body;
+  const sessions = JSON.parse(fs.readFileSync(SESSIONS_FILE, 'utf8'));
+  const idx = sessions.findIndex(s => s.id === sid);
+  if (idx >= 0) {
+    sessions[idx].actions = (sessions[idx].actions || 0) + 1;
+    if (firmó) sessions[idx].firmó = true;
+    fs.writeFileSync(SESSIONS_FILE, JSON.stringify(sessions));
+  }
+  res.json({ ok: true });
+});
+
+// GET /api/admin/analytics — datos completos de analytics
+app.get('/api/admin/analytics', requireAdmin, (req, res) => {
+  const sessions = JSON.parse(fs.readFileSync(SESSIONS_FILE, 'utf8'));
+  const events   = JSON.parse(fs.readFileSync(EVENTS_FILE,   'utf8'));
+  const { desde, hasta } = req.query;
+
+  // Filtrar por rango de fechas si se provee
+  let sess = sessions;
+  if (desde) sess = sess.filter(s => s.startTs >= desde);
+  if (hasta) sess = sess.filter(s => s.startTs <= hasta + 'T23:59:59');
+
+  const total = sess.length;
+  const completadas = sess.filter(s => s.endTs).length;
+  const duraciones = sess.filter(s => s.duration > 0).map(s => s.duration);
+  const durPromedio = duraciones.length ? Math.round(duraciones.reduce((a,b)=>a+b,0)/duraciones.length) : 0;
+  const durMax = duraciones.length ? Math.max(...duraciones) : 0;
+
+  // Distribución de dispositivos
+  const dispositivos = { mobile: 0, tablet: 0, desktop: 0 };
+  sess.forEach(s => { if (dispositivos[s.device] !== undefined) dispositivos[s.device]++; });
+
+  // Distribución de browsers
+  const browsers = {};
+  sess.forEach(s => { browsers[s.browser] = (browsers[s.browser]||0)+1; });
+
+  // Distribución de SO
+  const sistemas = {};
+  sess.forEach(s => { sistemas[s.os] = (sistemas[s.os]||0)+1; });
+
+  // Sesiones por día (últimos 30 días)
+  const porDia = {};
+  sess.forEach(s => {
+    const dia = s.startTs.slice(0,10);
+    porDia[dia] = (porDia[dia]||0)+1;
+  });
+
+  // Horas pico
+  const porHora = new Array(24).fill(0);
+  sess.forEach(s => { const h = new Date(s.startTs).getHours(); porHora[h]++; });
+
+  // Inspectores más activos
+  const porUser = {};
+  sess.filter(s => s.role==='inspector').forEach(s => {
+    if (!porUser[s.userId]) porUser[s.userId] = { nombre: s.nombre, username: s.username, sesiones: 0, firmas: 0, acciones: 0 };
+    porUser[s.userId].sesiones++;
+    if (s.firmó) porUser[s.userId].firmas++;
+    porUser[s.userId].acciones += s.actions||0;
+  });
+  const topInspectores = Object.values(porUser).sort((a,b)=>b.sesiones-a.sesiones).slice(0,10);
+
+  // Tasa de firma (sesiones de inspector que terminaron en firma)
+  const sesInsp = sess.filter(s=>s.role==='inspector');
+  const tasaFirma = sesInsp.length ? Math.round(sesInsp.filter(s=>s.firmó).length/sesInsp.length*100) : 0;
+
+  // Últimas 20 sesiones
+  const ultimas = [...sess].sort((a,b)=>new Date(b.startTs)-new Date(a.startTs)).slice(0,20);
+
+  res.json({
+    resumen: { total, completadas, durPromedio, durMax, tasaFirma },
+    dispositivos, browsers, sistemas,
+    porDia, porHora,
+    topInspectores,
+    ultimas,
+    totalEventos: events.length
+  });
 });
 
 // ── SPA fallback ───────────────────────────────────────────────
