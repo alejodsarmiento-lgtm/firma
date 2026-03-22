@@ -1233,8 +1233,10 @@ async function cargarAnalytics() {
           <b>Los datos de esta sesión tuya ya están siendo registrados.</b>
         </div>
       </div>`;
+    // Limpiar contenedores de gráficos
     ['chartDispositivos','chartBrowsers','chartDias','chartHoras'].forEach(id=>{
-      const el=document.getElementById(id);if(el&&el.parentElement){el.parentElement.querySelector('.ctit').nextSibling&&(el.style.display='none');}
+      const el=document.getElementById(id);
+      if(el) el.innerHTML='<div style="padding:14px;text-align:center;color:#aaa;font-size:12px">Sin datos aún</div>';
     });
     document.getElementById('aTopInsp').innerHTML='<div class="empty">Sin datos aún.</div>';
     document.getElementById('aUltimas').innerHTML='<div class="empty">Sin sesiones registradas todavía.</div>';
