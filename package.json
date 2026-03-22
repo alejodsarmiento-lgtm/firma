@@ -1,0 +1,16 @@
+{
+  "name": "firmared",
+  "version": "1.0.0",
+  "description": "Sistema de firma digital de viáticos - Subsecretaría de Inspección del Trabajo PBA",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "express-session": "^1.17.3",
+    "multer": "^1.4.5-lts.1",
+    "pdf-lib": "^1.17.1"
+  }
+}
