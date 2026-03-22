@@ -445,6 +445,93 @@ app.get('/api/admin/descargar/:filename', requireAdmin, (req, res) => {
   res.sendFile(filePath);
 });
 
+
+// ═══════════════════════════════════════════════════════════════
+//  NUEVAS FUNCIONALIDADES
+// ═══════════════════════════════════════════════════════════════
+
+// 1. Credenciales de todos los inspectores (CSV para distribución)
+app.get('/api/admin/credenciales', requireAdmin, (req, res) => {
+  const { inspectores = [] } = db.read('usuarios.json');
+  const rows = ['Apellido,Nombre,Legajo,DNI,Usuario,Contraseña'];
+  inspectores.forEach(i => {
+    rows.push(`"${i.apellido}","${i.nombre}","${i.legajo}","${i.dni}","${i.username}","${i.password}"`);
+  });
+  res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+  res.setHeader('Content-Disposition', 'attachment; filename="credenciales_firmared.csv"');
+  res.send('﻿' + rows.join('\n')); // BOM para Excel
+});
+
+// 2. Backup de firmas (descarga JSON con todas las firmas registradas)
+app.get('/api/admin/backup-firmas', requireAdmin, (req, res) => {
+  const { inspectores = [] } = db.read('usuarios.json');
+  const backup = {
+    fecha: new Date().toISOString(),
+    version: '1.0',
+    firmas: inspectores
+      .filter(i => i.firma)
+      .map(i => ({ id: i.id, apellido: i.apellido, nombre: i.nombre, legajo: i.legajo, firma: i.firma }))
+  };
+  res.setHeader('Content-Type', 'application/json');
+  res.setHeader('Content-Disposition', `attachment; filename="backup_firmas_${new Date().toISOString().slice(0,10)}.json"`);
+  res.json(backup);
+});
+
+// 3. Restaurar firmas desde backup
+app.post('/api/admin/restore-firmas', requireAdmin, (req, res) => {
+  const { firmas } = req.body;
+  if (!Array.isArray(firmas)) return res.status(400).json({ error: 'Formato inválido' });
+  const data = db.read('usuarios.json');
+  let restauradas = 0, noEncontradas = 0;
+  firmas.forEach(f => {
+    const idx = data.inspectores.findIndex(i => i.id === f.id || i.legajo === f.legajo);
+    if (idx >= 0) { data.inspectores[idx].firma = f.firma; restauradas++; }
+    else noEncontradas++;
+  });
+  db.write('usuarios.json', data);
+  res.json({ ok: true, restauradas, noEncontradas });
+});
+
+// 4. Cambiar contraseña (inspector o admin)
+app.post('/api/cambiar-password', requireAuth, (req, res) => {
+  const { actual, nueva } = req.body;
+  if (!actual || !nueva) return res.status(400).json({ error: 'Faltan campos' });
+  if (nueva.length < 4) return res.status(400).json({ error: 'La contraseña debe tener al menos 4 caracteres' });
+  const data = db.read('usuarios.json');
+  if (req.session.user.role === 'inspector') {
+    const idx = data.inspectores.findIndex(i => i.id === req.session.user.inspId);
+    if (idx < 0) return res.status(404).json({ error: 'Usuario no encontrado' });
+    if (data.inspectores[idx].password !== actual) return res.status(401).json({ error: 'Contraseña actual incorrecta' });
+    data.inspectores[idx].password = nueva;
+    req.session.user.password = nueva;
+  } else {
+    const idx = data.admins.findIndex(a => a.username === req.session.user.username);
+    if (idx < 0) return res.status(404).json({ error: 'Usuario no encontrado' });
+    if (data.admins[idx].password !== actual) return res.status(401).json({ error: 'Contraseña actual incorrecta' });
+    data.admins[idx].password = nueva;
+  }
+  db.write('usuarios.json', data);
+  res.json({ ok: true });
+});
+
+// 5. Estado de firmas del mes actual (para filtros admin)
+app.get('/api/admin/estado-firmas', requireAdmin, (req, res) => {
+  const { inspectores = [] } = db.read('usuarios.json');
+  const hist = db.read('historial.json');
+  const now = new Date();
+  const mes = now.getMonth(), year = now.getFullYear();
+  const firmaronEsteMes = new Set(
+    hist.filter(h => h.mes === mes && h.year === year).map(h => h.inspId)
+  );
+  res.json({
+    total: inspectores.length,
+    conFirmaRegistrada: inspectores.filter(i => i.firma).length,
+    firmaronEsteMes: firmaronEsteMes.size,
+    faltanEsteMes: inspectores.length - firmaronEsteMes.size,
+    ids: { firmaronEsteMes: [...firmaronEsteMes] }
+  });
+});
+
 // ── SPA fallback ───────────────────────────────────────────────
 app.get('*', (req, res) => {
   res.sendFile(path.join(PUBLIC_DIR, 'index.html'));
