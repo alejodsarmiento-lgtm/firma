@@ -950,20 +950,45 @@ async function abrirPerfil(inspId) {
   if (!r.historial.length) {
     document.getElementById('mpHistorial').innerHTML = '<div class="empty">Sin planillas firmadas.</div>';
   } else {
-    document.getElementById('mpHistorial').innerHTML =
-      '<table class="ht"><thead><tr><th>Período</th><th>Firmado</th><th>Reabrir</th><th>Borrar</th></tr></thead><tbody>' +
-      r.historial.map(h => `<tr>
-        <td><b>${h.mesNombre}</b> ${h.year}</td>
-        <td style="font-size:11px">${fmtDt(new Date(h.firmadoTs))}</td>
-        <td><button onclick="mpReabrirPlanilla('${h.inspId}','${h.mes}','${h.year}')"
-            style="background:#E67E22;color:#fff;border:none;border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer"
-            title="El inspector podrá volver a firmar">↺ Reabrir</button></td>
-        <td><button onclick="mpBorrarHistorial('${h.id}')"
-            style="background:#C0392B;color:#fff;border:none;border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer"
-            title="Elimina esta entrada del historial">🗑</button></td>
-      </tr>`).join('') +
-      '</tbody></table>' +
-      `<button onclick="mpBorrarTodoHistorial()" style="width:100%;margin-top:10px;padding:9px;background:#FDECEA;color:#C0392B;border:1.5px solid #F5A8A3;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer">🗑️ Borrar todo el historial de este inspector</button>`;
+    // Construir filas sin comillas anidadas en onclick
+    const filas = r.historial.map(h => {
+      const tr = document.createElement('tr');
+      tr.innerHTML =
+        `<td><b>${h.mesNombre}</b> ${h.year}</td>` +
+        `<td style="font-size:11px">${fmtDt(new Date(h.firmadoTs))}</td>` +
+        `<td></td><td></td>`;
+      // Botón Reabrir
+      const btnR = document.createElement('button');
+      btnR.textContent = '↺ Reabrir';
+      btnR.style.cssText = 'background:#E67E22;color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:600;cursor:pointer';
+      btnR.title = 'El inspector podrá volver a firmar';
+      btnR.onclick = () => mpReabrirPlanilla(h.inspId, h.mes, h.year);
+      tr.cells[2].appendChild(btnR);
+      // Botón Borrar
+      const btnD = document.createElement('button');
+      btnD.textContent = '🗑';
+      btnD.style.cssText = 'background:#C0392B;color:#fff;border:none;border-radius:6px;padding:5px 8px;font-size:13px;cursor:pointer';
+      btnD.title = 'Eliminar entrada del historial';
+      btnD.onclick = () => mpBorrarHistorial(h.id);
+      tr.cells[3].appendChild(btnD);
+      return tr;
+    });
+    const tbody = document.createElement('tbody');
+    filas.forEach(tr => tbody.appendChild(tr));
+    const table = document.createElement('table');
+    table.className = 'ht';
+    table.innerHTML = '<thead><tr><th>Período</th><th>Firmado</th><th>Reabrir</th><th>Borrar</th></tr></thead>';
+    table.appendChild(tbody);
+    const btnTodo = document.createElement('button');
+    btnTodo.textContent = '🗑️ Borrar todo el historial de este inspector';
+    btnTodo.style.cssText = 'width:100%;margin-top:10px;padding:9px;background:#FDECEA;color:#C0392B;border:1.5px solid #F5A8A3;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer';
+    btnTodo.onclick = () => mpBorrarTodoHistorial();
+    const wrap = document.getElementById('mpHistorial');
+    wrap.innerHTML = '';
+    wrap.appendChild(table);
+    wrap.appendChild(btnTodo);
+    // Variable dummy para no romper el flujo
+    const _dummy = null;
   }
 }
 
