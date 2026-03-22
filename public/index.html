@@ -915,6 +915,9 @@ function setStep(n,complete=false){[1,2,3,4].forEach(i=>{const s=document.getEle
 function setSt(id,cls,msg){const e=document.getElementById(id);if(!e)return;e.className='st'+(cls?' '+cls:'');e.textContent=msg||'';}
 function fmtSz(b){return b<1024?b+' B':b<1048576?(b/1024).toFixed(1)+' KB':(b/1048576).toFixed(2)+' MB';}
 
+// ── Utilidad global ──
+function cap(s){return String(s).split(' ').map(w=>w[0]+w.slice(1).toLowerCase()).join(' ');}
+
 // ══════════════════════════════════════════
 //  GESTIÓN DE INSPECTOR (modal admin)
 // ══════════════════════════════════════════
