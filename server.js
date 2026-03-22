@@ -430,9 +430,20 @@ app.delete('/api/admin/planilla/:id', requireAdmin, (req, res) => {
   res.json({ ok: true });
 });
 
-// GET /api/admin/historial
+// GET /api/admin/historial?mes=3&year=2026&q=angulo
 app.get('/api/admin/historial', requireAdmin, (req, res) => {
-  const hist = db.read('historial.json');
+  let hist = db.read('historial.json');
+  const { mes, year, q } = req.query;
+  if (mes !== undefined && mes !== '') hist = hist.filter(h => h.mes === parseInt(mes));
+  if (year && year !== '') hist = hist.filter(h => String(h.year) === String(year));
+  if (q && q.trim()) {
+    const lq = q.toLowerCase();
+    hist = hist.filter(h =>
+      h.inspNombre.toLowerCase().includes(lq) ||
+      h.inspLegajo.includes(lq) ||
+      h.inspDni.includes(lq)
+    );
+  }
   res.json([...hist].sort((a,b) => new Date(b.firmadoTs) - new Date(a.firmadoTs)));
 });
 
@@ -492,7 +503,7 @@ app.post('/api/admin/restore-firmas', requireAdmin, (req, res) => {
   res.json({ ok: true, restauradas, noEncontradas });
 });
 
-// 4. Cambiar contraseña (inspector o admin)
+// 4. Cambiar contraseña (inspector: máx 2 veces / admin: sin límite)
 app.post('/api/cambiar-password', requireAuth, (req, res) => {
   const { actual, nueva } = req.body;
   if (!actual || !nueva) return res.status(400).json({ error: 'Faltan campos' });
@@ -502,14 +513,36 @@ app.post('/api/cambiar-password', requireAuth, (req, res) => {
     const idx = data.inspectores.findIndex(i => i.id === req.session.user.inspId);
     if (idx < 0) return res.status(404).json({ error: 'Usuario no encontrado' });
     if (data.inspectores[idx].password !== actual) return res.status(401).json({ error: 'Contraseña actual incorrecta' });
+    const cambios = data.inspectores[idx].passwordCambios || 0;
+    if (cambios >= 2) return res.status(403).json({
+      error: 'Límite alcanzado. Ya cambiaste tu contraseña 2 veces. Contactá a la asesoría por WhatsApp: +54 9 221 380-2016',
+      limite: true
+    });
     data.inspectores[idx].password = nueva;
-    req.session.user.password = nueva;
+    data.inspectores[idx].passwordCambios = cambios + 1;
   } else {
     const idx = data.admins.findIndex(a => a.username === req.session.user.username);
     if (idx < 0) return res.status(404).json({ error: 'Usuario no encontrado' });
     if (data.admins[idx].password !== actual) return res.status(401).json({ error: 'Contraseña actual incorrecta' });
     data.admins[idx].password = nueva;
   }
+  db.write('usuarios.json', data);
+  res.json({ ok: true });
+});
+
+// GET /api/inspector/mis-cambios-password
+app.get('/api/inspector/cambios-password', requireAuth, (req, res) => {
+  if (req.session.user.role !== 'inspector') return res.json({ cambios: 0, limite: 2 });
+  const insp = getInspector(req.session.user.inspId);
+  res.json({ cambios: insp?.passwordCambios || 0, limite: 2 });
+});
+
+// Admin: resetear contador de cambios de contraseña
+app.post('/api/admin/reset-password/:inspId', requireAdmin, (req, res) => {
+  const data = db.read('usuarios.json');
+  const idx = data.inspectores.findIndex(i => i.id === req.params.inspId);
+  if (idx < 0) return res.status(404).json({ error: 'No encontrado' });
+  data.inspectores[idx].passwordCambios = 0;
   db.write('usuarios.json', data);
   res.json({ ok: true });
 });
