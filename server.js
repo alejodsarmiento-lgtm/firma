@@ -14,7 +14,8 @@ const fs           = require('fs');
 const { PDFDocument, rgb, StandardFonts } = require('pdf-lib');
 
 const app  = express();
-const PORT = process.env.PORT || 3000;
+const PORT    = process.env.PORT || 3000;
+const BASE_URL = process.env.BASE_URL || `http://147.93.69.57${PORT==80?'':':'+PORT}`;
 
 // ── Paths ──────────────────────────────────────────────────────
 const DATA_DIR      = path.join(__dirname, 'data');
@@ -280,10 +281,41 @@ app.post('/api/inspector/firmar', requireAuth, async (req, res) => {
     }
     const pdfBytes = fs.readFileSync(pdfPath);
     // Estampar firma
-    const signedBytes = await stamparFirma(pdfBytes, insp.firma, insp);
-    // Guardar PDF firmado
+    let signedBytes = await stamparFirma(pdfBytes, insp.firma, insp);
     const now        = new Date();
     const signedName = `firmado_${plan.inspId}_${plan.year}_${String(plan.mes+1).padStart(2,'0')}_${Date.now()}.pdf`;
+
+    // ── QR de verificación ────────────────────────────────────
+    // Hash provisional para generar la URL del QR
+    const provisionalHash = crypto.createHash('sha256').update(Buffer.from(signedBytes)).digest('hex');
+    const verifyUrl = `${BASE_URL}/verificar/${provisionalHash}`;
+
+    // Generar QR como PNG
+    const qrBuffer = await QRCode.toBuffer(verifyUrl, {
+      width: 120, margin: 1,
+      color: { dark: '#003366', light: '#FFFFFF' }
+    });
+
+    // Agregar QR al PDF
+    const pdfDocQR  = await PDFDocument.load(signedBytes);
+    const pages     = pdfDocQR.getPages();
+    const lastPage  = pages[pages.length - 1];
+    const { width: pgW } = lastPage.getSize();
+    const qrImg  = await pdfDocQR.embedPng(qrBuffer);
+    const qrSize = 72;
+    lastPage.drawImage(qrImg, { x: pgW - qrSize - 18, y: 18, width: qrSize, height: qrSize });
+    const fontV    = await pdfDocQR.embedFont(StandardFonts.Helvetica);
+    const labelTxt = 'Verificar autenticidad';
+    const labelSz  = 5.5;
+    const labelW   = fontV.widthOfTextAtSize(labelTxt, labelSz);
+    lastPage.drawText(labelTxt, {
+      x: pgW - qrSize - 18 + (qrSize - labelW) / 2,
+      y: 10, size: labelSz, font: fontV, color: rgb(0.2, 0.2, 0.2)
+    });
+    signedBytes = await pdfDocQR.save();
+
+    // Hash final del PDF con QR incluido
+    const finalHash = crypto.createHash('sha256').update(Buffer.from(signedBytes)).digest('hex');
     const signedPath = path.join(FIRMADAS_DIR, signedName);
     fs.writeFileSync(signedPath, signedBytes);
     // Marcar planilla como firmada
@@ -303,7 +335,9 @@ app.post('/api/inspector/firmar', requireAuth, async (req, res) => {
       mesNombre:  MESES[plan.mes],
       year:       plan.year,
       firmadoTs:  now.toISOString(),
-      signedFile: signedName
+      signedFile: signedName,
+      hash:       finalHash,
+      verifyUrl:  `${BASE_URL}/verificar/${finalHash}`
     });
     db.write('historial.json', hist);
     // Trackear firma en analytics
@@ -1003,6 +1037,76 @@ app.post('/api/admin/reset-analytics', requireAdmin, (req, res) => {
   fs.writeFileSync(SESSIONS_FILE, '[]');
   fs.writeFileSync(EVENTS_FILE, '[]');
   res.json({ ok: true, mensaje: 'Analytics reseteado. Contador en cero.' });
+});
+
+
+// ═══════════════════════════════════════════════════════════════
+//  VERIFICACIÓN PÚBLICA DE DOCUMENTOS (sin autenticación)
+// ═══════════════════════════════════════════════════════════════
+
+app.get('/verificar/:hash', (req, res) => {
+  const hash = req.params.hash;
+  const hist = db.read('historial.json');
+  const entry = hist.find(h => h.hash === hash);
+
+  const html = (valid, data) => `<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${valid ? '✅ Documento verificado' : '❌ Documento no encontrado'} — FirmaRED</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#F0F4F8;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.card{background:#fff;border-radius:16px;padding:40px 36px;max-width:520px;width:100%;box-shadow:0 4px 24px rgba(0,0,0,.1)}
+.icon{font-size:52px;margin-bottom:16px;display:block}
+.status{font-size:22px;font-weight:700;margin-bottom:8px;color:${valid?'#1A7A3C':'#C0392B'}}
+.sub{font-size:15px;color:#666;margin-bottom:28px;line-height:1.5}
+.field{border-top:1px solid #EEE;padding:12px 0;display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+.label{font-size:12px;color:#888;text-transform:uppercase;letter-spacing:.05em;flex-shrink:0}
+.value{font-size:14px;font-weight:600;color:#333;text-align:right}
+.hash{font-family:monospace;font-size:11px;color:#888;word-break:break-all;margin-top:20px;padding:12px;background:#F8F9FA;border-radius:8px;border:1px solid #E8E8E8}
+.footer{margin-top:24px;font-size:12px;color:#AAA;text-align:center;line-height:1.6}
+.logo{font-weight:700;color:#003366}
+.valid-bar{height:4px;background:${valid?'#27AE60':'#E74C3C'};border-radius:4px 4px 0 0;margin:-40px -36px 36px;border-radius:16px 16px 0 0}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="valid-bar"></div>
+  <span class="icon">${valid ? '✅' : '❌'}</span>
+  <div class="status">${valid ? 'Documento auténtico' : 'Documento no encontrado'}</div>
+  <div class="sub">${valid
+    ? 'Este documento fue firmado digitalmente en FirmaRED y su contenido no fue alterado.'
+    : 'No se encontró ningún documento firmado con este identificador. Puede haber sido adulterado o el código QR es incorrecto.'
+  }</div>
+  ${valid ? `
+  <div class="field"><span class="label">Inspector</span><span class="value">${data.inspNombre}</span></div>
+  <div class="field"><span class="label">Legajo</span><span class="value">${data.inspLegajo}</span></div>
+  <div class="field"><span class="label">DNI</span><span class="value">${data.inspDni}</span></div>
+  <div class="field"><span class="label">Período</span><span class="value">${data.mesNombre} ${data.year}</span></div>
+  <div class="field"><span class="label">Fecha de firma</span><span class="value">${new Date(data.firmadoTs).toLocaleString('es-AR',{dateStyle:'long',timeStyle:'short'})}</span></div>
+  <div class="field"><span class="label">Organismo</span><span class="value">Subsecretaría de Inspección del Trabajo<br>Provincia de Buenos Aires</span></div>
+  <div class="hash">SHA-256: ${hash}</div>
+  ` : `<div class="hash">Hash consultado: ${hash}</div>`}
+  <div class="footer">
+    <span class="logo">FirmaRED</span> — Sistema de Firma Digital de Viáticos<br>
+    Ministerio de Trabajo · Provincia de Buenos Aires
+  </div>
+</div>
+</body>
+</html>`;
+
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.send(html(!!entry, entry));
+});
+
+// GET /api/admin/historial-con-hash — historial con URLs de verificación
+app.get('/api/admin/verificacion/:hash', requireAdmin, (req, res) => {
+  const hist = db.read('historial.json');
+  const entry = hist.find(h => h.hash === req.params.hash);
+  if (!entry) return res.status(404).json({ error: 'No encontrado' });
+  res.json(entry);
 });
 
 // ── SPA fallback ───────────────────────────────────────────────
