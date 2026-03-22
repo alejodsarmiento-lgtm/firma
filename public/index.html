@@ -287,6 +287,26 @@ canvas.sp{display:block;width:100%;touch-action:none;cursor:crosshair}
     <div id="iHist"><div class="spin-dark"></div></div>
   </div>
 
+
+  <!-- CAMBIAR CONTRASEÑA -->
+  <div class="card" style="margin-top:6px">
+    <div class="ctit">🔑 Cambiar contraseña</div>
+    <div class="fg">
+      <label>Contraseña actual</label>
+      <input type="password" id="pwActual" placeholder="Tu contraseña actual" autocomplete="current-password">
+    </div>
+    <div class="fg">
+      <label>Contraseña nueva</label>
+      <input type="password" id="pwNueva" placeholder="Mínimo 4 caracteres" autocomplete="new-password">
+    </div>
+    <div class="fg">
+      <label>Repetir contraseña nueva</label>
+      <input type="password" id="pwNueva2" placeholder="Repetir contraseña" autocomplete="new-password">
+    </div>
+    <button class="bs bsv" style="width:100%;padding:11px;font-size:13px" onclick="cambiarPassword()">💾 Guardar nueva contraseña</button>
+    <div class="st" id="stPwd"></div>
+  </div>
+
 </div>
 </div>
 
@@ -359,8 +379,34 @@ canvas.sp{display:block;width:100%;touch-action:none;cursor:crosshair}
 
   <!-- TAB 2: INSPECTORES -->
   <div id="tab2" style="display:none">
+    <!-- Resumen + Backup + Credenciales -->
+    <div class="card">
+      <div class="ctit">📊 Resumen del mes</div>
+      <div id="estadoFirmas" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div class="spin-dark"></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+        <a href="/api/admin/credenciales" download class="bs bsv" style="flex:1;padding:10px;font-size:12px;text-align:center;text-decoration:none;border-radius:8px">
+          📋 Descargar credenciales (CSV)
+        </a>
+        <button class="bs" style="flex:1;padding:10px;font-size:12px;background:#EBF4FB;color:#003366;border-radius:8px" onclick="backupFirmas()">
+          💾 Backup de firmas
+        </button>
+        <label class="bs" style="flex:1;padding:10px;font-size:12px;background:#EDF7F0;color:#1A7A3C;border-radius:8px;cursor:pointer;text-align:center">
+          📥 Restaurar backup<input type="file" accept=".json" style="display:none" onchange="restoreFirmas(event)">
+        </label>
+      </div>
+      <div class="st" id="stBackup"></div>
+    </div>
+    <!-- Lista con filtros -->
     <div class="card">
       <div class="ctit">👥 Inspectores habilitados (<span id="cInsp">207</span>)</div>
+      <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">
+        <button class="tab on" id="fTodos"   onclick="setFiltro('todos')"    style="flex:1;border-radius:8px;font-size:11px">Todos</button>
+        <button class="tab"    id="fFirmaron" onclick="setFiltro('firmaron')" style="flex:1;border-radius:8px;font-size:11px">✅ Firmaron este mes</button>
+        <button class="tab"    id="fFaltan"   onclick="setFiltro('faltan')"   style="flex:1;border-radius:8px;font-size:11px">⏳ Faltan firmar</button>
+        <button class="tab"    id="fSinFirma" onclick="setFiltro('sinFirma')" style="flex:1;border-radius:8px;font-size:11px">🖊️ Sin firma registrada</button>
+      </div>
       <div class="fg" style="margin-bottom:10px">
         <input type="text" id="busq" placeholder="Buscar por nombre, legajo o DNI…" oninput="filtrarInsp()" style="font-size:14px">
       </div>
@@ -572,6 +618,7 @@ async function buildAdmin(){
   document.getElementById('aChip').innerHTML=me.username+'<br><span style="opacity:.7;font-size:10px">Admin</span>';
   const now=new Date();
   document.getElementById('pMes').value=now.getMonth();
+  window._firmaronEsteMesIds=new Set();
   // Cargar inspectores para el select
   allInspAdm=await api('GET','/api/admin/inspectores');
   const sel=document.getElementById('pSel');
@@ -582,7 +629,7 @@ async function buildAdmin(){
 
 function aTab(n){
   [1,2,3].forEach(i=>{document.getElementById('tab'+i).style.display=i===n?'block':'none';document.getElementById('t'+i).classList.toggle('on',i===n);});
-  if(n===2) renderAdminInsp();
+  if(n===2){cargarEstadoFirmas();renderAdminInsp();}
   if(n===3) renderAdminHist();
 }
 
@@ -634,11 +681,93 @@ async function delPlan(id){
   else alert(r.error||'Error');
 }
 
+
+// ── Cambiar contraseña ──────────────────────────────────────────
+async function cambiarPassword(){
+  const actual  = document.getElementById('pwActual').value;
+  const nueva   = document.getElementById('pwNueva').value;
+  const nueva2  = document.getElementById('pwNueva2').value;
+  if(!actual||!nueva||!nueva2){setSt('stPwd','err','❌ Completá todos los campos.');return;}
+  if(nueva!==nueva2){setSt('stPwd','err','❌ Las contraseñas nuevas no coinciden.');return;}
+  if(nueva.length<4){setSt('stPwd','err','❌ La contraseña debe tener al menos 4 caracteres.');return;}
+  const r=await api('POST','/api/cambiar-password',{actual,nueva});
+  if(r.error){setSt('stPwd','err','❌ '+r.error);return;}
+  setSt('stPwd','ok','✅ Contraseña cambiada correctamente.');
+  document.getElementById('pwActual').value='';
+  document.getElementById('pwNueva').value='';
+  document.getElementById('pwNueva2').value='';
+}
+
+// ── Backup de firmas ────────────────────────────────────────────
+async function backupFirmas(){
+  const r=await fetch('/api/admin/backup-firmas');
+  if(!r.ok){setSt('stBackup','err','❌ Error al generar backup.');return;}
+  const blob=await r.blob();
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download='backup_firmas_'+new Date().toISOString().slice(0,10)+'.json';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  setSt('stBackup','ok','✅ Backup descargado correctamente.');
+}
+
+async function restoreFirmas(e){
+  const f=e.target.files[0];if(!f)return;
+  try{
+    const text=await f.text();
+    const data=JSON.parse(text);
+    if(!data.firmas||!Array.isArray(data.firmas)){setSt('stBackup','err','❌ Archivo inválido.');return;}
+    const r=await api('POST','/api/admin/restore-firmas',{firmas:data.firmas});
+    if(r.error){setSt('stBackup','err','❌ '+r.error);return;}
+    setSt('stBackup','ok',`✅ Restauradas ${r.restauradas} firmas. No encontradas: ${r.noEncontradas}.`);
+    renderAdminInsp();
+  }catch(ex){setSt('stBackup','err','❌ Error al leer el archivo.');}
+  e.target.value='';
+}
+
+// ── Estado de firmas del mes (para resumen en tab Inspectores) ──
+async function cargarEstadoFirmas(){
+  const el=document.getElementById('estadoFirmas');
+  const r=await api('GET','/api/admin/estado-firmas');
+  if(r.error){el.innerHTML='<div class="empty">'+r.error+'</div>';return;}
+  const pct=r.total>0?Math.round(r.firmaronEsteMes/r.total*100):0;
+  el.innerHTML=`
+    <div class="mi"><div class="mk">Total inspectores</div><div class="mv" style="font-size:20px;color:#003366">${r.total}</div></div>
+    <div class="mi"><div class="mk">Con firma registrada</div><div class="mv" style="font-size:20px;color:#1A7A3C">${r.conFirmaRegistrada}</div></div>
+    <div class="mi"><div class="mk">Firmaron este mes</div><div class="mv" style="font-size:20px;color:#1A7A3C">${r.firmaronEsteMes} <span style="font-size:12px;color:#888">(${pct}%)</span></div></div>
+    <div class="mi"><div class="mk">Faltan este mes</div><div class="mv" style="font-size:20px;color:#E67E22">${r.faltanEsteMes}</div></div>`;
+  // Barra de progreso
+  const bar=document.createElement('div');
+  bar.style.cssText='grid-column:1/-1;background:#D0DCE8;border-radius:10px;height:8px;overflow:hidden;margin-top:4px';
+  bar.innerHTML=`<div style="height:100%;width:${pct}%;background:linear-gradient(90deg,#1F5FA6,#27AE60);border-radius:10px;transition:width .5s"></div>`;
+  el.appendChild(bar);
+  // Guardar IDs para filtros
+  window._firmaronEsteMesIds=new Set(r.ids.firmaronEsteMes);
+}
+
+// ── Filtros de inspectores ──────────────────────────────────────
+let filtroActual='todos';
+function setFiltro(f){
+  filtroActual=f;
+  ['fTodos','fFirmaron','fFaltan','fSinFirma'].forEach(id=>document.getElementById(id).classList.remove('on'));
+  const map={todos:'fTodos',firmaron:'fFirmaron',faltan:'fFaltan',sinFirma:'fSinFirma'};
+  if(map[f]) document.getElementById(map[f]).classList.add('on');
+  renderAdminInsp();
+}
 async function renderAdminInsp(){
   const el=document.getElementById('listInsp');
   const q=(document.getElementById('busq').value||'').toLowerCase();
-  const list=q?allInspAdm.filter(i=>
-    i.nombre.toLowerCase().includes(q)||i.legajo.includes(q)||i.dni.includes(q)):allInspAdm;
+  let list=allInspAdm;
+  // Aplicar filtro de estado
+  if(filtroActual==='firmaron')
+    list=list.filter(i=>window._firmaronEsteMesIds&&window._firmaronEsteMesIds.has(i.id));
+  else if(filtroActual==='faltan')
+    list=list.filter(i=>!window._firmaronEsteMesIds||!window._firmaronEsteMesIds.has(i.id));
+  else if(filtroActual==='sinFirma')
+    list=list.filter(i=>!i.tieneFirma);
+  // Aplicar búsqueda de texto
+  if(q) list=list.filter(i=>i.nombre.toLowerCase().includes(q)||i.legajo.includes(q)||i.dni.includes(q));
   document.getElementById('cInsp').textContent=list.length;
   if(!list.length){el.innerHTML='<div class="empty">Sin resultados.</div>';return;}
   el.innerHTML=list.map(i=>`
@@ -723,5 +852,37 @@ window.addEventListener('load',()=>{
   }
 });
 </script>
+
+<!-- WhatsApp soporte flotante -->
+<a href="https://wa.me/5492213802016?text=Hola%2C+necesito+ayuda+con+FirmaRED"
+   target="_blank" id="wabtn"
+   style="position:fixed;bottom:22px;right:18px;z-index:999;
+          background:#25D366;color:#fff;border-radius:50px;
+          padding:13px 18px;font-size:13px;font-weight:700;
+          text-decoration:none;display:flex;align-items:center;gap:8px;
+          box-shadow:0 4px 16px rgba(37,211,102,.45);
+          transition:transform .2s"
+   onmouseover="this.style.transform='scale(1.06)'"
+   onmouseout="this.style.transform='scale(1)'">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15
+             -.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075
+             -.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059
+             -.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52
+             .149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52
+             -.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51
+             -.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372
+             -.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074
+             .149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625
+             .712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413
+             .248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+    <path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.118 1.524 5.855L.057 23.617
+             a.75.75 0 00.906.94l5.934-1.556A11.945 11.945 0 0012 24c6.627 0 12-5.373
+             12-12S18.627 0 12 0zm0 22a9.944 9.944 0 01-5.176-1.453l-.371-.22-3.849
+             1.01 1.03-3.744-.242-.386A9.944 9.944 0 012 12C2 6.477 6.477 2 12 2s10
+             4.477 10 10-4.477 10-10 10z"/>
+  </svg>
+  Soporte WhatsApp
+</a>
 </body>
 </html>
