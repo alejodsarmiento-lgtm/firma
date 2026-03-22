@@ -544,6 +544,8 @@ async function doLogin() {
     if(r.error){errEl.textContent=r.error;errEl.style.display='block';return;}
     me = r;
     document.getElementById('lP').value='';
+    // Registrar sesión en analytics (no bloquea)
+    fetch('/api/analytics/session/start',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'}).catch(()=>{});
     if(r.role==='admin'){await buildAdmin();show('vAdmin');}
     else{await buildInsp();show('vInsp');}
   } catch(e) {
