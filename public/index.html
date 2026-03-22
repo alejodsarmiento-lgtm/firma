@@ -721,6 +721,12 @@ async function buildAdmin(){
   const now=new Date();
   document.getElementById('pMes').value=now.getMonth();
   window._firmaronEsteMesIds=new Set();
+  // Inicializar fechas de analytics
+  const hoy=new Date(), hace30=new Date(hoy-30*86400000);
+  const fmt=d=>d.toISOString().slice(0,10);
+  const elD=document.getElementById('aDesde'), elH=document.getElementById('aHasta');
+  if(elD) elD.value=fmt(hace30);
+  if(elH) elH.value=fmt(hoy);
   // Cargar inspectores para el select
   allInspAdm=await api('GET','/api/admin/inspectores');
   const sel=document.getElementById('pSel');
@@ -1203,6 +1209,10 @@ function fmtSeg(s) {
 }
 
 async function cargarAnalytics() {
+  // Si el tab no está visible o los elementos no existen, salir
+  const kpisEl = document.getElementById('aKpis');
+  if(!kpisEl) return;
+  kpisEl.innerHTML = '<div class="spin-dark"></div>';
   const desde = document.getElementById('aDesde')?.value||'';
   const hasta = document.getElementById('aHasta')?.value||'';
   let url = '/api/admin/analytics';
@@ -1223,6 +1233,25 @@ async function cargarAnalytics() {
     {label:'Tasa de firma',     val: r.resumen.tasaFirma+'%',      color:'#27AE60', icon:'✍️'},
     {label:'Eventos totales',   val: r.totalEventos,               color:'#E67E22', icon:'📌'},
   ];
+  // Mostrar aviso si no hay sesiones aún
+  if(r.resumen.total === 0) {
+    document.getElementById('aKpis').innerHTML = `
+      <div style="grid-column:1/-1;background:#EBF4FB;border-radius:12px;padding:20px;text-align:center;border:2px dashed #4A90D9">
+        <div style="font-size:32px;margin-bottom:8px">📊</div>
+        <div style="font-size:15px;font-weight:700;color:#003366;margin-bottom:6px">Sin datos de sesiones todavía</div>
+        <div style="font-size:13px;color:#666;line-height:1.6">
+          El sistema empieza a registrar sesiones desde ahora.<br>
+          Pedile a los inspectores que cierren sesión y vuelvan a entrar — cada login nuevo queda registrado.<br>
+          <b>Los datos de esta sesión tuya ya están siendo registrados.</b>
+        </div>
+      </div>`;
+    ['chartDispositivos','chartBrowsers','chartDias','chartHoras'].forEach(id=>{
+      const el=document.getElementById(id);if(el&&el.parentElement){el.parentElement.querySelector('.ctit').nextSibling&&(el.style.display='none');}
+    });
+    document.getElementById('aTopInsp').innerHTML='<div class="empty">Sin datos aún.</div>';
+    document.getElementById('aUltimas').innerHTML='<div class="empty">Sin sesiones registradas todavía.</div>';
+    return;
+  }
   document.getElementById('aKpis').innerHTML = kpiDefs.map(k=>`
     <div style="background:#fff;border-radius:12px;padding:14px 16px;border:1px solid #D0DCE8;box-shadow:0 2px 10px rgba(0,51,102,.08);text-align:center">
       <div style="font-size:24px;margin-bottom:4px">${k.icon}</div>
@@ -1334,11 +1363,7 @@ window.addEventListener('load',()=>{
   document.getElementById('lU').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('lP').focus();});
   document.getElementById('lP').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
   document.getElementById('lU').focus();
-  // Inicializar fechas de analytics (últimos 30 días)
-  const hoy=new Date(), hace30=new Date(hoy-30*86400000);
-  const fmt=d=>d.toISOString().slice(0,10);
-  if(document.getElementById('aDesde')) document.getElementById('aDesde').value=fmt(hace30);
-  if(document.getElementById('aHasta')) document.getElementById('aHasta').value=fmt(hoy);
+
   // Aviso solo en Render gratuito (el servidor puede tardar en despertar)
   if(location.hostname.includes('onrender.com')){
     const hint=document.createElement('div');
