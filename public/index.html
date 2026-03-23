@@ -35,8 +35,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
 .card{background:#fff;border-radius:14px;padding:18px;margin-bottom:14px;border:1px solid #D0DCE8;box-shadow:0 3px 16px rgba(0,51,102,.09)}
 .ctit{font-size:11px;font-weight:700;color:#003366;text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px}
 /* TABS */
-.tabs{display:flex;background:#fff;border-radius:12px;padding:4px;margin-bottom:14px;border:1px solid #D0DCE8;box-shadow:0 2px 10px rgba(0,51,102,.08)}
-.tab{flex:1;padding:9px 4px;border:none;background:none;border-radius:9px;font-size:12px;font-weight:600;cursor:pointer;color:#999;white-space:nowrap}
+.tabs{display:flex;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;flex-shrink:0;background:#fff;border-radius:12px;padding:4px;margin-bottom:14px;border:1px solid #D0DCE8;box-shadow:0 2px 10px rgba(0,51,102,.08)}
+.tab{flex-shrink:0;white-space:nowrap;flex:1;padding:9px 4px;border:none;background:none;border-radius:9px;font-size:12px;font-weight:600;cursor:pointer;color:#999;white-space:nowrap}
 .tab.on{background:#003366;color:#fff}
 /* PERFIL */
 .perfil{display:flex;align-items:center;gap:14px}
@@ -531,6 +531,12 @@ canvas.sp{display:block;width:100%;touch-action:none;cursor:crosshair}
       <div id="aUltimas" style="overflow-x:auto"></div>
     </div>
 
+    <!-- Analytics Viáticos -->
+    <div class="card" style="margin-top:12px">
+      <div class="ctit">📋 Solicitudes de viáticos por delegación</div>
+      <div id="aViatStats"><div class="spin-dark"></div></div>
+    </div>
+
   </div>
 
     <!-- TAB 5: AUTORIZACIÓN DE VIÁTICOS -->
@@ -773,7 +779,7 @@ async function renderIHist(){
 //  ADMIN
 // ══════════════════════════════════════════
 async function buildAdmin(){
-  document.getElementById('aChip').innerHTML=me.username+'<br><span style="opacity:.7;font-size:10px">Admin</span>';
+  document.getElementById('aChip').innerHTML=(me.nombre||me.username||'Admin')+'<br><span style="opacity:.7;font-size:10px">Admin</span>';
   const now=new Date();
   document.getElementById('pMes').value=now.getMonth();
   window._firmaronEsteMesIds=new Set();
@@ -1283,6 +1289,74 @@ async function guardarWA(delegacion){
   }catch(e){alert('Error al guardar');}
 }
 
+
+// ── Analytics de Viáticos ─────────────────────────────────────
+async function cargarViatAnalytics(desde, hasta){
+  const el = document.getElementById('aViatStats');
+  if(!el) return;
+  el.innerHTML = '<div class="spin-dark"></div>';
+  try{
+    // Cargar solicitudes activas + archivos
+    const [activas, archivos] = await Promise.all([
+      api('GET','/api/admin/solicitudes'),
+      api('GET','/api/admin/viaticos/archivos')
+    ]);
+    // Combinar todas las solicitudes (activas + archivadas)
+    let todas = [...(Array.isArray(activas)?activas:[])];
+    (Array.isArray(archivos)?archivos:[]).forEach(a=>{
+      todas = todas.concat(a.solicitudes||[]);
+    });
+    if(!todas.length){
+      el.innerHTML='<div style="color:#aaa;font-size:13px;padding:16px;text-align:center">No hay solicitudes registradas todavía</div>';
+      return;
+    }
+    // Agrupar por delegación
+    const stats = {};
+    todas.forEach(s=>{
+      if(!stats[s.delegacion]) stats[s.delegacion]={total:0,aprobadas:0,rechazadas:0,pendientes:0};
+      stats[s.delegacion].total++;
+      if(s.estado==='aprobada')  stats[s.delegacion].aprobadas++;
+      if(s.estado==='rechazada') stats[s.delegacion].rechazadas++;
+      if(s.estado==='pendiente') stats[s.delegacion].pendientes++;
+    });
+    // Ordenar por total desc
+    const sorted = Object.entries(stats).sort((a,b)=>b[1].total-a[1].total);
+    const maxTotal = sorted[0][1].total;
+    el.innerHTML = `
+      <div style="font-size:11px;color:#888;margin-bottom:12px">${todas.length} solicitudes totales de ${sorted.length} delegaciones</div>
+      ${sorted.map(([del,s])=>{
+        const pct = Math.round((s.aprobadas/s.total)*100);
+        const barW = Math.round((s.total/maxTotal)*100);
+        return `<div style="margin-bottom:12px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px">
+            <div style="font-size:12px;font-weight:600;color:#003366">${del}</div>
+            <div style="font-size:11px;color:#888">${s.total} sol. · ${pct}% aprobadas</div>
+          </div>
+          <div style="background:#eee;border-radius:4px;height:8px;overflow:hidden">
+            <div style="display:flex;height:100%">
+              <div style="background:#1A5E2A;width:${Math.round(barW*s.aprobadas/s.total)}%" title="Aprobadas: ${s.aprobadas}"></div>
+              <div style="background:#C62828;width:${Math.round(barW*s.rechazadas/s.total)}%" title="Rechazadas: ${s.rechazadas}"></div>
+              <div style="background:#F57F17;width:${Math.round(barW*s.pendientes/s.total)}%" title="Pendientes: ${s.pendientes}"></div>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:3px;font-size:10px;color:#888">
+            <span style="color:#1A5E2A">✅ ${s.aprobadas}</span>
+            <span style="color:#C62828">❌ ${s.rechazadas}</span>
+            ${s.pendientes?`<span style="color:#F57F17">⏳ ${s.pendientes}</span>`:''}
+          </div>
+        </div>`;
+      }).join('')}
+      <div style="display:flex;gap:12px;margin-top:8px;padding-top:8px;border-top:1px solid #eee;font-size:10px">
+        <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#1A5E2A;border-radius:2px;display:inline-block"></span>Aprobada</span>
+        <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#C62828;border-radius:2px;display:inline-block"></span>Rechazada</span>
+        <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#F57F17;border-radius:2px;display:inline-block"></span>Pendiente</span>
+      </div>
+    `;
+  }catch(e){
+    el.innerHTML='<div style="color:#e53935;font-size:12px">Error al cargar</div>';
+  }
+}
+
 // ══════════════════════════════════════════
 //  CANVAS DE FIRMA
 // ══════════════════════════════════════════
@@ -1684,6 +1758,9 @@ async function cargarAnalytics() {
 document.addEventListener('click', e => {
   const m=document.getElementById('modalNuevo');
   if(m && e.target===m) cerrarNuevoInsp();
+  // Cargar analytics de viáticos
+  cargarViatAnalytics(desde, hasta);
+
 });
 
 function fmtDt(d){const z=n=>('0'+n).slice(-2);return z(d.getDate())+'/'+z(d.getMonth()+1)+'/'+d.getFullYear()+' '+z(d.getHours())+':'+z(d.getMinutes());}
