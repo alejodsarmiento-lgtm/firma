@@ -770,8 +770,11 @@ app.post('/api/admin/inspector', requireAdmin, (req, res) => {
     return res.status(409).json({ error: `Ya existe un inspector con el DNI ${dni}` });
   // Generar username automático si no se provee
   const genUser = () => {
-    const base = (nombre.split(' ')[0][0] + apellido.split(' ')[0])
+    const apBase = apellido.split(' ')[0]
       .normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9]/g,'').toLowerCase();
+    const nomInicial = nombre.split(' ')[0][0]
+      .normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+    const base = apBase + nomInicial;
     if (!data.inspectores.find(i => i.username === base)) return base;
     let n = 2;
     while (data.inspectores.find(i => i.username === base+n)) n++;
@@ -1186,7 +1189,7 @@ app.listen(PORT, () => {
   Admin:    usuario "admin"     clave "admin2026"
   Directora: usuario "directora" clave "dir2026"
   Asesoría: usuario "asesoria"  clave "ases2026"
-  Inspectores: usuario = inicial+apellido / clave = N° legajo
-  Ejemplo: Angulo Yamila → yangulo / 601806
+  Inspectores: usuario = apellido+inicial / clave = N° legajo
+  Ejemplo: Angulo Yamila → anguloy / 601806
 `);
 });
