@@ -12,6 +12,8 @@ const multer       = require('multer');
 const path         = require('path');
 const fs           = require('fs');
 const { PDFDocument, rgb, StandardFonts } = require('pdf-lib');
+const nodeCrypto = require('crypto');
+const QRCode     = require('qrcode');
 
 const app  = express();
 const PORT    = process.env.PORT || 3000;
@@ -314,8 +316,9 @@ app.post('/api/inspector/firmar', requireAuth, async (req, res) => {
     });
     signedBytes = await pdfDocQR.save();
 
-    // Hash final del PDF con QR incluido
-    const finalHash = nodeCrypto.createHash('sha256').update(Buffer.from(signedBytes)).digest('hex');
+    // Usar provisionalHash para verificación — mismo valor que está en el QR
+    // (hash del PDF firmado ANTES de agregar el QR, garantiza coincidencia)
+    const finalHash = provisionalHash;
     const signedPath = path.join(FIRMADAS_DIR, signedName);
     fs.writeFileSync(signedPath, signedBytes);
     // Marcar planilla como firmada
