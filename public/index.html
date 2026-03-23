@@ -536,16 +536,30 @@ canvas.sp{display:block;width:100%;touch-action:none;cursor:crosshair}
     <!-- TAB 5: AUTORIZACIÓN DE VIÁTICOS -->
   <div id="tab5" style="display:none">
 
-    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">
-      <button class="bdg" id="vfTodos"    onclick="filtrarViat('todos')"    style="background:#003366;color:#fff">Todas</button>
-      <button class="bdg" id="vfPend"     onclick="filtrarViat('pendiente')">Pendientes</button>
-      <button class="bdg" id="vfApro"     onclick="filtrarViat('aprobada')">Aprobadas</button>
-      <button class="bdg" id="vfRech"     onclick="filtrarViat('rechazada')">Rechazadas</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:14px">
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="bdg" id="vfTodos"    onclick="filtrarViat('todos')"    style="background:#003366;color:#fff">Todas</button>
+        <button class="bdg" id="vfPend"     onclick="filtrarViat('pendiente')">Pendientes</button>
+        <button class="bdg" id="vfApro"     onclick="filtrarViat('aprobada')">Aprobadas</button>
+        <button class="bdg" id="vfRech"     onclick="filtrarViat('rechazada')">Rechazadas</button>
+      </div>
+      <button onclick="archivarPeriodo()" style="padding:6px 12px;background:#5F5E5A;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer">📦 Archivar período</button>
     </div>
 
     <div id="viatList"><div class="spin-dark"></div></div>
 
     <div style="margin:20px 0;border-top:1px solid #eee"></div>
+
+    <!-- Historial de archivos -->
+    <div class="card" style="margin-bottom:12px">
+      <div class="ctit" onclick="toggleArchivos()" style="cursor:pointer;user-select:none">
+        📦 Historial de períodos archivados
+        <span id="archArrow" style="margin-left:auto;font-size:12px">▼</span>
+      </div>
+      <div id="archivosPanel" style="display:none;margin-top:10px">
+        <div id="archivosLista"><div class="spin-dark"></div></div>
+      </div>
+    </div>
 
     <div class="card" style="margin-bottom:0">
       <div class="ctit" onclick="toggleWAConfig()" style="cursor:pointer;user-select:none">
@@ -1158,6 +1172,83 @@ async function accionViat(id, accion){
       await cargarViaticos();
     }
   }catch(e){alert('Error: '+e.message);}
+}
+
+
+// ── Archivar período ────────────────────────────────────────────
+
+async function archivarPeriodo(){
+  if(!_viatData.length){alert('No hay solicitudes activas para archivar.');return;}
+  const nombre = prompt('Nombre del período (ej: "Marzo 2026", "Quincena 1 - Abril"):\n\n(Se archivarán '+_viatData.length+' solicitudes)', sugNombrePeriodo());
+  if(nombre===null)return;
+  try{
+    const r = await api('POST','/api/admin/viaticos/archivar',{nombre});
+    if(r.ok){
+      alert('✅ '+r.paquete.total+' solicitudes archivadas en "'+r.paquete.nombre+'".');
+      await cargarViaticos();
+    }
+  }catch(e){alert('Error: '+e.message);}
+}
+
+function sugNombrePeriodo(){
+  const ahora = new Date();
+  return ahora.toLocaleDateString('es-AR',{month:'long',year:'numeric'});
+}
+
+function toggleArchivos(){
+  const d=document.getElementById('archivosPanel');
+  const a=document.getElementById('archArrow');
+  const open=d.style.display==='none';
+  d.style.display=open?'block':'none';
+  a.textContent=open?'▲':'▼';
+  if(open)cargarArchivos();
+}
+
+async function cargarArchivos(){
+  document.getElementById('archivosLista').innerHTML='<div class="spin-dark"></div>';
+  try{
+    const archs = await api('GET','/api/admin/viaticos/archivos');
+    if(!archs.length){
+      document.getElementById('archivosLista').innerHTML='<div style="color:#aaa;font-size:13px;padding:12px 0">No hay períodos archivados todavía.</div>';
+      return;
+    }
+    document.getElementById('archivosLista').innerHTML = archs.map(a=>`
+      <div style="border:1px solid #eee;border-radius:10px;margin-bottom:8px;overflow:hidden">
+        <div onclick="toggleArchivo('${a.id}')" style="display:flex;justify-content:space-between;align-items:center;padding:10px 13px;cursor:pointer;background:#f9f9f9">
+          <div>
+            <div style="font-weight:700;font-size:13px;color:#003366">${a.nombre}</div>
+            <div style="font-size:11px;color:#aaa;margin-top:1px">${new Date(a.timestamp).toLocaleDateString('es-AR',{dateStyle:'medium'})} · ${a.total} solicitudes</div>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center">
+            <span style="font-size:10px;background:#E8F5E9;color:#2E7D32;padding:2px 7px;border-radius:10px">✅ ${a.aprobadas}</span>
+            <span style="font-size:10px;background:#FFEBEE;color:#C62828;padding:2px 7px;border-radius:10px">❌ ${a.rechazadas}</span>
+            ${a.pendientes>0?`<span style="font-size:10px;background:#FFFDE7;color:#F57F17;padding:2px 7px;border-radius:10px">⏳ ${a.pendientes}</span>`:''}
+            <span id="arr_${a.id}" style="color:#aaa;font-size:12px">▼</span>
+          </div>
+        </div>
+        <div id="arc_${a.id}" style="display:none;padding:0 12px 10px;max-height:340px;overflow-y:auto">
+          ${a.solicitudes.map(s=>{
+            const estColor=s.estado==='pendiente'?'#F57F17':s.estado==='aprobada'?'#2E7D32':'#C62828';
+            const estLabel=s.estado==='pendiente'?'⏳':s.estado==='aprobada'?'✅':'❌';
+            const insps=(s.inspectores||[]).map(i=>i.nombre||i.username).join(', ')||'—';
+            const fecha=s.fecha?`${s.fecha.dia}/${s.fecha.mes}`:'—';
+            return `<div style="border-bottom:1px solid #f2f2f2;padding:8px 0;font-size:11px;color:#555">
+              <span style="color:${estColor};margin-right:4px">${estLabel}</span>
+              <b style="color:#333">${s.delegacion}</b> · ${fecha} · ${s.destino}
+              <div style="color:#888;margin-top:2px">${insps}</div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>`).join('');
+  }catch(e){document.getElementById('archivosLista').innerHTML='<div style="color:#e53935;font-size:12px">Error al cargar archivos</div>';}
+}
+
+function toggleArchivo(id){
+  const d=document.getElementById('arc_'+id);
+  const a=document.getElementById('arr_'+id);
+  const open=d.style.display==='none';
+  d.style.display=open?'block':'none';
+  a.textContent=open?'▲':'▼';
 }
 
 function toggleWAConfig(){
