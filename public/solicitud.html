@@ -31,7 +31,7 @@ textarea{min-height:110px;resize:vertical;line-height:1.55}
 .insp-box{border:1.5px solid #e8e8e8;border-radius:10px;overflow:hidden}
 .insp-search{border:none;border-bottom:1.5px solid #e8e8e8;border-radius:0;background:#fff}
 .insp-search:focus{border-color:#003366;background:#fff}
-.insp-scroll{max-height:190px;overflow-y:auto}
+.insp-scroll{max-height:340px;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .insp-item{display:flex;align-items:center;padding:9px 12px;gap:10px;border-bottom:1px solid #f2f2f2;cursor:pointer;transition:background .1s}
 .insp-item:last-child{border-bottom:none}
 .insp-item:hover{background:#f5f8ff}
@@ -87,7 +87,7 @@ textarea{min-height:110px;resize:vertical;line-height:1.55}
         <input type="text" class="insp-search" id="inspQ" placeholder="🔍  Buscar inspector..." oninput="filtrar()" autocomplete="off">
         <div class="insp-scroll" id="inspList"><div class="insp-none">Cargando...</div></div>
       </div>
-      <div class="hint">Podés seleccionar varios. La búsqueda filtra en tiempo real.</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px"><div class="hint">Podés seleccionar varios.</div><div id="inspCount" style="font-size:11px;color:#888"></div></div>
     </div>
   </div>
 
@@ -220,10 +220,13 @@ function filtrar(){
   const lista=allInsps.filter(i=>{
     if(selInsps.find(s=>s.u===i.username))return false;
     return !q||i.nombre.toLowerCase().includes(q);
-  }).slice(0,40);
+  });
   const c=document.getElementById('inspList');
   if(!lista.length){c.innerHTML='<div class="insp-none">Sin resultados</div>';return;}
-  c.innerHTML=lista.map(i=>`<div class="insp-item" onclick="addInsp('${i.username}','${i.nombre.replace(/'/g,"\\'").replace(/"/g,"&quot;")}')"><span>${i.nombre}</span></div>`).join('');
+  const _tot=allInsps.length-selInsps.length;
+  const _cEl=document.getElementById('inspCount');
+  if(_cEl)_cEl.textContent=lista.length===_tot?_tot+' inspectores':lista.length+' de '+_tot;
+  c.innerHTML=lista.map(i=>`<div class="insp-item" onclick="addInsp('${i.username}','${i.nombre.replace(/'/g,"\'").replace(/"/g,"&quot;")}')"><span>${i.nombre}</span></div>`).join('');
 }
 
 function addInsp(u,n){
