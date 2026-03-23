@@ -1281,6 +1281,40 @@ app.put('/api/admin/delegado/:delegacion/whatsapp', requireAdmin, (req, res) => 
   res.json({ ok: true });
 });
 
+
+// POST /api/admin/viaticos/archivar — archivar todas las solicitudes en un paquete
+app.post('/api/admin/viaticos/archivar', requireAdmin, (req, res) => {
+  const { nombre } = req.body;
+  const ARCHIVOS_FILE = path.join(DATA_DIR, 'archivos_viaticos.json');
+  if (!fs.existsSync(ARCHIVOS_FILE)) fs.writeFileSync(ARCHIVOS_FILE, '[]');
+  const solicitudes = db.read('solicitudes.json') || [];
+  if (!solicitudes.length)
+    return res.status(400).json({ error: 'No hay solicitudes para archivar' });
+  const archivos = JSON.parse(fs.readFileSync(ARCHIVOS_FILE, 'utf8'));
+  const paquete = {
+    id:        `arch_${Date.now()}`,
+    nombre:    (nombre || `Período ${new Date().toLocaleDateString('es-AR',{month:'long',year:'numeric'})}`).trim(),
+    timestamp: new Date().toISOString(),
+    creadoPor: req.session.user,
+    total:     solicitudes.length,
+    aprobadas: solicitudes.filter(s=>s.estado==='aprobada').length,
+    rechazadas:solicitudes.filter(s=>s.estado==='rechazada').length,
+    pendientes:solicitudes.filter(s=>s.estado==='pendiente').length,
+    solicitudes,
+  };
+  archivos.unshift(paquete);
+  fs.writeFileSync(ARCHIVOS_FILE, JSON.stringify(archivos));
+  db.write('solicitudes.json', []);
+  res.json({ ok: true, paquete: { id: paquete.id, nombre: paquete.nombre, total: paquete.total } });
+});
+
+// GET /api/admin/viaticos/archivos
+app.get('/api/admin/viaticos/archivos', requireAdmin, (req, res) => {
+  const ARCHIVOS_FILE = path.join(DATA_DIR, 'archivos_viaticos.json');
+  if (!fs.existsSync(ARCHIVOS_FILE)) return res.json([]);
+  res.json(JSON.parse(fs.readFileSync(ARCHIVOS_FILE, 'utf8')));
+});
+
 // ── SPA fallback ───────────────────────────────────────────────
 app.get('*', (req, res) => {
   res.sendFile(path.join(PUBLIC_DIR, 'index.html'));
