@@ -167,6 +167,37 @@ canvas.sp{display:block;width:100%;touch-action:none;cursor:crosshair}
 
 </body>
 </html>
+  <!-- TAB 5: AUTORIZACIÓN DE VIÁTICOS -->
+  <div id="tab5" style="display:none">
+
+    <!-- Filtros -->
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">
+      <button class="bdg" id="vfTodos"    onclick="filtrarViat('todos')"    style="background:#003366;color:#fff">Todas</button>
+      <button class="bdg" id="vfPend"     onclick="filtrarViat('pendiente')">Pendientes</button>
+      <button class="bdg" id="vfApro"     onclick="filtrarViat('aprobada')">Aprobadas</button>
+      <button class="bdg" id="vfRech"     onclick="filtrarViat('rechazada')">Rechazadas</button>
+    </div>
+
+    <!-- Lista de solicitudes -->
+    <div id="viatList"><div class="spin-dark"></div></div>
+
+    <!-- Separador -->
+    <div style="margin:20px 0;border-top:1px solid #eee"></div>
+
+    <!-- Gestión de WhatsApp por delegación -->
+    <div class="card" style="margin-bottom:0">
+      <div class="ctit" onclick="toggleWAConfig()" style="cursor:pointer;user-select:none">
+        💬 Números WhatsApp por delegación
+        <span id="waArrow" style="margin-left:auto;font-size:12px">▼</span>
+      </div>
+      <div id="waConfig" style="display:none;margin-top:10px">
+        <div style="font-size:11px;color:#888;margin-bottom:10px">Ingresá el número sin espacios ni símbolos (ej: 2216123456). Se usa para notificar al delegado.</div>
+        <div id="waList"><div class="spin-dark"></div></div>
+      </div>
+    </div>
+
+  </div>
+
 </div>
 </div>
 
@@ -356,6 +387,7 @@ canvas.sp{display:block;width:100%;touch-action:none;cursor:crosshair}
     <button class="tab"    id="t2" onclick="aTab(2)">👥 Inspectores</button>
     <button class="tab"    id="t3" onclick="aTab(3)">📋 Historial</button>
     <button class="tab"    id="t4" onclick="aTab(4)">📊 Analytics</button>
+    <button class="tab"    id="t5" onclick="aTab(5)">📋 Viáticos<span id="badgePend" style="display:none;background:#e53935;color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:8px;margin-left:4px;vertical-align:middle"></span></button>
   </div>
 
   <!-- TAB 1: SUBIR PLANILLA -->
@@ -752,7 +784,7 @@ async function buildAdmin(){
 }
 
 async function aTab(n){
-  [1,2,3,4].forEach(i=>{
+  [1,2,3,4,5].forEach(i=>{
     const tab=document.getElementById('tab'+i);
     const btn=document.getElementById('t'+i);
     if(tab) tab.style.display=i===n?'block':'none';
@@ -761,6 +793,7 @@ async function aTab(n){
   if(n===2){await cargarEstadoFirmas();renderAdminInsp();}
   if(n===3) renderAdminHist();
   if(n===4) cargarAnalytics();
+  if(n===5) cargarViaticos();
 }
 
 function aPDFLoad(e){
@@ -1027,6 +1060,142 @@ async function verPdfHistorial(apiUrl, filename){
     closePdfModal();
     alert('Error al cargar el PDF: '+e.message);
   }
+}
+
+
+// ══════════════════════════════════════════
+//  VIÁTICOS — Autorización de solicitudes
+// ══════════════════════════════════════════
+
+let _viatFiltro = 'todos';
+let _viatData = [];
+
+async function cargarViaticos(){
+  document.getElementById('viatList').innerHTML='<div class="spin-dark"></div>';
+  try{
+    const r = await api('GET','/api/admin/solicitudes');
+    _viatData = Array.isArray(r) ? r : [];
+    // Badge pendientes
+    const pend = _viatData.filter(s=>s.estado==='pendiente').length;
+    const badge = document.getElementById('badgePend');
+    if(pend>0){badge.textContent=pend;badge.style.display='inline';}
+    else badge.style.display='none';
+    renderViaticos();
+  }catch(e){
+    document.getElementById('viatList').innerHTML='<div style="color:#888;padding:20px;text-align:center">Error al cargar solicitudes</div>';
+  }
+}
+
+function filtrarViat(estado){
+  _viatFiltro = estado;
+  ['Todos','Pend','Apro','Rech'].forEach(x=>{
+    const b = document.getElementById('vf'+x);
+    if(b) b.style.background = b.id==='vf'+x && estado===({Todos:'todos',Pend:'pendiente',Apro:'aprobada',Rech:'rechazada'}[x]) ? '#003366' : '';
+    if(b) b.style.color = b.style.background ? '#fff' : '';
+  });
+  // Fix button highlighting
+  ['vfTodos','vfPend','vfApro','vfRech'].forEach(id=>{
+    const b=document.getElementById(id);
+    const map={vfTodos:'todos',vfPend:'pendiente',vfApro:'aprobada',vfRech:'rechazada'};
+    if(b){b.style.background=map[id]===estado?'#003366':'';b.style.color=map[id]===estado?'#fff':'';}
+  });
+  renderViaticos();
+}
+
+function renderViaticos(){
+  const lista = _viatFiltro==='todos' ? _viatData : _viatData.filter(s=>s.estado===_viatFiltro);
+  const c = document.getElementById('viatList');
+  if(!lista.length){
+    c.innerHTML='<div style="text-align:center;color:#aaa;padding:30px;font-size:13px">No hay solicitudes'+(_viatFiltro!=='todos'?' con este estado':'')+'</div>';
+    return;
+  }
+  c.innerHTML = lista.map(s=>{
+    const estColor = s.estado==='pendiente'?'#F57F17':s.estado==='aprobada'?'#2E7D32':'#C62828';
+    const estBg    = s.estado==='pendiente'?'#FFFDE7':s.estado==='aprobada'?'#E8F5E9':'#FFEBEE';
+    const estLabel = s.estado==='pendiente'?'⏳ Pendiente':s.estado==='aprobada'?'✅ Aprobada':'❌ Rechazada';
+    const insps = (s.inspectores||[]).map(i=>i.nombre||i.username).join(', ') || '—';
+    const fecha = s.fecha ? `${s.fecha.dia} de ${s.fecha.mesNombre||''}` : '—';
+    const ts = new Date(s.timestamp).toLocaleString('es-AR',{dateStyle:'short',timeStyle:'short'});
+    return `
+    <div class="card" style="margin-bottom:10px;border:1.5px solid ${estBg}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+        <div>
+          <div style="font-weight:700;font-size:14px;color:#003366">${s.delegacion}</div>
+          <div style="font-size:12px;color:#888;margin-top:2px">${ts}</div>
+        </div>
+        <span style="background:${estBg};color:${estColor};font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px">${estLabel}</span>
+      </div>
+      <div style="font-size:12px;color:#555;line-height:1.8">
+        <div><b>Solicitante:</b> ${s.solicitante}</div>
+        <div><b>Fecha:</b> ${fecha}</div>
+        <div><b>Destino:</b> ${s.destino}</div>
+        <div><b>Inspectores:</b> ${insps}</div>
+        <div style="margin-top:6px;background:#f8f8f8;padding:8px 10px;border-radius:8px;white-space:pre-wrap;font-size:11px"><b>Objetivos:</b>\n${s.objetivos}</div>
+        ${s.observaciones?`<div style="margin-top:6px;color:#888;font-size:11px"><b>Obs:</b> ${s.observaciones}</div>`:''}
+      </div>
+      ${s.estado==='pendiente'?`
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button onclick="accionViat('${s.id}','aprobar')" style="flex:1;padding:9px;background:#1A5E2A;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">✅ Aprobar</button>
+        <button onclick="accionViat('${s.id}','rechazar')" style="flex:1;padding:9px;background:#C62828;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">❌ Rechazar</button>
+      </div>
+      <textarea id="obs_${s.id}" placeholder="Observaciones (opcional)" style="width:100%;margin-top:8px;padding:8px;border:1px solid #eee;border-radius:8px;font-size:12px;resize:vertical;min-height:56px;font-family:inherit"></textarea>
+      `:''}
+    </div>`;
+  }).join('');
+}
+
+async function accionViat(id, accion){
+  const obs = document.getElementById('obs_'+id)?.value||'';
+  try{
+    const r = await api('POST','/api/admin/solicitud/'+id+'/'+accion,{observaciones:obs});
+    if(r.ok){
+      // WhatsApp notification
+      const sol = _viatData.find(s=>s.id===id);
+      if(r.whatsapp){
+        const fecha = sol.fecha ? `${sol.fecha.dia} de ${sol.fecha.mesNombre}` : sol.fecha;
+        const estadoLabel = accion==='aprobar'?'✅ APROBADA':'❌ RECHAZADA';
+        const msg = `Hola ${sol.solicitante}, su solicitud de viáticos para la delegación *${sol.delegacion}* del *${fecha}* con destino *${sol.destino}* ha sido *${estadoLabel}*.${obs?' Observaciones: '+obs:''}`;
+        const waNum = '549' + r.whatsapp.replace(/\D/g,'');
+        const waUrl = `https://wa.me/${waNum}?text=${encodeURIComponent(msg)}`;
+        if(confirm('Solicitud ' + (accion==='aprobar'?'aprobada':'rechazada') + '. ¿Notificar por WhatsApp al delegado?')){
+          window.open(waUrl,'_blank');
+        }
+      }
+      await cargarViaticos();
+    }
+  }catch(e){alert('Error: '+e.message);}
+}
+
+function toggleWAConfig(){
+  const d = document.getElementById('waConfig');
+  const a = document.getElementById('waArrow');
+  const open = d.style.display==='none';
+  d.style.display = open ? 'block' : 'none';
+  a.textContent = open ? '▲' : '▼';
+  if(open) cargarWAConfig();
+}
+
+async function cargarWAConfig(){
+  document.getElementById('waList').innerHTML='<div class="spin-dark"></div>';
+  try{
+    const delegs = await api('GET','/api/admin/delegados');
+    document.getElementById('waList').innerHTML = delegs.map(d=>`
+      <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #f5f5f5">
+        <div style="font-size:12px;font-weight:600;color:#333;min-width:140px;flex-shrink:0">${d.delegacion}</div>
+        <input type="tel" id="wa_${d.delegacion.replace(/[^A-Z0-9]/g,'_')}" value="${d.whatsapp||''}" 
+          placeholder="2216123456" 
+          style="flex:1;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:12px">
+        <button onclick="guardarWA('${d.delegacion}')" style="padding:6px 10px;background:#003366;color:#fff;border:none;border-radius:6px;font-size:11px;cursor:pointer;font-weight:700;flex-shrink:0">Guardar</button>
+      </div>`).join('');
+  }catch(e){document.getElementById('waList').innerHTML='<div style="color:#888;font-size:12px">Error al cargar</div>';}
+}
+
+async function guardarWA(delegacion){
+  const key = 'wa_'+delegacion.replace(/[^A-Z0-9]/g,'_');
+  const val = document.getElementById(key)?.value||'';
+  try{
+    await api('PUT','/api/admin/delegado/'+encodeURIComponent(delegacion)+'/whatsapp',{whatsapp:val});
+  }catch(e){alert('Error al guardar');}
 }
 
 // ══════════════════════════════════════════
