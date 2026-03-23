@@ -770,10 +770,10 @@ app.post('/api/admin/inspector', requireAdmin, (req, res) => {
     return res.status(409).json({ error: `Ya existe un inspector con el DNI ${dni}` });
   // Generar username automático si no se provee
   const genUser = () => {
-    const apBase = apellido.split(' ')[0]
-      .normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9]/g,'').toLowerCase();
-    const nomInicial = nombre.split(' ')[0][0]
-      .normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+    // Apellido completo sin espacios ni acentos + inicial del primer nombre
+    const normalize = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9]/g,'').toLowerCase();
+    const apBase = normalize(apellido.replace(/\s+/g,''));
+    const nomInicial = normalize(nombre.trim().split(/\s+/)[0][0]);
     const base = apBase + nomInicial;
     if (!data.inspectores.find(i => i.username === base)) return base;
     let n = 2;
@@ -1173,6 +1173,108 @@ app.post('/api/admin/planilla-test', requireAdmin, (req, res) => {
   })();
 });
 
+
+// ═══════════════════════════════════════════════════════════════
+//  SOLICITUDES DE VIÁTICOS (delegados y coordinadores)
+// ═══════════════════════════════════════════════════════════════
+
+const SOLICITUDES_FILE = path.join(DATA_DIR, 'solicitudes.json');
+const DELEGADOS_FILE   = path.join(DATA_DIR, 'delegados.json');
+if (!fs.existsSync(SOLICITUDES_FILE)) fs.writeFileSync(SOLICITUDES_FILE, '[]');
+if (!fs.existsSync(DELEGADOS_FILE))   fs.writeFileSync(DELEGADOS_FILE, '[]');
+
+// GET /solicitud — página pública del formulario
+app.get('/solicitud', (req, res) => {
+  res.sendFile(path.join(PUBLIC_DIR, 'solicitud.html'));
+});
+
+// GET /api/inspectores/lista — lista pública de inspectores (sin auth)
+app.get('/api/inspectores/lista', (req, res) => {
+  const data = db.read('usuarios.json');
+  const lista = (data.inspectores || [])
+    .map(i => ({ username: i.username, nombre: i.nombre || `${i.apellido}, ${i.nombre}` }))
+    .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+  res.json(lista);
+});
+
+// POST /api/solicitud/nueva — enviar solicitud (sin auth)
+app.post('/api/solicitud/nueva', (req, res) => {
+  const { delegacion, solicitante, inspectores, fecha, destino, objetivos } = req.body;
+  if (!delegacion || !solicitante || !fecha || !destino || !objetivos)
+    return res.status(400).json({ error: 'Faltan campos obligatorios' });
+  const solicitudes = db.read('solicitudes.json') || [];
+  const nueva = {
+    id:           `sol_${Date.now()}`,
+    delegacion:   delegacion.trim(),
+    solicitante:  solicitante.toUpperCase().trim(),
+    inspectores:  Array.isArray(inspectores) ? inspectores : [],
+    fecha,
+    destino:      destino.trim(),
+    objetivos:    objetivos.trim(),
+    estado:       'pendiente',
+    estadoTs:     null,
+    estadoAdmin:  null,
+    observaciones:'',
+    timestamp:    new Date().toISOString(),
+  };
+  solicitudes.push(nueva);
+  if (solicitudes.length > 1000) solicitudes.splice(0, solicitudes.length - 1000);
+  db.write('solicitudes.json', solicitudes);
+  res.json({ ok: true, id: nueva.id, mensaje: 'Solicitud enviada correctamente' });
+});
+
+// GET /api/admin/solicitudes
+app.get('/api/admin/solicitudes', requireAdmin, (req, res) => {
+  const solicitudes = db.read('solicitudes.json') || [];
+  res.json([...solicitudes].reverse());
+});
+
+// POST /api/admin/solicitud/:id/aprobar
+app.post('/api/admin/solicitud/:id/aprobar', requireAdmin, (req, res) => {
+  const { observaciones } = req.body;
+  const solicitudes = db.read('solicitudes.json') || [];
+  const sol = solicitudes.find(s => s.id === req.params.id);
+  if (!sol) return res.status(404).json({ error: 'No encontrada' });
+  sol.estado       = 'aprobada';
+  sol.estadoTs     = new Date().toISOString();
+  sol.estadoAdmin  = req.session.user;
+  sol.observaciones = observaciones || '';
+  db.write('solicitudes.json', solicitudes);
+  const deleg = (db.read('delegados.json') || []).find(d => d.delegacion === sol.delegacion);
+  res.json({ ok: true, whatsapp: deleg?.whatsapp || '', solicitud: sol });
+});
+
+// POST /api/admin/solicitud/:id/rechazar
+app.post('/api/admin/solicitud/:id/rechazar', requireAdmin, (req, res) => {
+  const { observaciones } = req.body;
+  const solicitudes = db.read('solicitudes.json') || [];
+  const sol = solicitudes.find(s => s.id === req.params.id);
+  if (!sol) return res.status(404).json({ error: 'No encontrada' });
+  sol.estado       = 'rechazada';
+  sol.estadoTs     = new Date().toISOString();
+  sol.estadoAdmin  = req.session.user;
+  sol.observaciones = observaciones || '';
+  db.write('solicitudes.json', solicitudes);
+  const deleg = (db.read('delegados.json') || []).find(d => d.delegacion === sol.delegacion);
+  res.json({ ok: true, whatsapp: deleg?.whatsapp || '', solicitud: sol });
+});
+
+// GET /api/admin/delegados
+app.get('/api/admin/delegados', requireAdmin, (req, res) => {
+  res.json(db.read('delegados.json') || []);
+});
+
+// PUT /api/admin/delegado/:delegacion/whatsapp
+app.put('/api/admin/delegado/:delegacion/whatsapp', requireAdmin, (req, res) => {
+  const { whatsapp } = req.body;
+  const delegados = db.read('delegados.json') || [];
+  const d = delegados.find(x => x.delegacion === decodeURIComponent(req.params.delegacion));
+  if (!d) return res.status(404).json({ error: 'Delegación no encontrada' });
+  d.whatsapp = (whatsapp || '').replace(/\D/g,'');
+  db.write('delegados.json', delegados);
+  res.json({ ok: true });
+});
+
 // ── SPA fallback ───────────────────────────────────────────────
 app.get('*', (req, res) => {
   res.sendFile(path.join(PUBLIC_DIR, 'index.html'));
@@ -1189,7 +1291,7 @@ app.listen(PORT, () => {
   Admin:    usuario "admin"     clave "admin2026"
   Directora: usuario "directora" clave "dir2026"
   Asesoría: usuario "asesoria"  clave "ases2026"
-  Inspectores: usuario = apellido+inicial / clave = N° legajo
-  Ejemplo: Angulo Yamila → anguloy / 601806
+  Inspectores: usuario = apellido_completo+iniciales_nombre / clave = N° legajo
+  Ejemplo: Angulo Estrada Yamila → anguloestraday / 601806
 `);
 });
