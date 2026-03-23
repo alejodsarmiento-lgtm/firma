@@ -353,9 +353,9 @@ canvas.sp{display:block;width:100%;touch-action:none;cursor:crosshair}
   <div class="tabs">
     <button class="tab on" id="t1" onclick="aTab(1)">📤 Subir planilla</button>
     <button class="tab"    id="t2" onclick="aTab(2)">👥 Inspectores</button>
-    <button class="tab"    id="t3" onclick="aTab(3)">📋 Historial</button>
+    <button class="tab"    id="t3" onclick="aTab(3)">📋 Historial viáticos</button>
     <button class="tab"    id="t4" onclick="aTab(4)">📊 Analytics</button>
-    <button class="tab"    id="t5" onclick="aTab(5)">📋 Viáticos<span id="badgePend" style="display:none;background:#e53935;color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:8px;margin-left:4px;vertical-align:middle"></span></button>
+    <button class="tab"    id="t5" onclick="aTab(5)">📋 Solicitud viáticos<span id="badgePend" style="display:none;background:#e53935;color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:8px;margin-left:4px;vertical-align:middle"></span></button>
   </div>
 
   <!-- TAB 1: SUBIR PLANILLA -->
@@ -527,7 +527,22 @@ canvas.sp{display:block;width:100%;touch-action:none;cursor:crosshair}
 
     <!-- Últimas sesiones -->
     <div class="card">
-      <div class="ctit">🕐 Últimas 20 sesiones</div>
+      <div class="ctit" style="flex-wrap:wrap;gap:8px">
+        <span>🕐 Historial de sesiones</span>
+        <div style="display:flex;gap:6px;margin-left:auto;flex-wrap:wrap">
+          <select id="aSelRol" onchange="filtrarSesiones()" style="font-size:11px;padding:3px 7px;border:1px solid #ddd;border-radius:6px">
+            <option value="">Todos los roles</option>
+            <option value="inspector">Inspectores</option>
+            <option value="admin">Admins</option>
+          </select>
+          <select id="aSelLim" onchange="filtrarSesiones()" style="font-size:11px;padding:3px 7px;border:1px solid #ddd;border-radius:6px">
+            <option value="20">Últimas 20</option>
+            <option value="50">Últimas 50</option>
+            <option value="100">Últimas 100</option>
+            <option value="9999">Todas</option>
+          </select>
+        </div>
+      </div>
       <div id="aUltimas" style="overflow-x:auto"></div>
     </div>
 
@@ -1298,8 +1313,8 @@ async function cargarViatAnalytics(desde, hasta){
   try{
     // Cargar solicitudes activas + archivos
     const [activas, archivos] = await Promise.all([
-      api('GET','/api/admin/solicitudes'),
-      api('GET','/api/admin/viaticos/archivos')
+      api('GET','/api/admin/solicitudes').catch(()=>[]),
+      api('GET','/api/admin/viaticos/archivos').catch(()=>[])
     ]);
     // Combinar todas las solicitudes (activas + archivadas)
     let todas = [...(Array.isArray(activas)?activas:[])];
@@ -1736,22 +1751,36 @@ async function cargarAnalytics() {
     '</tbody></table>';
   }
 
-  // Últimas sesiones
+  // Historial completo de sesiones — guardar y filtrar
+  window._allSesiones = r.ultimas || [];
+  filtrarSesiones();
+}
+
+function filtrarSesiones(){
   const ulEl = document.getElementById('aUltimas');
-  if(!r.ultimas.length){ulEl.innerHTML='<div class="empty">Sin sesiones registradas aún.</div>';}
-  else{
-    ulEl.innerHTML='<table class="ht" style="min-width:600px"><thead><tr><th>Usuario</th><th>Rol</th><th>Dispositivo</th><th>Browser</th><th>Duración</th><th>Firmó</th><th>Inicio</th></tr></thead><tbody>'+
-      r.ultimas.map(s=>`<tr>
-        <td><b>${s.username}</b></td>
-        <td style="font-size:11px">${s.role==='admin'?'👤 Admin':'🔍 Inspector'}</td>
-        <td style="font-size:11px">${s.device==='mobile'?'📱':s.device==='tablet'?'📟':'🖥️'} ${s.device}</td>
-        <td style="font-size:11px">${s.browser}</td>
-        <td style="font-size:11px">${fmtSeg(s.duration)}</td>
-        <td style="text-align:center">${s.firmó?'✅':'—'}</td>
-        <td style="font-size:10px">${fmtDt(new Date(s.startTs))}</td>
-      </tr>`).join('')+
-    '</tbody></table>';
+  if(!ulEl) return;
+  const rol = document.getElementById('aSelRol')?.value || '';
+  const lim = parseInt(document.getElementById('aSelLim')?.value || '20');
+  let data = window._allSesiones || [];
+  if(rol) data = data.filter(s => s.role === rol);
+  const total = data.length;
+  data = data.slice(0, lim);
+  if(!data.length){
+    ulEl.innerHTML='<div class="empty">Sin sesiones registradas aún.</div>';
+    return;
   }
+  ulEl.innerHTML='<div style="font-size:11px;color:#888;margin-bottom:6px">Mostrando '+data.length+' de '+total+' sesiones</div>'+
+    '<table class="ht" style="min-width:600px"><thead><tr><th>Usuario</th><th>Rol</th><th>Dispositivo</th><th>Browser</th><th>Duración</th><th>Firmó</th><th>Inicio</th></tr></thead><tbody>'+
+    data.map(s=>`<tr>
+      <td><b>${s.username}</b></td>
+      <td style="font-size:11px">${s.role==='admin'?'👤 Admin':'🔍 Inspector'}</td>
+      <td style="font-size:11px">${s.device==='mobile'?'📱':s.device==='tablet'?'📟':'🖥️'} ${s.device}</td>
+      <td style="font-size:11px">${s.browser}</td>
+      <td style="font-size:11px">${fmtSeg(s.duration)}</td>
+      <td style="text-align:center">${s.firmó?'✅':'—'}</td>
+      <td style="font-size:10px">${fmtDt(new Date(s.startTs))}</td>
+    </tr>`).join('')+
+  '</tbody></table>';
 }
 
 // Cerrar modal nuevo inspector al hacer clic fuera
