@@ -283,7 +283,7 @@ canvas.sp{display:block;width:100%;touch-action:none;cursor:crosshair}
     <h2>¡Planilla firmada!</h2>
     <p>Tu planilla fue firmada y registrada correctamente.</p>
     <div style="font-size:11px;color:#aaa;margin-bottom:16px" id="exTs"></div>
-    <button onclick="openPdfModal(window._lastPdfB64, window._lastPdfName)" class="btn-dl" style="cursor:pointer;border:none;width:100%;font-size:14px">👁 Ver planilla firmada</button>
+    <button onclick="if(window._lastPdfB64){openPdfModal(window._lastPdfB64,window._lastPdfName);}else{alert('El PDF aún se está procesando, intentá en un momento.');}"  class="btn-dl" style="cursor:pointer;border:none;width:100%;font-size:14px">👁 Ver planilla firmada</button>
     <button onclick="downloadPdf(window._lastPdfB64, window._lastPdfName)" style="background:none;border:none;color:#888;font-size:12px;cursor:pointer;margin-top:4px;width:100%">⬇️ Descargar en cambio</button>
   </div>
 
@@ -585,7 +585,7 @@ function show(id){['vLogin','vInsp','vAdmin'].forEach(v=>{document.getElementByI
 //  INSPECTOR
 // ══════════════════════════════════════════
 async function buildInsp(){
-  document.getElementById('iChip').innerHTML=me.username+'<br><span style="opacity:.7;font-size:10px">Inspector/a</span>';
+  document.getElementById('iChip').innerHTML=(me.nombre||me.username||'Inspector')+'<br><span style="opacity:.7;font-size:10px">Inspector/a</span>';
   // Cargar perfil
   const perfil = await api('GET','/api/inspector/perfil');
   if(perfil.error){console.error(perfil.error);return;}
@@ -691,7 +691,7 @@ async function firmar(){
       window._lastPdfB64=b64url;
       window._lastPdfName=fname;
     };
-    await new Promise(r=>{reader.onloadend=r;});
+    await new Promise(r=>{reader.onload=r;});
     await prog(100,'¡Listo!');await new Promise(r=>setTimeout(r,300));
     // UI de éxito
     setStep(4,true);
