@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#003366">
+<title>Solicitud de Viáticos — Inspección del Trabajo PBA</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a1929;min-height:100vh;padding:0 0 48px}
+.hdr{text-align:center;padding:28px 16px 16px;color:#fff}
+.hdr .ico{font-size:44px;display:block;margin-bottom:8px}
+.hdr h1{font-size:20px;font-weight:700}
+.hdr p{font-size:12px;color:rgba(255,255,255,.55);margin-top:4px}
+.wrap{max-width:480px;margin:0 auto;padding:0 14px}
+.card{background:#fff;border-radius:16px;padding:18px 16px;margin-bottom:12px}
+.ctit{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#003366;margin-bottom:14px;display:flex;align-items:center;gap:6px}
+.field{margin-bottom:14px}
+.field:last-child{margin-bottom:0}
+label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#888;margin-bottom:5px}
+label.req::after{content:' *';color:#e53935}
+input,select,textarea{display:block;width:100%;padding:11px 13px;border:1.5px solid #e8e8e8;border-radius:10px;font-size:15px;font-family:inherit;color:#1a1a1a;background:#fafafa;transition:border-color .15s;-webkit-appearance:none}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#003366;background:#fff}
+textarea{min-height:110px;resize:vertical;line-height:1.55}
+.hint{font-size:11px;color:#aaa;margin-top:4px;line-height:1.4}
+.date-row{display:grid;grid-template-columns:100px 1fr;gap:8px}
+.insp-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px}
+.insp-tag{background:#003366;color:#fff;font-size:11px;padding:4px 8px;border-radius:20px;display:flex;align-items:center;gap:4px}
+.insp-tag button{background:none;border:none;color:rgba(255,255,255,.7);cursor:pointer;padding:0;font-size:16px;line-height:1;margin-top:-1px}
+.insp-box{border:1.5px solid #e8e8e8;border-radius:10px;overflow:hidden}
+.insp-search{border:none;border-bottom:1.5px solid #e8e8e8;border-radius:0;background:#fff}
+.insp-search:focus{border-color:#003366;background:#fff}
+.insp-scroll{max-height:190px;overflow-y:auto}
+.insp-item{display:flex;align-items:center;padding:9px 12px;gap:10px;border-bottom:1px solid #f2f2f2;cursor:pointer;transition:background .1s}
+.insp-item:last-child{border-bottom:none}
+.insp-item:hover{background:#f5f8ff}
+.insp-item.sel{background:#EBF4FB}
+.insp-item span{font-size:13px;color:#333;line-height:1.3}
+.insp-none{padding:16px;text-align:center;color:#bbb;font-size:13px}
+.btn{display:block;width:100%;padding:15px;background:#003366;color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;transition:background .15s}
+.btn:hover{background:#00264d}
+.btn:active{background:#001833;transform:scale(.99)}
+.btn:disabled{background:#aaa;cursor:not-allowed;transform:none}
+.err{background:#FFEBEE;border:1px solid #ffcdd2;color:#c62828;padding:10px 13px;border-radius:8px;font-size:13px;margin-bottom:10px;display:none}
+.spin{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:sp .6s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.success{text-align:center;padding:48px 20px}
+.sico{font-size:64px;display:block;margin-bottom:16px}
+.stit{font-size:22px;font-weight:700;color:#1A5E2A;margin-bottom:10px}
+.ssub{font-size:14px;color:#555;line-height:1.65}
+.badge-pend{background:#e53935;color:#fff;font-size:10px;font-weight:700;padding:1px 5px;border-radius:8px;margin-left:4px}
+.footer{text-align:center;padding:20px 16px 0;font-size:11px;color:rgba(255,255,255,.3)}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <span class="ico">✍️</span>
+  <h1>Solicitud de Viáticos</h1>
+  <p>Subsecretaría de Inspección del Trabajo · Prov. Buenos Aires</p>
+</div>
+
+<div class="wrap" id="formWrap">
+
+  <div class="card">
+    <div class="ctit">📍 Delegación y solicitante</div>
+    <div class="field">
+      <label class="req" for="selDel">Delegación</label>
+      <select id="selDel" onchange="onDelChange()">
+        <option value="">— Seleccioná tu delegación —</option>
+      </select>
+    </div>
+    <div class="field">
+      <label class="req" for="txtSol">Nombre del solicitante</label>
+      <input type="text" id="txtSol" placeholder="Nombre y apellido completo" autocomplete="name" autocapitalize="words">
+      <div class="hint">Si firmás en nombre del delegado/a o coordinador/a, ingresá tu propio nombre.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ctit">👤 Inspectores convocados</div>
+    <div class="field">
+      <label>Seleccioná uno o más inspectores</label>
+      <div class="insp-tags" id="tags"></div>
+      <div class="insp-box">
+        <input type="text" class="insp-search" id="inspQ" placeholder="🔍  Buscar inspector..." oninput="filtrar()" autocomplete="off">
+        <div class="insp-scroll" id="inspList"><div class="insp-none">Cargando...</div></div>
+      </div>
+      <div class="hint">Podés seleccionar varios. La búsqueda filtra en tiempo real.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ctit">📅 Fecha y destino</div>
+    <div class="field">
+      <label class="req">Fecha de la inspección</label>
+      <div class="date-row">
+        <select id="selDia"><option value="">Día</option></select>
+        <select id="selMes">
+          <option value="">Mes</option>
+          <option value="1">Enero</option><option value="2">Febrero</option>
+          <option value="3">Marzo</option><option value="4">Abril</option>
+          <option value="5">Mayo</option><option value="6">Junio</option>
+          <option value="7">Julio</option><option value="8">Agosto</option>
+          <option value="9">Septiembre</option><option value="10">Octubre</option>
+          <option value="11">Noviembre</option><option value="12">Diciembre</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label class="req" for="txtDest">Destino</label>
+      <input type="text" id="txtDest" placeholder="Localidad / Municipio" autocapitalize="words">
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ctit">🎯 Objetivos de inspección</div>
+    <div class="field">
+      <label class="req" for="txtObj">Establecimientos a inspeccionar</label>
+      <textarea id="txtObj" placeholder="OI 12345 — Razón Social SRL&#10;OI 12346 — Otra Empresa SA&#10;..."></textarea>
+      <div class="hint">Detallá los números de OI y razones sociales, uno por línea.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div id="errMsg" class="err"></div>
+    <button class="btn" id="btnEnv" onclick="enviar()">Enviar solicitud</button>
+  </div>
+
+</div>
+
+<div id="okWrap" style="display:none;max-width:480px;margin:0 auto;padding:0 14px">
+  <div class="card success">
+    <span class="sico">✅</span>
+    <div class="stit">¡Solicitud enviada!</div>
+    <div class="ssub">Tu solicitud fue registrada y será revisada por la Subsecretaría de Inspección del Trabajo.<br><br>Recibirás la respuesta por WhatsApp.</div>
+  </div>
+</div>
+
+<div class="footer">FirmaRED · Ministerio de Trabajo · Provincia de Buenos Aires</div>
+
+<script>
+const DELEGACIONES=[
+  {n:"9 DE JULIO",d:"MAESTRUTTI MARIA CECILIA"},
+  {n:"ALTE BROWN",d:"MELETTI JORGE ANTONIO"},
+  {n:"AVELLANEDA",d:"COUSIRAT RICARDO GUSTAVO"},
+  {n:"AZUL",d:"BARRERA MARIELA ANDREA"},
+  {n:"BAHIA BLANCA",d:"RUIZ DIAZ GUSTAVO DANIEL"},
+  {n:"BALCARCE",d:"ARANAGA SERGIO FABIAN"},
+  {n:"BARADERO",d:"CHAPUIS FLAVIO SEBASTIAN"},
+  {n:"BRAGADO",d:"AIME MARIA AGUSTINA"},
+  {n:"CAMPANA",d:"CINGOLANI DARIO MARIO"},
+  {n:"CARMEN DE PATAGONES",d:"FIRMAPAZ NESTOR FABIAN"},
+  {n:"CHACABUCO",d:"ROUCO LUCIANO ADRIAN"},
+  {n:"CHASCOMUS",d:"TORRES EZEQUIEL MARTIN"},
+  {n:"CHIVILCOY",d:"ANTONELLI LUIS FERNANDO"},
+  {n:"CORONEL",d:"CONSERVA MARCELO FABIAN"},
+  {n:"DOLORES",d:"ARGEL ALBERTO"},
+  {n:"JOSE C. PAZ",d:"LASAGNO WALTER HERNAN"},
+  {n:"JUNIN",d:"GAUNA NICOLAS PATRICIO"},
+  {n:"LA MATANZA",d:"VACANTE"},
+  {n:"LA PLATA",d:"DOVALE DESPOTT MARIA CELESTE"},
+  {n:"LANUS",d:"TORRES JORGE"},
+  {n:"LINCOLN",d:"MAUTINO MATIAS"},
+  {n:"LOBOS",d:"MANSILLA DARDO ALBERTO"},
+  {n:"LOMAS DE ZAMORA",d:"VACCARO GUIDO EZEQUIEL"},
+  {n:"LUJAN",d:"ZABALO JORGE CEFERINO"},
+  {n:"MAR DEL PLATA",d:"BUCCICO DANIEL EDUARDO"},
+  {n:"MERCEDES",d:"DIAZ FABIAN JAVIER"},
+  {n:"MORON",d:"PONCE DAVID NORMAN"},
+  {n:"NECOCHEA",d:"STEFFEN MARIA NATALIA"},
+  {n:"OLAVARRIA",d:"MIRIUKA LUCAS FEDERICO"},
+  {n:"PARTIDO DE LA COSTA",d:"GALLARDO ALEJANDRO RAFAEL"},
+  {n:"PEHUAJO",d:"ALMEIRA ALEJANDRO FABIAN"},
+  {n:"PERGAMINO",d:"RODRIGUEZ SABRINA BELEN"},
+  {n:"PILAR",d:"TRIPICCHIO MATIAS FERNANDO"},
+  {n:"QUILMES",d:"PARDEY ARIEL ALEJANDRO"},
+  {n:"SALADILLO",d:"LACUNZA OSCAR OSVALDO"},
+  {n:"SAN ISIDRO",d:"BONETTO ALEXANDER DIEGO ARMANDO"},
+  {n:"SAN MARTIN",d:"RUSSO FEDERICO ALEJANDRO"},
+  {n:"SAN MIGUEL",d:"SAAVEDRA YOLANDA DEL VALLE"},
+  {n:"SAN NICOLAS",d:"HERRERA MARCELO ARIEL"},
+  {n:"SAN PEDRO",d:"ROTUNDO SOFIA"},
+  {n:"TANDIL",d:"GONZALEZ GODOY EZEQUIEL"},
+  {n:"TIGRE",d:"VACANTE"},
+  {n:"TRENQUE LAUQUEN",d:"LONGO SERGIO RAUL"},
+  {n:"TRES ARROYOS",d:"ESCUDERO ROBERTO MARTIN"},
+  {n:"TRES DE FEBRERO",d:"SENDES MARIA OFELIA"},
+  {n:"ZARATE",d:"HILLKIRK ALEJANDRO"},
+];
+const MESES=['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+let allInsps=[],selInsps=[];
+
+// Populate delegaciones
+const seld=document.getElementById('selDel');
+DELEGACIONES.forEach(d=>{const o=document.createElement('option');o.value=d.n;o.textContent=d.n;o.dataset.del=d.d;seld.appendChild(o);});
+
+// Populate days
+const selDia=document.getElementById('selDia');
+for(let i=1;i<=31;i++){const o=document.createElement('option');o.value=i;o.textContent=i;selDia.appendChild(o);}
+
+function onDelChange(){
+  const o=seld.selectedOptions[0];
+  const s=document.getElementById('txtSol');
+  if(o&&o.dataset.del&&o.dataset.del!=='VACANTE')s.value=o.dataset.del;
+  else s.value='';
+}
+
+async function loadInsps(){
+  try{
+    const r=await fetch('/api/inspectores/lista');
+    allInsps=await r.json();
+    filtrar();
+  }catch(e){document.getElementById('inspList').innerHTML='<div class="insp-none">No se pudo cargar la lista de inspectores.</div>';}
+}
+
+function filtrar(){
+  const q=document.getElementById('inspQ').value.toLowerCase().trim();
+  const lista=allInsps.filter(i=>{
+    if(selInsps.find(s=>s.u===i.username))return false;
+    return !q||i.nombre.toLowerCase().includes(q);
+  }).slice(0,40);
+  const c=document.getElementById('inspList');
+  if(!lista.length){c.innerHTML='<div class="insp-none">Sin resultados</div>';return;}
+  c.innerHTML=lista.map(i=>`<div class="insp-item" onclick="addInsp('${i.username}','${i.nombre.replace(/'/g,"\\'").replace(/"/g,"&quot;")}')"><span>${i.nombre}</span></div>`).join('');
+}
+
+function addInsp(u,n){
+  if(!selInsps.find(i=>i.u===u)){
+    selInsps.push({u,n});
+    renderTags();
+    document.getElementById('inspQ').value='';
+    filtrar();
+  }
+}
+
+function removeInsp(u){
+  selInsps=selInsps.filter(i=>i.u!==u);
+  renderTags();filtrar();
+}
+
+function renderTags(){
+  document.getElementById('tags').innerHTML=selInsps.map(i=>`
+    <div class="insp-tag">
+      <span>${i.n.split(',')[0]}</span>
+      <button type="button" onclick="removeInsp('${i.u}')">×</button>
+    </div>`).join('');
+}
+
+async function enviar(){
+  const delegacion=document.getElementById('selDel').value;
+  const solicitante=document.getElementById('txtSol').value.trim();
+  const dia=document.getElementById('selDia').value;
+  const mes=document.getElementById('selMes').value;
+  const destino=document.getElementById('txtDest').value.trim();
+  const objetivos=document.getElementById('txtObj').value.trim();
+  const err=document.getElementById('errMsg');
+  err.style.display='none';
+
+  if(!delegacion){err.textContent='Seleccioná tu delegación.';err.style.display='block';return;}
+  if(!solicitante){err.textContent='Ingresá el nombre del solicitante.';err.style.display='block';return;}
+  if(!dia||!mes){err.textContent='Seleccioná la fecha completa.';err.style.display='block';return;}
+  if(!destino){err.textContent='Ingresá el destino de la inspección.';err.style.display='block';return;}
+  if(!objetivos){err.textContent='Completá los objetivos de la inspección.';err.style.display='block';return;}
+
+  const btn=document.getElementById('btnEnv');
+  btn.disabled=true;
+  btn.innerHTML='<span class="spin"></span>Enviando...';
+
+  try{
+    const r=await fetch('/api/solicitud/nueva',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        delegacion,solicitante,
+        inspectores:selInsps.map(i=>({username:i.u,nombre:i.n})),
+        fecha:{dia,mes,mesNombre:MESES[parseInt(mes)]},
+        destino,objetivos
+      })
+    });
+    const d=await r.json();
+    if(d.ok){
+      document.getElementById('formWrap').style.display='none';
+      document.getElementById('okWrap').style.display='block';
+      window.scrollTo(0,0);
+    }else{
+      err.textContent=d.error||'Error al enviar. Intentá de nuevo.';
+      err.style.display='block';
+      btn.disabled=false;btn.textContent='Enviar solicitud';
+    }
+  }catch(e){
+    err.textContent='Error de conexión. Verificá tu internet e intentá de nuevo.';
+    err.style.display='block';
+    btn.disabled=false;btn.textContent='Enviar solicitud';
+  }
+}
+
+loadInsps();
+</script>
+</body>
+</html>
