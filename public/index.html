@@ -283,7 +283,8 @@ canvas.sp{display:block;width:100%;touch-action:none;cursor:crosshair}
     <h2>¡Planilla firmada!</h2>
     <p>Tu planilla fue firmada y registrada correctamente.</p>
     <div style="font-size:11px;color:#aaa;margin-bottom:16px" id="exTs"></div>
-    <a id="dlLink" href="#" class="btn-dl">⬇️ Descargar planilla firmada</a>
+    <button onclick="openPdfModal(window._lastPdfB64, window._lastPdfName)" class="btn-dl" style="cursor:pointer;border:none;width:100%;font-size:14px">👁 Ver planilla firmada</button>
+    <button onclick="downloadPdf(window._lastPdfB64, window._lastPdfName)" style="background:none;border:none;color:#888;font-size:12px;cursor:pointer;margin-top:4px;width:100%">⬇️ Descargar en cambio</button>
   </div>
 
   <!-- HISTORIAL -->
@@ -292,6 +293,23 @@ canvas.sp{display:block;width:100%;touch-action:none;cursor:crosshair}
     <div id="iHist"><div class="spin-dark"></div></div>
   </div>
 
+
+  <!-- MODAL VISOR PDF -->
+  <div id="pdfModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;padding:16px;box-sizing:border-box;flex-direction:column;align-items:center;justify-content:flex-start">
+    <div style="background:#fff;border-radius:16px;width:100%;max-width:520px;max-height:92vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.4)">
+      <div style="padding:14px 16px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center;flex-shrink:0">
+        <span style="font-weight:700;font-size:14px;color:#003366">📄 Planilla firmada</span>
+        <button onclick="closePdfModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#888;padding:0 4px">✕</button>
+      </div>
+      <div style="flex:1;overflow:hidden;min-height:400px">
+        <iframe id="pdfFrame" style="width:100%;height:100%;min-height:420px;border:none" src=""></iframe>
+      </div>
+      <div style="padding:12px 16px;border-top:1px solid #eee;display:flex;gap:8px;flex-shrink:0">
+        <a id="pdfDlBtn" href="#" download class="bs bsv" style="flex:1;text-align:center;text-decoration:none;padding:12px;font-size:13px">⬇️ Descargar PDF</a>
+        <button onclick="closePdfModal()" style="flex:1;padding:12px;font-size:13px;background:#f0f0f0;border:none;border-radius:10px;cursor:pointer;font-weight:600">Cerrar</button>
+      </div>
+    </div>
+  </div>
 
   <!-- CAMBIAR CONTRASEÑA (colapsable, máx 2 veces) -->
   <div class="card" style="margin-top:6px" id="cardPwd">
@@ -663,14 +681,17 @@ async function firmar(){
     await prog(70,'Procesando PDF firmado…');
     // Recibir el PDF como blob
     const blob=await resp.blob();
-    await prog(95,'Preparando descarga…');
-    // Crear link de descarga
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');
-    a.href=url;
-    a.download=`viatico_${planillaInfo.mesNombre.toLowerCase()}_${planillaInfo.year}_${perfilInsp.legajo}.pdf`;
-    document.body.appendChild(a);a.click();document.body.removeChild(a);
-    setTimeout(()=>URL.revokeObjectURL(url),10000);
+    await prog(95,'Preparando visor…');
+    // Convertir blob a base64 para el visor inline (evita warning de descarga insegura)
+    const reader=new FileReader();
+    reader.readAsDataURL(blob);
+    reader.onload=()=>{
+      const b64url=reader.result;
+      const fname=`viatico_${planillaInfo.mesNombre.toLowerCase()}_${planillaInfo.year}_${perfilInsp.legajo}.pdf`;
+      window._lastPdfB64=b64url;
+      window._lastPdfName=fname;
+    };
+    await new Promise(r=>{reader.onloadend=r;});
     await prog(100,'¡Listo!');await new Promise(r=>setTimeout(r,300));
     // UI de éxito
     setStep(4,true);
@@ -704,8 +725,9 @@ async function renderIHist(){
         <div class="hi-s">Firmado el ${fmtDt(new Date(h.firmadoTs))}</div>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
+        <button onclick="verPdfHistorial('/api/inspector/descargar/${h.signedFile}','viatico_${h.mesNombre}_${h.year}.pdf')" class="bdg" style="cursor:pointer;border:none">👁 Ver</button>
         <a href="/api/inspector/descargar/${h.signedFile}" class="bdg" style="text-decoration:none" download>⬇️ Descargar</a>
-        ${h.hash?`<a href="/verificar/${h.hash}" target="_blank" class="bdg" style="text-decoration:none;font-size:11px;background:#EBF4FB;color:#1F5FA6;border:1px solid #B5D4F4">🔍 Verificar autenticidad</a>`:''}
+        ${h.hash?`<a href="/verificar/${h.hash}" target="_blank" class="bdg" style="text-decoration:none;font-size:11px;background:#EBF4FB;color:#1F5FA6;border:1px solid #B5D4F4">🔍 Verificar</a>`:''}
       </div>
     </div>`).join('');
 }
@@ -950,6 +972,64 @@ async function renderAdminHist(){
       <td>${fmtDt(new Date(h.firmadoTs))}</td>
       <td><a href="/api/admin/descargar/${h.signedFile}" class="bdg" style="text-decoration:none" download>⬇️</a></td>
     </tr>`).join('')+'</tbody></table>';
+}
+
+// ══════════════════════════════════════════
+//  VISOR PDF INLINE
+// ══════════════════════════════════════════
+
+function openPdfModal(b64url, filename){
+  if(!b64url)return;
+  const modal=document.getElementById('pdfModal');
+  const frame=document.getElementById('pdfFrame');
+  const dlBtn=document.getElementById('pdfDlBtn');
+  frame.src=b64url;
+  dlBtn.href=b64url;
+  dlBtn.download=filename||'planilla_firmada.pdf';
+  modal.style.display='flex';
+  document.body.style.overflow='hidden';
+}
+
+function closePdfModal(){
+  const modal=document.getElementById('pdfModal');
+  modal.style.display='none';
+  document.getElementById('pdfFrame').src='';
+  document.body.style.overflow='';
+}
+
+function downloadPdf(b64url, filename){
+  if(!b64url)return;
+  const a=document.createElement('a');
+  a.href=b64url;
+  a.download=filename||'planilla_firmada.pdf';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+}
+
+async function verPdfHistorial(apiUrl, filename){
+  // Mostrar spinner en el modal mientras carga
+  const modal=document.getElementById('pdfModal');
+  const frame=document.getElementById('pdfFrame');
+  const dlBtn=document.getElementById('pdfDlBtn');
+  frame.src='';
+  modal.style.display='flex';
+  document.body.style.overflow='hidden';
+  try{
+    const r=await fetch(apiUrl);
+    if(!r.ok)throw new Error('No se pudo cargar el PDF');
+    const blob=await r.blob();
+    const b64=await new Promise((res,rej)=>{
+      const rd=new FileReader();
+      rd.onload=()=>res(rd.result);
+      rd.onerror=rej;
+      rd.readAsDataURL(blob);
+    });
+    frame.src=b64;
+    dlBtn.href=b64;
+    dlBtn.download=filename||'planilla.pdf';
+  }catch(e){
+    closePdfModal();
+    alert('Error al cargar el PDF: '+e.message);
+  }
 }
 
 // ══════════════════════════════════════════
