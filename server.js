@@ -963,7 +963,7 @@ app.get('/api/admin/analytics', requireAdmin, (req, res) => {
   const tasaFirma = sesInsp.length ? Math.round(sesInsp.filter(s=>s.firmó).length/sesInsp.length*100) : 0;
 
   // Últimas 20 sesiones
-  const ultimas = [...sess].sort((a,b)=>new Date(b.startTs)-new Date(a.startTs)).slice(0,20);
+  const ultimas = [...sess].sort((a,b)=>new Date(b.startTs)-new Date(a.startTs));
 
   res.json({
     resumen: { total, completadas, durPromedio, durMax, tasaFirma },
