@@ -166,39 +166,7 @@ canvas.sp{display:block;width:100%;touch-action:none;cursor:crosshair}
 </div>
 
 </body>
-</html>
-  <!-- TAB 5: AUTORIZACIÓN DE VIÁTICOS -->
-  <div id="tab5" style="display:none">
-
-    <!-- Filtros -->
-    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">
-      <button class="bdg" id="vfTodos"    onclick="filtrarViat('todos')"    style="background:#003366;color:#fff">Todas</button>
-      <button class="bdg" id="vfPend"     onclick="filtrarViat('pendiente')">Pendientes</button>
-      <button class="bdg" id="vfApro"     onclick="filtrarViat('aprobada')">Aprobadas</button>
-      <button class="bdg" id="vfRech"     onclick="filtrarViat('rechazada')">Rechazadas</button>
-    </div>
-
-    <!-- Lista de solicitudes -->
-    <div id="viatList"><div class="spin-dark"></div></div>
-
-    <!-- Separador -->
-    <div style="margin:20px 0;border-top:1px solid #eee"></div>
-
-    <!-- Gestión de WhatsApp por delegación -->
-    <div class="card" style="margin-bottom:0">
-      <div class="ctit" onclick="toggleWAConfig()" style="cursor:pointer;user-select:none">
-        💬 Números WhatsApp por delegación
-        <span id="waArrow" style="margin-left:auto;font-size:12px">▼</span>
-      </div>
-      <div id="waConfig" style="display:none;margin-top:10px">
-        <div style="font-size:11px;color:#888;margin-bottom:10px">Ingresá el número sin espacios ni símbolos (ej: 2216123456). Se usa para notificar al delegado.</div>
-        <div id="waList"><div class="spin-dark"></div></div>
-      </div>
-    </div>
-
-  </div>
-
-</div>
+</html></div>
 </div>
 
 <!-- ═══ INSPECTOR ════════════════════════════════ -->
@@ -565,6 +533,32 @@ canvas.sp{display:block;width:100%;touch-action:none;cursor:crosshair}
 
   </div>
 
+    <!-- TAB 5: AUTORIZACIÓN DE VIÁTICOS -->
+  <div id="tab5" style="display:none">
+
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">
+      <button class="bdg" id="vfTodos"    onclick="filtrarViat('todos')"    style="background:#003366;color:#fff">Todas</button>
+      <button class="bdg" id="vfPend"     onclick="filtrarViat('pendiente')">Pendientes</button>
+      <button class="bdg" id="vfApro"     onclick="filtrarViat('aprobada')">Aprobadas</button>
+      <button class="bdg" id="vfRech"     onclick="filtrarViat('rechazada')">Rechazadas</button>
+    </div>
+
+    <div id="viatList"><div class="spin-dark"></div></div>
+
+    <div style="margin:20px 0;border-top:1px solid #eee"></div>
+
+    <div class="card" style="margin-bottom:0">
+      <div class="ctit" onclick="toggleWAConfig()" style="cursor:pointer;user-select:none">
+        💬 Números WhatsApp por delegación
+        <span id="waArrow" style="margin-left:auto;font-size:12px">▼</span>
+      </div>
+      <div id="waConfig" style="display:none;margin-top:10px">
+        <div style="font-size:11px;color:#888;margin-bottom:10px">Ingresá el número sin espacios ni símbolos (ej: 2216123456).</div>
+        <div id="waList"><div class="spin-dark"></div></div>
+      </div>
+    </div>
+
+  </div>
 </div>
 </div>
 
