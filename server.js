@@ -1192,7 +1192,13 @@ app.get('/solicitud', (req, res) => {
 app.get('/api/inspectores/lista', (req, res) => {
   const data = db.read('usuarios.json');
   const lista = (data.inspectores || [])
-    .map(i => ({ username: i.username, nombre: i.nombre || `${i.apellido}, ${i.nombre}` }))
+    .map(i => {
+      // Normalizar: si 'nombre' ya contiene la coma (apellido, nombre) lo usa directo
+      // Si no, combina apellido + nombre
+      let display = i.nombre || '';
+      if (!display.includes(',') && i.apellido) display = `${i.apellido}, ${i.nombre}`;
+      return { username: i.username, nombre: display.trim() };
+    })
     .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
   res.json(lista);
 });
