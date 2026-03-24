@@ -1394,7 +1394,7 @@ app.post('/api/webauthn/registro-inicio', requireAuth, (req, res) => {
   WA_CHALLENGES.set(user + '_reg', { challenge, ts: Date.now() });
 
   res.json({
-    rp:           { name: 'FirmaRED', id: req.hostname },
+    rp:           { name: 'FirmaRED', id: 'firmared.com' },
     user:         { id: userId, name: user, displayName: user },
     challenge,
     pubKeyCredParams: [
@@ -1464,7 +1464,7 @@ app.post('/api/webauthn/auth-inicio', requireAuth, (req, res) => {
   res.json({
     challenge,
     timeout:         60000,
-    rpId:            req.hostname,
+    rpId:            'firmared.com',
     userVerification: 'required',
     allowCredentials: userCreds.map(c => ({
       id:   c.credentialId,
