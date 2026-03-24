@@ -1509,6 +1509,7 @@ async function registrarBiometrico() {
     const opts = await api('POST', '/api/webauthn/registro-inicio');
 
     // 2. Convertir challenge y userId a ArrayBuffer
+    if (!opts.challenge) throw new Error('El servidor no devolvió un challenge válido');
     const optsForBrowser = {
       ...opts,
       challenge: base64urlToBuffer(opts.challenge),
@@ -1560,6 +1561,7 @@ async function firmarConBiometrico() {
     if (opts.error) { msg.textContent = opts.error; msg.style.color='#C62828'; return; }
 
     // 2. Preparar opciones
+    if (!opts.challenge) throw new Error('El servidor no devolvió un challenge válido');
     const optsForBrowser = {
       ...opts,
       challenge: base64urlToBuffer(opts.challenge),
@@ -1604,10 +1606,13 @@ async function firmarConBiometrico() {
 
 // Helpers base64url ↔ ArrayBuffer
 function base64urlToBuffer(b64url) {
-  const b64 = b64url.replace(/-/g,'+').replace(/_/g,'/');
-  const binary = atob(b64.padEnd(b64.length + (4 - b64.length%4)%4, '='));
+  if (!b64url) throw new Error('base64url value is empty or undefined');
+  const str = typeof b64url === 'string' ? b64url : String(b64url);
+  const b64 = str.replace(/-/g,'+').replace(/_/g,'/');
+  const padded = b64.padEnd(b64.length + (4 - b64.length % 4) % 4, '=');
+  const binary = atob(padded);
   const buf = new Uint8Array(binary.length);
-  for (let i=0; i<binary.length; i++) buf[i] = binary.charCodeAt(i);
+  for (let i = 0; i < binary.length; i++) buf[i] = binary.charCodeAt(i);
   return buf.buffer;
 }
 
