@@ -1387,8 +1387,19 @@ function waWriteCreds(data) {
 }
 
 // ── 1. Inicio de registro ──────────────────────────────────────
-app.post('/api/webauthn/registro-inicio', requireAuth, (req, res) => {
-  const user = req.session.user;
+app.post('/api/webauthn/registro-inicio', (req, res) => {
+  // Debug: log session state
+  const user = req.session?.user;
+  if (!user) {
+    return res.status(401).json({ 
+      error: 'Sesión no encontrada', 
+      debug: { 
+        sessionId: req.sessionID,
+        hasCookie: !!req.headers.cookie,
+        cookieHeader: req.headers.cookie?.substring(0,50)
+      }
+    });
+  }
   const userId = Buffer.from(user).toString('base64url');
   const challenge = nodeCrypto.randomBytes(32).toString('base64url');
   WA_CHALLENGES.set(user + '_reg', { challenge, ts: Date.now() });
@@ -1451,8 +1462,9 @@ app.post('/api/webauthn/registro-verificar', requireAuth, (req, res) => {
 });
 
 // ── 3. Inicio de autenticación ─────────────────────────────────
-app.post('/api/webauthn/auth-inicio', requireAuth, (req, res) => {
-  const user  = req.session.user;
+app.post('/api/webauthn/auth-inicio', (req, res) => {
+  const user = req.session?.user;
+  if (!user) return res.status(401).json({ error: 'Sesión no encontrada en auth-inicio' });
   const creds = waReadCreds();
   const userCreds = creds[user] || [];
   if (!userCreds.length)
