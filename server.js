@@ -48,7 +48,7 @@ app.use(session({
   secret: 'firmared-subsecretaria-pba-2026',
   resave: false,
   saveUninitialized: false,
-  cookie: { secure: false, maxAge: 30 * 24 * 60 * 60 * 1000 } // 30 días
+  cookie: { secure: 'auto', sameSite: 'lax', maxAge: 30 * 24 * 60 * 60 * 1000 } // 30 días
 }));
 
 // Multer para uploads de planillas (PDFs)
