@@ -314,6 +314,32 @@ app.post('/api/inspector/firmar', requireAuth, async (req, res) => {
       x: pgW - qrSize - 18 + (qrSize - labelW) / 2,
       y: 10, size: labelSz, font: fontV, color: rgb(0.2, 0.2, 0.2)
     });
+
+    // Sello biométrico adicional si la firma fue verificada biométricamente
+    if (req.body.bioVerificado === true) {
+      const bioTxt1 = 'Identidad verificada';
+      const bioTxt2 = 'biometricamente';
+      const bioSz   = 5.5;
+      const bio1W   = fontV.widthOfTextAtSize(bioTxt1, bioSz);
+      const bio2W   = fontV.widthOfTextAtSize(bioTxt2, bioSz);
+      const bioX    = pgW - qrSize - 18 + (qrSize - Math.max(bio1W, bio2W)) / 2;
+      // Fondo verde para el sello
+      lastPage.drawRectangle({
+        x: pgW - qrSize - 22, y: 95,
+        width: qrSize + 8, height: 28,
+        color: rgb(0.9, 1.0, 0.9),
+        borderColor: rgb(0.1, 0.6, 0.1),
+        borderWidth: 0.5,
+      });
+      lastPage.drawText('✓ ' + bioTxt1, {
+        x: bioX - 4, y: 115, size: bioSz,
+        font: fontV, color: rgb(0.1, 0.5, 0.1)
+      });
+      lastPage.drawText(bioTxt2, {
+        x: bioX + (bio1W - bio2W)/2, y: 104, size: bioSz,
+        font: fontV, color: rgb(0.1, 0.5, 0.1)
+      });
+    }
     signedBytes = await pdfDocQR.save();
 
     // Usar provisionalHash para verificación — mismo valor que está en el QR
@@ -1107,6 +1133,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
   <div class="field"><span class="label">DNI</span><span class="value">${data.inspDni}</span></div>
   <div class="field"><span class="label">Período</span><span class="value">${data.mesNombre} ${data.year}</span></div>
   <div class="field"><span class="label">Fecha de firma</span><span class="value">${new Date(data.firmadoTs).toLocaleString('es-AR',{dateStyle:'long',timeStyle:'short'})}</span></div>
+  <div class="field"><span class="label">Método de firma</span><span class="value" style="display:flex;align-items:center;gap:8px;justify-content:flex-end">
+    ${data.firmaMetodo==='biometrico'
+      ? '<span style="background:#E8F5E9;color:#1A5E2A;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:700;border:1px solid #A5D6A7">👆 Firma biométrica verificada</span>'
+      : '<span style="background:#EBF4FB;color:#1F5FA6;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:700;border:1px solid #B5D4F4">✍️ Firma electrónica manuscrita</span>'
+    }
+  </span></div>
+  <div class="field"><span class="label">Nivel de autenticación</span><span class="value" style="text-align:right">
+    ${data.firmaMetodo==='biometrico'
+      ? '<span style="color:#1A5E2A;font-size:12px">⭐⭐ Superior — Identidad biométrica + firma electrónica</span>'
+      : '<span style="color:#1F5FA6;font-size:12px">⭐ Estándar — Firma electrónica · Ley 25.506</span>'
+    }
+  </span></div>
   <div class="field"><span class="label">Organismo</span><span class="value">Subsecretaría de Inspección del Trabajo<br>Provincia de Buenos Aires</span></div>
   <div class="hash">SHA-256: ${hash}</div>
   ` : `<div class="hash">Hash consultado: ${hash}</div>`}
