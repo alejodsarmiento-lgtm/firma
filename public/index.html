@@ -589,6 +589,12 @@ canvas.sp{display:block;width:100%;touch-action:none;cursor:crosshair}
       <div id="aViatStats"><div class="spin-dark"></div></div>
     </div>
 
+    <!-- Blockchain Bitcoin -->
+    <div class="card" style="margin-top:12px">
+      <div class="ctit">⛓ Registro en blockchain Bitcoin</div>
+      <div id="aBlockchain"><div class="spin-dark"></div></div>
+    </div>
+
   </div>
 
     <!-- TAB 5: AUTORIZACIÓN DE VIÁTICOS -->
@@ -1397,6 +1403,111 @@ async function guardarWA(delegacion){
 }
 
 
+
+// ── Blockchain Bitcoin — Analytics ─────────────────────────────
+async function cargarBlockchain(){
+  const el = document.getElementById('aBlockchain');
+  if(!el) return;
+  el.innerHTML = '<div class="spin-dark"></div>';
+  try{
+    // Obtener historial completo
+    const hist = await api('GET', '/api/admin/historial');
+    if(!hist.length){
+      el.innerHTML = '<div style="color:#aaa;font-size:13px;padding:16px;text-align:center">No hay documentos firmados todavía</div>';
+      return;
+    }
+
+    // Verificar estado OTS de cada hash (últimos 20 para no sobrecargar)
+    const recientes = [...hist].sort((a,b)=>new Date(b.firmadoTs)-new Date(a.firmadoTs)).slice(0,20);
+    const estados = await Promise.all(
+      recientes.map(h => h.hash
+        ? fetch('/api/verificar/' + h.hash + '/estado-ots').then(r=>r.json()).catch(()=>({otsDisponible:false}))
+        : Promise.resolve({otsDisponible:false})
+      )
+    );
+
+    const total     = hist.length;
+    const conOts    = estados.filter(e=>e.otsDisponible).length;
+    const sinOts    = recientes.length - conOts;
+    const pct       = recientes.length > 0 ? Math.round(conOts/recientes.length*100) : 0;
+
+    el.innerHTML = `
+      <!-- KPIs -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:16px">
+        <div style="background:#f5f7fa;border-radius:10px;padding:14px;text-align:center;border:1px solid #e0e0e0">
+          <div style="font-size:26px;font-weight:800;color:#003366">${total}</div>
+          <div style="font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-top:3px">Firmas totales</div>
+        </div>
+        <div style="background:#E8F5E9;border-radius:10px;padding:14px;text-align:center;border:1px solid #A5D6A7">
+          <div style="font-size:26px;font-weight:800;color:#1A5E2A">${conOts}</div>
+          <div style="font-size:10px;color:#2E7D32;text-transform:uppercase;letter-spacing:.05em;margin-top:3px">Ancladas en Bitcoin</div>
+        </div>
+        <div style="background:#fff3e0;border-radius:10px;padding:14px;text-align:center;border:1px solid #ffcc80">
+          <div style="font-size:26px;font-weight:800;color:#E65100">${sinOts}</div>
+          <div style="font-size:10px;color:#BF360C;text-transform:uppercase;letter-spacing:.05em;margin-top:3px">Pendientes</div>
+        </div>
+        <div style="background:#EBF4FB;border-radius:10px;padding:14px;text-align:center;border:1px solid #B5D4F4">
+          <div style="font-size:26px;font-weight:800;color:#1F5FA6">${pct}%</div>
+          <div style="font-size:10px;color:#1F5FA6;text-transform:uppercase;letter-spacing:.05em;margin-top:3px">Cobertura (últimas 20)</div>
+        </div>
+      </div>
+
+      <!-- Barra de progreso -->
+      <div style="margin-bottom:16px">
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:#888;margin-bottom:4px">
+          <span>Cobertura blockchain (últimas 20 firmas)</span>
+          <span style="font-weight:700;color:#1A5E2A">${pct}%</span>
+        </div>
+        <div style="background:#e0e0e0;border-radius:10px;height:10px;overflow:hidden">
+          <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,#1A5E2A,#27AE60);border-radius:10px;transition:width .5s"></div>
+        </div>
+      </div>
+
+      <!-- Tabla de registros recientes -->
+      <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">
+        Últimas 20 firmas — estado blockchain
+      </div>
+      <div style="overflow-x:auto">
+        <table class="ht" style="min-width:500px">
+          <thead><tr>
+            <th>Inspector</th>
+            <th>Período</th>
+            <th>Firmado</th>
+            <th style="text-align:center">Bitcoin</th>
+            <th>Hash SHA-256</th>
+          </tr></thead>
+          <tbody>
+            ${recientes.map((h,i)=>{
+              const ots = estados[i];
+              const btcBadge = ots.otsDisponible
+                ? '<span style="background:#E8F5E9;color:#1A5E2A;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;white-space:nowrap">Anclado</span>'
+                : '<span style="background:#fff3e0;color:#E65100;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;white-space:nowrap">Pendiente</span>';
+              const hashShort = h.hash ? h.hash.substring(0,12)+'...' : '—';
+              return '<tr>' +
+                '<td><b>' + (h.inspNombre||'—') + '</b></td>' +
+                '<td>' + (h.mesNombre||'') + ' ' + (h.year||'') + '</td>' +
+                '<td style="font-size:10px">' + fmtDt(new Date(h.firmadoTs)) + '</td>' +
+                '<td style="text-align:center">' + btcBadge + '</td>' +
+                '<td style="font-family:monospace;font-size:10px;color:#888">' +
+                  (h.hash ? '<a href="/verificar/' + h.hash + '" target="_blank" style="color:#1F5FA6;text-decoration:none">' + hashShort + '</a>' : '—') +
+                '</td>' +
+              '</tr>';
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Info protocolo -->
+      <div style="margin-top:14px;background:#f5f7fa;border-radius:10px;padding:12px 14px;font-size:11px;color:#666;line-height:1.7;border:1px solid #e0e0e0">
+        <b style="color:#003366">Protocolo:</b> OpenTimestamps sobre Bitcoin · Gratuito · Open source<br>
+        <b style="color:#003366">Verificación:</b> Cada hash es verificable independientemente en <a href="https://opentimestamps.org" target="_blank" style="color:#1F5FA6">opentimestamps.org</a><br>
+        <b style="color:#003366">Permanencia:</b> Una vez anclado en Bitcoin, el registro es inmutable y permanente.
+      </div>`;
+  }catch(e){
+    el.innerHTML = '<div style="color:#e53935;font-size:12px">Error al cargar datos blockchain</div>';
+  }
+}
+
 // ── Analytics de Viáticos ─────────────────────────────────────
 async function cargarViatAnalytics(desde, hasta){
   const el = document.getElementById('aViatStats');
@@ -2053,6 +2164,7 @@ document.addEventListener('click', e => {
   if(m && e.target===m) cerrarNuevoInsp();
   // Cargar analytics de viáticos
   cargarViatAnalytics(desde, hasta);
+  cargarBlockchain();
 
 });
 
