@@ -165,6 +165,20 @@ canvas.sp{display:block;width:100%;touch-action:none;cursor:crosshair}
 
 </div>
 
+  <!-- Contador público de firmas -->
+  <div id="statsPanel" style="margin-top:18px;width:100%;max-width:380px">
+    <div style="text-align:center;margin-bottom:10px">
+      <div id="statsTotal" style="font-size:32px;font-weight:800;color:#fff;letter-spacing:-.5px;line-height:1">—</div>
+      <div style="font-size:10px;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.12em;margin-top:3px">documentos firmados</div>
+    </div>
+    <div style="background:rgba(255,255,255,.07);border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,.1)">
+      <div style="padding:8px 14px;border-bottom:1px solid rgba(255,255,255,.07);font-size:9px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.1em;display:flex;justify-content:space-between">
+        <span>Hash SHA-256</span><span>Hace</span>
+      </div>
+      <div id="statsFeed" style="font-size:11px"></div>
+    </div>
+  </div>
+
 </body>
 </html></div>
 </div>
@@ -2049,6 +2063,29 @@ window.addEventListener('load',()=>{
   document.getElementById('lU').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('lP').focus();});
   document.getElementById('lP').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
   document.getElementById('lU').focus();
+
+  // Cargar stats públicas y actualizar cada 30 segundos
+  async function cargarStats(){
+    try{
+      const r = await fetch('/api/stats');
+      const d = await r.json();
+      const el = document.getElementById('statsTotal');
+      if(el) el.textContent = d.total.toLocaleString('es-AR');
+      const feed = document.getElementById('statsFeed');
+      if(feed && d.recientes?.length){
+        feed.innerHTML = d.recientes.map(h=>{
+          const diff = Math.floor((Date.now()-new Date(h.ts))/1000);
+          const hace = diff<60 ? diff+'s' : diff<3600 ? Math.floor(diff/60)+'m' : Math.floor(diff/3600)+'h';
+          return `<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 14px;border-bottom:1px solid rgba(255,255,255,.05)">
+            <span style="font-family:monospace;color:rgba(255,255,255,.55);font-size:11px">${h.hash}</span>
+            <span style="color:rgba(255,255,255,.3);font-size:10px;margin-left:8px;flex-shrink:0">${hace}</span>
+          </div>`;
+        }).join('');
+      }
+    }catch(e){}
+  }
+  cargarStats();
+  setInterval(cargarStats, 30000);
 
   // Aviso solo en Render gratuito (el servidor puede tardar en despertar)
   if(location.hostname.includes('onrender.com')){
