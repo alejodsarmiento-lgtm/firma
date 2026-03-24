@@ -386,6 +386,8 @@ app.post('/api/inspector/firmar', requireAuth, async (req, res) => {
       firmaIp:         req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'desconocida',
     });
     db.write('historial.json', hist);
+    // Registrar hash en blockchain Bitcoin (async — no bloquea la respuesta)
+    registrarEnBlockchain(finalHash, insp.id, plan.mes, plan.year).catch(()=>{});
     // Trackear firma en analytics
     const sid = req.session.analyticsSessionId;
     if (sid) {
@@ -1148,6 +1150,34 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
     }
   </span></div>
   <div class="field"><span class="label">Organismo</span><span class="value">Subsecretaría de Inspección del Trabajo<br>Provincia de Buenos Aires</span></div>
+
+  <!-- Sección hash SHA-256 -->
+  <div style="margin-top:18px;padding-top:14px;border-top:1px solid #e8e8e8">
+    <div style="font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">Huella criptográfica SHA-256</div>
+    <div style="font-family:monospace;font-size:11px;word-break:break-all;background:#f5f7fa;padding:10px 12px;border-radius:8px;color:#333;border:1px solid #e0e0e0">${data.hash || hash}</div>
+  </div>
+
+  <!-- Sección blockchain OTS -->
+  <div id="otsSection" style="margin-top:14px;padding-top:14px;border-top:1px solid #e8e8e8">
+    <div style="font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">Registro en blockchain Bitcoin</div>
+    <div id="otsStatus" style="font-size:12px;color:#888">Consultando...</div>
+    <div id="otsActions" style="display:none;margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"></div>
+  </div>
+
+  <!-- Botón ver detalle técnico -->
+  <div style="margin-top:16px;text-align:center">
+    <button onclick="document.getElementById('detalleTecnico').style.display=document.getElementById('detalleTecnico').style.display==='none'?'block':'none'" 
+      style="background:none;border:1px solid #ddd;border-radius:8px;padding:7px 16px;font-size:12px;color:#888;cursor:pointer">
+      Ver detalle técnico
+    </button>
+  </div>
+  <div id="detalleTecnico" style="display:none;margin-top:12px;background:#f5f7fa;border-radius:10px;padding:14px;font-size:11px;color:#555;line-height:1.8">
+    <div><b>Algoritmo:</b> SHA-256 (FIPS 180-4)</div>
+    <div><b>Protocolo de firma:</b> FirmaRED v1 · Ley 25.506</div>
+    <div><b>Timestamping:</b> OpenTimestamps sobre Bitcoin</div>
+    <div><b>Verificación independiente:</b> <a href="https://opentimestamps.org" target="_blank" style="color:#1F5FA6">opentimestamps.org</a></div>
+    <div style="margin-top:8px"><a href="/api/verificar/${hash}/ots" style="color:#1F5FA6;font-weight:600">⬇ Descargar prueba .ots</a></div>
+  </div>
   <div class="hash">SHA-256: ${hash}</div>
   ` : `<div class="hash">Hash consultado: ${hash}</div>`}
   <div class="footer">
@@ -1155,6 +1185,30 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
     Ministerio de Trabajo · Provincia de Buenos Aires
   </div>
 </div>
+<script>
+async function checkOTS(){
+  const hash = location.pathname.split('/').pop();
+  try{
+    const r = await fetch('/api/verificar/' + hash + '/estado-ots');
+    const d = await r.json();
+    const el = document.getElementById('otsStatus');
+    const ac = document.getElementById('otsActions');
+    if(!el) return;
+    if(d.otsDisponible){
+      el.innerHTML = '<span style="color:#1A5E2A;font-weight:700">Registrado en Bitcoin</span> · Prueba anclada, confirmación en progreso';
+      if(ac){
+        ac.style.display='flex';
+        ac.innerHTML = 
+          '<a href="/api/verificar/' + hash + '/ots" style="background:#003366;color:#fff;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none">Descargar prueba .ots</a>' +
+          '<a href="https://opentimestamps.org" target="_blank" style="background:#f5f5f5;color:#333;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;border:1px solid #ddd">Verificar online</a>';
+      }
+    } else {
+      if(el) el.textContent = 'Registro en Bitcoin pendiente de confirmacion';
+    }
+  }catch(e){}
+}
+checkOTS();
+</script>
 </body>
 </html>`;
 
@@ -1586,6 +1640,96 @@ app.get('/api/stats', (req, res) => {
     }))
     .filter(h => h.hash);
   res.json({ total, recientes });
+});
+
+
+// ═══════════════════════════════════════════════════════════════
+//  OPENTIMESTAMPS — Registro en blockchain Bitcoin
+// ═══════════════════════════════════════════════════════════════
+
+const OTS_DIR = path.join(DATA_DIR, 'ots_proofs');
+if (!fs.existsSync(OTS_DIR)) fs.mkdirSync(OTS_DIR, { recursive: true });
+
+// Registrar un hash en OpenTimestamps (async, no bloquea la firma)
+async function registrarEnBlockchain(hash, inspId, mes, year) {
+  try {
+    const https = require('https');
+    const hashBytes = Buffer.from(hash, 'hex');
+    
+    const otsData = await new Promise((resolve, reject) => {
+      const req = https.request({
+        hostname: 'a.pool.opentimestamps.org',
+        path: '/digest',
+        method: 'POST',
+        headers: {
+          'Content-Type':   'application/octet-stream',
+          'Content-Length': hashBytes.length,
+          'Accept':         'application/vnd.opentimestamps.v1',
+        },
+        timeout: 15000,
+      }, (res) => {
+        const chunks = [];
+        res.on('data', c => chunks.push(c));
+        res.on('end', () => {
+          if (res.statusCode === 200) resolve(Buffer.concat(chunks));
+          else reject(new Error(`OTS status ${res.statusCode}`));
+        });
+      });
+      req.on('error',   reject);
+      req.on('timeout', () => { req.destroy(); reject(new Error('OTS timeout')); });
+      req.write(hashBytes);
+      req.end();
+    });
+    
+    // Guardar el .ots junto al hash
+    const otsFile = path.join(OTS_DIR, hash + '.ots');
+    fs.writeFileSync(otsFile, otsData);
+    
+    // Actualizar el historial con el estado OTS
+    const hist = db.read('historial.json') || [];
+    const entry = hist.find(h => h.hash === hash);
+    if (entry) {
+      entry.otsEstado    = 'pendiente';       // pendiente hasta confirmar en Bitcoin
+      entry.otsTs        = new Date().toISOString();
+      entry.otsFile      = hash + '.ots';
+      db.write('historial.json', hist);
+    }
+    
+    console.log(`[OTS] Hash anclado: ${hash.substring(0,16)}...`);
+    return true;
+  } catch(e) {
+    console.error(`[OTS] Error al registrar ${hash.substring(0,16)}...: ${e.message}`);
+    return false;
+  }
+}
+
+// GET /api/verificar/:hash/ots — descargar el archivo de prueba OTS
+app.get('/api/verificar/:hash/ots', (req, res) => {
+  const hash = req.params.hash.replace(/[^a-f0-9]/gi, '');
+  const otsFile = path.join(OTS_DIR, hash + '.ots');
+  if (!fs.existsSync(otsFile))
+    return res.status(404).json({ error: 'Prueba OTS no disponible todavía' });
+  res.setHeader('Content-Type', 'application/vnd.opentimestamps.v1');
+  res.setHeader('Content-Disposition', `attachment; filename="${hash.substring(0,16)}.ots"`);
+  res.sendFile(otsFile);
+});
+
+// GET /api/verificar/:hash/estado-ots — verificar estado en Bitcoin
+app.get('/api/verificar/:hash/estado-ots', (req, res) => {
+  const hash = req.params.hash.replace(/[^a-f0-9]/gi, '');
+  const otsFile = path.join(OTS_DIR, hash + '.ots');
+  const hist = db.read('historial.json') || [];
+  const entry = hist.find(h => h.hash === hash);
+  
+  res.json({
+    hashDisponible: !!entry,
+    otsDisponible:  fs.existsSync(otsFile),
+    otsEstado:      entry?.otsEstado || 'no_registrado',
+    otsTs:          entry?.otsTs || null,
+    hash:           hash,
+    btcVerifier:    `https://opentimestamps.org/ver/${hash}`,
+    explorador:     `https://blockstream.info/search?q=${hash}`,
+  });
 });
 
 // ── SPA fallback ───────────────────────────────────────────────
