@@ -1506,7 +1506,11 @@ async function registrarBiometrico() {
 
   try {
     // 1. Obtener opciones del servidor
+    // Asegurar que la sesión esté activa
+    const sesion = await api('GET', '/api/me');
+    if (!sesion || sesion.error) throw new Error('Sesión no activa. Salí y volvé a entrar.');
     const opts = await api('POST', '/api/webauthn/registro-inicio');
+    if (opts.error) throw new Error(opts.error + (opts.debug ? ' — ' + JSON.stringify(opts.debug) : ''));
 
     // 2. Convertir challenge y userId a ArrayBuffer
     if (!opts.challenge) throw new Error('El servidor no devolvió un challenge válido');
@@ -1542,9 +1546,20 @@ async function registrarBiometrico() {
     }
   } catch(e) {
     msg.style.color = '#C62828';
-    msg.textContent = e.name === 'NotAllowedError'
-      ? 'Verificación cancelada o no autorizada.'
-      : 'Error: ' + (e.message || e.name);
+    if (e.name === 'NotAllowedError') {
+      msg.textContent = 'Verificación cancelada o no autorizada.';
+    } else if (e.message?.includes('challenge')) {
+      // Re-intentar con refresh de sesión
+      try {
+        await api('GET', '/api/me');
+        msg.textContent = 'Sesión refrescada. Intentá de nuevo.';
+        msg.style.color = '#F57F17';
+      } catch(e2) {
+        msg.textContent = 'Sesión expirada. Salí y volvé a entrar.';
+      }
+    } else {
+      msg.textContent = 'Error: ' + (e.message || e.name);
+    }
   }
 }
 
