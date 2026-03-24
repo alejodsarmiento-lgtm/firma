@@ -42,6 +42,144 @@ const db = {
 
 // ── Middlewares ────────────────────────────────────────────────
 app.use(express.json({ limit: '10mb' }));
+
+// ═══════════════════════════════════════════════════════════════
+//  PILAR 1 — CIBERSEGURIDAD COMPLETA
+//  Rate limiting · Brute force · Security headers · Audit log
+// ═══════════════════════════════════════════════════════════════
+
+// ── Security Headers (todas las respuestas) ───────────────────
+app.use((req, res, next) => {
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  res.setHeader('Content-Security-Policy',
+    "default-src 'self'; " +
+    "script-src 'self' 'unsafe-inline'; " +
+    "style-src 'self' 'unsafe-inline'; " +
+    "img-src 'self' data: blob:; " +
+    "connect-src 'self'; " +
+    "frame-ancestors 'none';"
+  );
+  if (req.secure) {
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+  }
+  next();
+});
+
+// ── IP helper ─────────────────────────────────────────────────
+function getIP(req) {
+  return req.headers['x-forwarded-for']?.split(',')[0].trim()
+    || req.socket.remoteAddress || 'unknown';
+}
+
+// ── Rate Limiting ─────────────────────────────────────────────
+const _rateLimits = new Map();
+const _blockedIPs  = new Map();
+
+function rateLimit(maxReqs, windowMs, blockMs = 0) {
+  return (req, res, next) => {
+    const ip  = getIP(req);
+    const now = Date.now();
+    if (_blockedIPs.has(ip)) {
+      const until = _blockedIPs.get(ip);
+      if (now < until) {
+        return res.status(429).json({ error: 'Demasiados intentos. Esperá ' + Math.ceil((until-now)/1000) + ' segundos.' });
+      }
+      _blockedIPs.delete(ip);
+    }
+    const key  = ip + ':' + req.path;
+    const reqs = (_rateLimits.get(key) || []).filter(t => now - t < windowMs);
+    reqs.push(now);
+    _rateLimits.set(key, reqs);
+    if (reqs.length > maxReqs) {
+      if (blockMs > 0) _blockedIPs.set(ip, now + blockMs);
+      logSecurity('RATE_LIMIT', ip, req.path, reqs.length + ' reqs en ' + (windowMs/1000) + 's');
+      return res.status(429).json({ error: 'Demasiadas solicitudes. Intentá en unos minutos.' });
+    }
+    next();
+  };
+}
+
+setInterval(() => {
+  const now = Date.now();
+  for (const [k, v] of _rateLimits) {
+    const f = v.filter(t => now - t < 600000);
+    if (!f.length) _rateLimits.delete(k); else _rateLimits.set(k, f);
+  }
+  for (const [ip, until] of _blockedIPs) { if (now > until) _blockedIPs.delete(ip); }
+}, 300000);
+
+// ── Brute Force en Login ──────────────────────────────────────
+const _loginAttempts = new Map();
+
+function checkBruteForce(req, res, next) {
+  const ip       = getIP(req);
+  const username = (req.body?.username || '').toLowerCase();
+  const key      = ip + ':' + username;
+  const now      = Date.now();
+  const attempts = (_loginAttempts.get(key) || []).filter(t => now - t < 15*60*1000);
+  if (attempts.length >= 8) {
+    logSecurity('BRUTE_FORCE', ip, '/api/login', attempts.length + ' intentos para "' + username + '"');
+    return res.status(429).json({ error: 'Cuenta bloqueada temporalmente por múltiples intentos fallidos. Intentá en 15 minutos.', bloqueado: true });
+  }
+  req._bruteKey = key; req._bruteAttempts = attempts;
+  next();
+}
+
+function recordLoginFail(req) {
+  if (!req._bruteKey) return;
+  req._bruteAttempts.push(Date.now());
+  _loginAttempts.set(req._bruteKey, req._bruteAttempts);
+  logSecurity('LOGIN_FAIL', getIP(req), '/api/login', 'Usuario: "' + (req.body?.username||'') + '"');
+}
+
+function clearLoginAttempts(req) { if (req._bruteKey) _loginAttempts.delete(req._bruteKey); }
+
+// ── Security Audit Log ────────────────────────────────────────
+const SEC_LOG_FILE = path.join(DATA_DIR, 'security_log.json');
+if (!fs.existsSync(SEC_LOG_FILE)) fs.writeFileSync(SEC_LOG_FILE, '[]');
+
+function logSecurity(tipo, ip, endpoint, detalle) {
+  try {
+    const log = JSON.parse(fs.readFileSync(SEC_LOG_FILE, 'utf8'));
+    log.unshift({ tipo, ip, endpoint, detalle: detalle || '', ts: new Date().toISOString() });
+    if (log.length > 500) log.splice(500);
+    fs.writeFileSync(SEC_LOG_FILE, JSON.stringify(log));
+  } catch(e) {}
+  console.warn('[SEC]', tipo, '|', ip, '|', endpoint, '|', detalle || '');
+}
+
+// ── Endpoint auditoría de seguridad ──────────────────────────
+app.get('/api/admin/security-log', requireAdmin, (req, res) => {
+  try {
+    const log = JSON.parse(fs.readFileSync(SEC_LOG_FILE, 'utf8'));
+    const tipos = {};
+    log.forEach(e => { tipos[e.tipo] = (tipos[e.tipo]||0)+1; });
+    res.json({
+      log:         log.slice(0, 200),
+      resumen:     tipos,
+      ipsBlockedActualmente: [..._blockedIPs.entries()].map(([ip, until]) => ({
+        ip, bloqueadaHasta: new Date(until).toISOString(),
+        segundosRestantes: Math.ceil((until-Date.now())/1000)
+      })),
+      intentosFallidos: [..._loginAttempts.entries()]
+        .map(([k,v])=>({clave:k, intentos:v.length}))
+        .filter(x=>x.intentos>2)
+        .sort((a,b)=>b.intentos-a.intentos),
+    });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── Rate limits por ruta ───────────────────────────────────────
+app.use('/api/login',   rateLimit(10, 60000, 120000)); // 10/min → bloqueo 2min
+app.use('/api/',        rateLimit(300, 60000));          // 300/min global API  
+app.use('/verificar/',  rateLimit(120, 60000));           // 120/min verificaciones
+app.use('/solicitud',   rateLimit(30,  60000));            // 30/min formulario
+
+
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.static(PUBLIC_DIR));
 app.use(session({
@@ -173,11 +311,13 @@ function cap(s) {
 // ═══════════════════════════════════════════════════════════════
 
 // POST /api/login
-app.post('/api/login', (req, res) => {
+app.post('/api/login', checkBruteForce, (req, res) => {
   const { username, password } = req.body;
   if (!username || !password) return res.status(400).json({ error: 'Campos requeridos' });
   const user = findUser(username.trim(), password);
-  if (!user) return res.status(401).json({ error: 'Usuario o contraseña incorrectos' });
+  if (!user) recordLoginFail(req);
+  return res.status(401).json({ error: 'Usuario o contraseña incorrectos' });
+  clearLoginAttempts(req);
   req.session.user = {
     id:       user.id || user.username,
     username: user.username,
@@ -1731,6 +1871,7 @@ app.get('/api/verificar/:hash/estado-ots', (req, res) => {
     explorador:     `https://blockstream.info/search?q=${hash}`,
   });
 });
+
 
 // ── SPA fallback ───────────────────────────────────────────────
 app.get('*', (req, res) => {
