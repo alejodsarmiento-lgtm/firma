@@ -17,7 +17,7 @@ const QRCode     = require('qrcode');
 
 const app  = express();
 const PORT    = process.env.PORT || 3000;
-const BASE_URL = process.env.BASE_URL || 'https://srv1517690.hstgr.cloud';
+const BASE_URL = process.env.BASE_URL || 'https://firmared.com';
 
 // ── Paths ──────────────────────────────────────────────────────
 const DATA_DIR      = path.join(__dirname, 'data');
@@ -1471,7 +1471,7 @@ app.get('*', (req, res) => {
 
 // ── Inicio ─────────────────────────────────────────────────────
 // ── Inicio del servidor: HTTPS si hay certificado, HTTP como fallback ──
-const CERT_PATH = '/etc/letsencrypt/live/srv1517690.hstgr.cloud';
+const CERT_PATH = '/etc/letsencrypt/live/firmared.com';
 const certExists = (() => { try { return require('fs').existsSync(CERT_PATH+'/fullchain.pem'); } catch(e){return false;} })();
 
 if (certExists) {
@@ -1485,7 +1485,7 @@ if (certExists) {
   https.createServer(sslOptions, app).listen(HTTPS_PORT, () => {
     console.log('\n╔═══════════════════════════════════════════════════╗');
     console.log('║   FirmaRED — Subsecretaría de Inspección PBA      ║');
-    console.log('║   Servidor HTTPS en https://srv1517690.hstgr.cloud ║');
+    console.log('║   Servidor HTTPS en https://firmared.com           ║');
     console.log('╚═══════════════════════════════════════════════════╝\n');
   });
   // Redirect HTTP → HTTPS
