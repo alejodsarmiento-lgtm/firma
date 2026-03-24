@@ -154,23 +154,23 @@ function logSecurity(tipo, ip, endpoint, detalle) {
 
 // ── Endpoint auditoría de seguridad ──────────────────────────
 app.get('/api/admin/security-log', requireAdmin, (req, res) => {
-  try {
-    const log = JSON.parse(fs.readFileSync(SEC_LOG_FILE, 'utf8'));
-    const tipos = {};
-    log.forEach(e => { tipos[e.tipo] = (tipos[e.tipo]||0)+1; });
-    res.json({
-      log:         log.slice(0, 200),
-      resumen:     tipos,
-      ipsBlockedActualmente: [..._blockedIPs.entries()].map(([ip, until]) => ({
-        ip, bloqueadaHasta: new Date(until).toISOString(),
-        segundosRestantes: Math.ceil((until-Date.now())/1000)
-      })),
-      intentosFallidos: [..._loginAttempts.entries()]
-        .map(([k,v])=>({clave:k, intentos:v.length}))
-        .filter(x=>x.intentos>2)
-        .sort((a,b)=>b.intentos-a.intentos),
-    });
-  } catch(e) { res.status(500).json({ error: e.message }); }
+  let log = [];
+  try { log = JSON.parse(fs.readFileSync(SEC_LOG_FILE, 'utf8')); } catch(e) { log = []; }
+  if (!Array.isArray(log)) log = [];
+  const tipos = {};
+  log.forEach(e => { tipos[e.tipo] = (tipos[e.tipo]||0)+1; });
+  res.json({
+    log:         log.slice(0, 200),
+    resumen:     tipos,
+    ipsBlockedActualmente: [..._blockedIPs.entries()].map(([ip, until]) => ({
+      ip, bloqueadaHasta: new Date(until).toISOString(),
+      segundosRestantes: Math.ceil((until-Date.now())/1000)
+    })),
+    intentosFallidos: [..._loginAttempts.entries()]
+      .map(([k,v])=>({clave:k, intentos:v.length}))
+      .filter(x=>x.intentos>2)
+      .sort((a,b)=>b.intentos-a.intentos),
+  });
 });
 
 // ── Rate limits por ruta ───────────────────────────────────────
