@@ -560,6 +560,17 @@ canvas.sp{display:block;width:100%;touch-action:none;cursor:crosshair}
       <div id="aUltimas" style="overflow-x:auto"></div>
     </div>
 
+    <!-- Auditoría Biométrica -->
+    <div class="card" style="margin-top:12px">
+      <div class="ctit" onclick="toggleBioAudit()" style="cursor:pointer;user-select:none">
+        👆 Auditoría de firma biométrica
+        <span id="bioAuditArrow" style="margin-left:auto;font-size:12px">▼</span>
+      </div>
+      <div id="bioAuditPanel" style="display:none;margin-top:10px">
+        <div id="bioAuditData"><div class="spin-dark"></div></div>
+      </div>
+    </div>
+
     <!-- Analytics Viáticos -->
     <div class="card" style="margin-top:12px">
       <div class="ctit">📋 Solicitudes de viáticos por delegación</div>
@@ -796,7 +807,7 @@ async function renderIHist(){
       <div class="hi-i">📄</div>
       <div style="flex:1">
         <div class="hi-m">${h.mesNombre} ${h.year}</div>
-        <div class="hi-s">Firmado el ${fmtDt(new Date(h.firmadoTs))}</div>
+        <div class="hi-s">Firmado el ${fmtDt(new Date(h.firmadoTs))} ${h.firmaMetodo==='biometrico'?'<span style="background:#E8F5E9;color:#1A5E2A;font-size:9px;padding:1px 5px;border-radius:8px;font-weight:700;margin-left:4px">👆 BIOMÉTRICO</span>':'' }</div>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">
         <button onclick="verPdfHistorial('/api/inspector/descargar/${h.signedFile}','viatico_${h.mesNombre}_${h.year}.pdf')" class="bdg" style="cursor:pointer;border:none;background:#003366;color:#fff;padding:6px 14px;border-radius:8px;font-size:12px">👁 Ver</button>
@@ -1043,7 +1054,7 @@ async function renderAdminHist(){
       <td><b>${h.inspNombre}</b></td>
       <td style="font-size:11px">${h.inspDni} · Leg. ${h.inspLegajo}</td>
       <td><b>${h.mesNombre}</b> ${h.year}</td>
-      <td>${fmtDt(new Date(h.firmadoTs))}</td>
+      <td>${fmtDt(new Date(h.firmadoTs))} ${h.firmaMetodo==='biometrico'?'<span style="background:#E8F5E9;color:#1A5E2A;font-size:9px;padding:1px 5px;border-radius:8px;font-weight:700">👆</span>':''}</td>
       <td><a href="/api/admin/descargar/${h.signedFile}" class="bdg" style="text-decoration:none" download>⬇️</a></td>
     </tr>`).join('')+'</tbody></table>';
 }
@@ -1210,6 +1221,60 @@ async function accionViat(id, accion){
   }catch(e){alert('Error: '+e.message);}
 }
 
+
+
+// ── Auditoría Biométrica ────────────────────────────────────────
+function toggleBioAudit(){
+  const p=document.getElementById('bioAuditPanel');
+  const a=document.getElementById('bioAuditArrow');
+  const open=p.style.display==='none';
+  p.style.display=open?'block':'none';
+  a.textContent=open?'▲':'▼';
+  if(open) cargarBioAudit();
+}
+
+async function cargarBioAudit(){
+  const el=document.getElementById('bioAuditData');
+  el.innerHTML='<div class="spin-dark"></div>';
+  try{
+    const data = await api('GET','/api/admin/biometrico/auditoria');
+    if(!data.length){
+      el.innerHTML='<div style="color:#aaa;font-size:13px;padding:12px 0">Ningún inspector ha registrado biométrico todavía.</div>';
+      return;
+    }
+    const totalBio = data.reduce((a,d)=>a+(d.firmasConBiometrico||0),0);
+    el.innerHTML=`
+      <div style="font-size:11px;color:#888;margin-bottom:12px">
+        ${data.length} inspectores con biométrico registrado · ${totalBio} firmas biométricas totales
+      </div>
+      <table class="ht" style="min-width:600px">
+        <thead><tr>
+          <th>Inspector</th>
+          <th>Dispositivo</th>
+          <th>Registrado</th>
+          <th>Usos totales</th>
+          <th>Firmas con 👆</th>
+          <th>Último uso</th>
+        </tr></thead>
+        <tbody>
+          ${data.map(d=>`<tr>
+            <td><b>${d.nombre||d.username}</b><br><span style="font-size:10px;color:#aaa">${d.username}</span></td>
+            <td style="font-size:11px">${d.dispositivo?.substring(0,40)||'—'}</td>
+            <td style="font-size:11px">${d.registradoTs?fmtDt(new Date(d.registradoTs)):'—'}</td>
+            <td style="text-align:center;font-weight:700">${d.usosTotales||0}</td>
+            <td style="text-align:center">
+              <span style="background:#E8F5E9;color:#1A5E2A;padding:2px 8px;border-radius:10px;font-weight:700;font-size:12px">
+                👆 ${d.firmasConBiometrico||0}
+              </span>
+            </td>
+            <td style="font-size:11px">${d.ultimoUsoTs?fmtDt(new Date(d.ultimoUsoTs)):'—'}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>`;
+  }catch(e){
+    el.innerHTML='<div style="color:#e53935;font-size:12px">Error al cargar auditoría</div>';
+  }
+}
 
 // ── Archivar período ────────────────────────────────────────────
 
