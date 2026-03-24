@@ -275,10 +275,10 @@ canvas.sp{display:block;width:100%;touch-action:none;cursor:crosshair}
         </div>
         <div style="background:#fff;border-radius:8px;padding:10px 12px;margin-bottom:12px;border:1px solid #C8E6C9">
           <div style="font-size:11px;color:#333;line-height:1.7">
-            <div>✅ Identidad verificada biométricamente</div>
-            <div>✅ Sello adicional de autenticidad en el PDF</div>
-            <div>✅ Página de verificación muestra nivel superior</div>
-            <div>✅ Mayor peso jurídico e institucional</div>
+            <div>Verificacion adicional a tu firma manuscrita</div>
+            <div>Identidad confirmada por biometria del dispositivo</div>
+            <div>Sello adicional de autenticidad en el PDF</div>
+            <div>Nivel de autenticacion superior (Ley 25.506)</div>
           </div>
         </div>
         <button onclick="firmarConBiometrico()" style="width:100%;padding:13px;background:#1A5E2A;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:.02em">👆 Firmar con huella / Face ID</button>
@@ -1482,16 +1482,13 @@ async function checkBioSupport() {
 // Mostrar opciones biométricas según estado
 async function initBioUI() {
   const soporta = await checkBioSupport();
-  if (!soporta) return; // dispositivo sin biométrico
-
-  // Verificar si ya tiene biométrico registrado
+  if (!soporta) return;
   try {
     const r = await api('GET', '/api/webauthn/estado');
-    // Mostrar botón de registro en swCard
+    // Mostrar botón de registro si no tiene biométrico
     const regCard = document.getElementById('bioRegCard');
     if (regCard && !r.tieneBiometrico) regCard.style.display = 'block';
-
-    // Mostrar opción de firma biométrica en fpPanel
+    // Mostrar opción de firma biométrica si tiene biométrico (complementaria a la manuscrita)
     const firmaCard = document.getElementById('bioFirmaCard');
     if (firmaCard && r.tieneBiometrico) firmaCard.style.display = 'block';
   } catch(e) {}
