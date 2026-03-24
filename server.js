@@ -1570,6 +1570,24 @@ app.get('/api/admin/biometrico/auditoria', requireAdmin, (req, res) => {
   res.json(result);
 });
 
+
+// GET /api/stats — estadísticas públicas (sin auth)
+app.get('/api/stats', (req, res) => {
+  const hist = db.read('historial.json') || [];
+  const total = hist.length;
+  // Últimas 10 firmas — solo hash y timestamp, sin datos personales
+  const recientes = [...hist]
+    .sort((a,b) => new Date(b.firmadoTs) - new Date(a.firmadoTs))
+    .slice(0, 10)
+    .map(h => ({
+      hash:  h.hash ? h.hash.substring(0, 16) + '...' : null,
+      ts:    h.firmadoTs,
+      bio:   h.firmaMetodo === 'biometrico',
+    }))
+    .filter(h => h.hash);
+  res.json({ total, recientes });
+});
+
 // ── SPA fallback ───────────────────────────────────────────────
 app.get('*', (req, res) => {
   res.sendFile(path.join(PUBLIC_DIR, 'index.html'));
