@@ -17,7 +17,7 @@ const QRCode     = require('qrcode');
 
 const app  = express();
 const PORT    = process.env.PORT || 3000;
-const BASE_URL = process.env.BASE_URL || `http://147.93.69.57${PORT==80?'':':'+PORT}`;
+const BASE_URL = process.env.BASE_URL || 'https://srv1517690.hstgr.cloud';
 
 // ── Paths ──────────────────────────────────────────────────────
 const DATA_DIR      = path.join(__dirname, 'data');
@@ -1470,17 +1470,34 @@ app.get('*', (req, res) => {
 });
 
 // ── Inicio ─────────────────────────────────────────────────────
-app.listen(PORT, () => {
-  console.log(`
-╔═══════════════════════════════════════════════════╗
-║   FirmaRED — Subsecretaría de Inspección PBA      ║
-║   Servidor iniciado en http://localhost:${PORT}      ║
-╚═══════════════════════════════════════════════════╝
+// ── Inicio del servidor: HTTPS si hay certificado, HTTP como fallback ──
+const CERT_PATH = '/etc/letsencrypt/live/srv1517690.hstgr.cloud';
+const certExists = (() => { try { return require('fs').existsSync(CERT_PATH+'/fullchain.pem'); } catch(e){return false;} })();
 
-  Admin:    usuario "admin"     clave "admin2026"
-  Directora: usuario "directora" clave "dir2026"
-  Asesoría: usuario "asesoria"  clave "ases2026"
-  Inspectores: usuario = apellido_completo+iniciales_nombre / clave = N° legajo
-  Ejemplo: Angulo Estrada Yamila → anguloestraday / 601806
-`);
-});
+if (certExists) {
+  const https = require('https');
+  const HTTPS_PORT = 443;
+  const sslOptions = {
+    cert: fs.readFileSync(CERT_PATH + '/fullchain.pem'),
+    key:  fs.readFileSync(CERT_PATH + '/privkey.pem'),
+  };
+  // Servidor HTTPS principal
+  https.createServer(sslOptions, app).listen(HTTPS_PORT, () => {
+    console.log('\n╔═══════════════════════════════════════════════════╗');
+    console.log('║   FirmaRED — Subsecretaría de Inspección PBA      ║');
+    console.log('║   Servidor HTTPS en https://srv1517690.hstgr.cloud ║');
+    console.log('╚═══════════════════════════════════════════════════╝\n');
+  });
+  // Redirect HTTP → HTTPS
+  const http = require('http');
+  http.createServer((req, res) => {
+    res.writeHead(301, { Location: 'https://' + req.headers.host + req.url });
+    res.end();
+  }).listen(80, () => console.log('  HTTP→HTTPS redirect activo en puerto 80'));
+} else {
+  // Fallback HTTP (desarrollo local)
+  app.listen(PORT, () => {
+    console.log('\n  FirmaRED corriendo en http://localhost:' + PORT);
+    console.log('  ⚠️  Sin SSL — WebAuthn solo funciona en HTTPS\n');
+  });
+}
