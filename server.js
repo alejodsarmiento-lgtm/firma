@@ -274,7 +274,9 @@ app.post('/api/inspector/firmar', requireAuth, async (req, res) => {
     if (planIdx < 0) return res.status(400).json({ error: 'Planilla no encontrada o ya firmada' });
     const plan = planillas[planIdx];
     const insp = getInspector(req.session.user.inspId);
-    if (!insp || !insp.firma) return res.status(400).json({ error: 'No tenés firma registrada' });
+    const esBiometrico = req.body.bioVerificado === true;
+    if (!insp) return res.status(400).json({ error: 'Inspector no encontrado' });
+    if (!insp.firma) return res.status(400).json({ error: 'No tenés firma registrada' });
     // Leer PDF original
     const pdfPath = path.join(PLANILLAS_DIR, plan.filename);
     if (!fs.existsSync(pdfPath)) {
@@ -331,8 +333,8 @@ app.post('/api/inspector/firmar', requireAuth, async (req, res) => {
         borderColor: rgb(0.1, 0.6, 0.1),
         borderWidth: 0.5,
       });
-      lastPage.drawText('✓ ' + bioTxt1, {
-        x: bioX - 4, y: 115, size: bioSz,
+      lastPage.drawText('>> ' + bioTxt1, {
+        x: bioX - 6, y: 115, size: bioSz,
         font: fontV, color: rgb(0.1, 0.5, 0.1)
       });
       lastPage.drawText(bioTxt2, {
