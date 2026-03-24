@@ -328,19 +328,34 @@ app.post('/api/inspector/firmar', requireAuth, async (req, res) => {
     db.write('planillas_asignadas.json', planillas);
     // Guardar en historial
     const hist = db.read('historial.json');
+    // Registrar si la firma fue verificada biométricamente
+    const bioVerif = req.body.bioVerificado === true;
+    if (bioVerif) {
+      const credsB = waReadCreds();
+      if (credsB[insp.username]) {
+        credsB[insp.username].forEach(c => {
+          c.firmasConBiometrico = (c.firmasConBiometrico || 0) + 1;
+          c.ultimaFirmaBioTs = now.toISOString();
+        });
+        waWriteCreds(credsB);
+      }
+    }
+
     hist.push({
-      id:         `h${Date.now()}`,
-      inspId:     insp.id,
-      inspNombre: cap(insp.apellido) + ', ' + cap(insp.nombre),
-      inspDni:    insp.dni,
-      inspLegajo: insp.legajo,
-      mes:        plan.mes,
-      mesNombre:  MESES[plan.mes],
-      year:       plan.year,
-      firmadoTs:  now.toISOString(),
-      signedFile: signedName,
-      hash:       finalHash,
-      verifyUrl:  `${BASE_URL}/verificar/${finalHash}`
+      id:              `h${Date.now()}`,
+      inspId:          insp.id,
+      inspNombre:      cap(insp.apellido) + ', ' + cap(insp.nombre),
+      inspDni:         insp.dni,
+      inspLegajo:      insp.legajo,
+      mes:             plan.mes,
+      mesNombre:       MESES[plan.mes],
+      year:            plan.year,
+      firmadoTs:       now.toISOString(),
+      signedFile:      signedName,
+      hash:            finalHash,
+      verifyUrl:       `${BASE_URL}/verificar/${finalHash}`,
+      firmaMetodo:     bioVerif ? 'biometrico' : 'manuscrita',
+      firmaIp:         req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'desconocida',
     });
     db.write('historial.json', hist);
     // Trackear firma en analytics
@@ -1383,10 +1398,14 @@ app.post('/api/webauthn/registro-verificar', requireAuth, (req, res) => {
   if (!creds[user].find(c => c.credentialId === id)) {
     creds[user].push({
       credentialId:       id,
-      publicKeyRaw:       waResp.attestationObject,  // guardar raw para verificación
+      publicKeyRaw:       waResp.attestationObject,
       signCount:          0,
+      usos:               0,
       registradoTs:       new Date().toISOString(),
+      ultimoUsoTs:        null,
       dispositivo:        req.headers['user-agent']?.substring(0,80) || 'desconocido',
+      ip:                 req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'desconocida',
+      firmasConBiometrico: 0,
     });
     waWriteCreds(creds);
   }
@@ -1436,6 +1455,17 @@ app.post('/api/webauthn/auth-verificar', requireAuth, (req, res) => {
   // La verificación criptográfica completa de la firma ECDSA requiere HTTPS (rpIdHash)
   // En HTTP se valida el challenge y el tipo — suficiente para el entorno de desarrollo
   // En producción con HTTPS se agrega verificación de rpIdHash y firma completa
+  // Actualizar contadores de uso del biométrico
+  const credsUpd = waReadCreds();
+  if (credsUpd[user]) {
+    const credUsada = credsUpd[user].find(c => c.credentialId === req.body.id);
+    if (credUsada) {
+      credUsada.usos = (credUsada.usos || 0) + 1;
+      credUsada.ultimoUsoTs = new Date().toISOString();
+      credUsada.ultimaIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'desconocida';
+      waWriteCreds(credsUpd);
+    }
+  }
   res.json({ ok: true, verificado: true, usuario: user });
 });
 
@@ -1462,6 +1492,33 @@ app.delete('/api/webauthn/credencial', requireAuth, (req, res) => {
   creds[user] = [];
   waWriteCreds(creds);
   res.json({ ok: true });
+});
+
+
+// GET /api/admin/biometrico/auditoria — auditoría de uso biométrico
+app.get('/api/admin/biometrico/auditoria', requireAdmin, (req, res) => {
+  const creds = waReadCreds();
+  const data  = db.read('usuarios.json');
+  const result = [];
+  Object.entries(creds).forEach(([username, credList]) => {
+    const insp = (data.inspectores||[]).find(i => i.username === username);
+    credList.forEach(c => {
+      result.push({
+        username,
+        nombre:              insp ? (insp.nombre || insp.apellido) : username,
+        credentialId:        c.credentialId?.substring(0,20) + '...',
+        registradoTs:        c.registradoTs,
+        dispositivo:         c.dispositivo,
+        ipRegistro:          c.ip,
+        usosTotales:         c.usos || 0,
+        firmasConBiometrico: c.firmasConBiometrico || 0,
+        ultimoUsoTs:         c.ultimoUsoTs,
+        ultimaFirmaBioTs:    c.ultimaFirmaBioTs,
+      });
+    });
+  });
+  result.sort((a,b) => (b.firmasConBiometrico||0) - (a.firmasConBiometrico||0));
+  res.json(result);
 });
 
 // ── SPA fallback ───────────────────────────────────────────────
