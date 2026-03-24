@@ -1389,17 +1389,9 @@ function waWriteCreds(data) {
 // ── 1. Inicio de registro ──────────────────────────────────────
 app.post('/api/webauthn/registro-inicio', (req, res) => {
   // Debug: log session state
-  const user = req.session?.user;
-  if (!user) {
-    return res.status(401).json({ 
-      error: 'Sesión no encontrada', 
-      debug: { 
-        sessionId: req.sessionID,
-        hasCookie: !!req.headers.cookie,
-        cookieHeader: req.headers.cookie?.substring(0,50)
-      }
-    });
-  }
+  const userObj = req.session?.user;
+  if (!userObj) return res.status(401).json({ error: 'Sesión no encontrada' });
+  const user = userObj.username || userObj.id || String(userObj);
   const userId = Buffer.from(user).toString('base64url');
   const challenge = nodeCrypto.randomBytes(32).toString('base64url');
   WA_CHALLENGES.set(user + '_reg', { challenge, ts: Date.now() });
@@ -1424,7 +1416,8 @@ app.post('/api/webauthn/registro-inicio', (req, res) => {
 
 // ── 2. Verificación de registro ────────────────────────────────
 app.post('/api/webauthn/registro-verificar', requireAuth, (req, res) => {
-  const user     = req.session.user;
+  const userObj2  = req.session.user;
+  const user     = userObj2?.username || userObj2?.id || String(userObj2);
   const stored   = WA_CHALLENGES.get(user + '_reg');
   if (!stored || Date.now() - stored.ts > 120000)
     return res.status(400).json({ error: 'Desafío expirado' });
@@ -1463,8 +1456,9 @@ app.post('/api/webauthn/registro-verificar', requireAuth, (req, res) => {
 
 // ── 3. Inicio de autenticación ─────────────────────────────────
 app.post('/api/webauthn/auth-inicio', (req, res) => {
-  const user = req.session?.user;
-  if (!user) return res.status(401).json({ error: 'Sesión no encontrada en auth-inicio' });
+  const userObjA = req.session?.user;
+  if (!userObjA) return res.status(401).json({ error: 'Sesión no encontrada' });
+  const user = userObjA.username || userObjA.id || String(userObjA);
   const creds = waReadCreds();
   const userCreds = creds[user] || [];
   if (!userCreds.length)
@@ -1488,7 +1482,8 @@ app.post('/api/webauthn/auth-inicio', (req, res) => {
 
 // ── 4. Verificación de autenticación ──────────────────────────
 app.post('/api/webauthn/auth-verificar', requireAuth, (req, res) => {
-  const user   = req.session.user;
+  const userObjV = req.session.user;
+  const user   = userObjV?.username || userObjV?.id || String(userObjV);
   const stored = WA_CHALLENGES.get(user + '_auth');
   if (!stored || Date.now() - stored.ts > 120000)
     return res.status(400).json({ error: 'Desafío expirado' });
@@ -1521,7 +1516,8 @@ app.post('/api/webauthn/auth-verificar', requireAuth, (req, res) => {
 
 // ── 5. Estado de biométrico del usuario ───────────────────────
 app.get('/api/webauthn/estado', requireAuth, (req, res) => {
-  const user  = req.session.user;
+  const userObjE = req.session.user;
+  const user  = userObjE?.username || userObjE?.id || String(userObjE);
   const creds = waReadCreds();
   const userCreds = creds[user] || [];
   res.json({
@@ -1537,7 +1533,8 @@ app.get('/api/webauthn/estado', requireAuth, (req, res) => {
 
 // ── 6. Eliminar biométrico ─────────────────────────────────────
 app.delete('/api/webauthn/credencial', requireAuth, (req, res) => {
-  const user  = req.session.user;
+  const userObjD = req.session.user;
+  const user  = userObjD?.username || userObjD?.id || String(userObjD);
   const creds = waReadCreds();
   creds[user] = [];
   waWriteCreds(creds);
