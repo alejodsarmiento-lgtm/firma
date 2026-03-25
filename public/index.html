@@ -1690,29 +1690,41 @@ async function cargarBlockchain(){
   if(!el) return;
   el.innerHTML = '<div class="spin-dark"></div>';
   try{
-    // Obtener historial completo
     const hist = await api('GET', '/api/admin/historial');
-    if(!hist.length){
+    if(!Array.isArray(hist) || !hist.length){
       el.innerHTML = '<div style="color:#aaa;font-size:13px;padding:16px;text-align:center">No hay documentos firmados todavía</div>';
       return;
     }
 
-    // Verificar estado OTS de cada hash (últimos 20 para no sobrecargar)
-    const recientes = [...hist].sort((a,b)=>new Date(b.firmadoTs)-new Date(a.firmadoTs)).slice(0,20);
-    const estados = await Promise.all(
-      recientes.map(h => h.hash
-        ? fetch('/api/verificar/' + h.hash + '/estado-ots').then(r=>r.json()).catch(()=>({otsDisponible:false}))
-        : Promise.resolve({otsDisponible:false})
-      )
-    );
+    const recientes = [...hist]
+      .sort((a,b)=>new Date(b.firmadoTs)-new Date(a.firmadoTs))
+      .slice(0,20);
 
-    const total     = hist.length;
-    const conOts    = estados.filter(e=>e.otsDisponible).length;
-    const sinOts    = recientes.length - conOts;
-    const pct       = recientes.length > 0 ? Math.round(conOts/recientes.length*100) : 0;
+    // Verificar estado OTS — con timeout individual por request
+    const fetchOts = (hash) => {
+      if (!hash) return Promise.resolve({otsDisponible:false});
+      return Promise.race([
+        fetch('/api/verificar/' + hash + '/estado-ots')
+          .then(r => r.ok ? r.json() : {otsDisponible:false})
+          .catch(() => ({otsDisponible:false})),
+        new Promise(res => setTimeout(() => res({otsDisponible:false}), 3000))
+      ]);
+    };
+
+    // Verificar de a 5 para no saturar el rate limiter
+    const estados = [];
+    for(let i = 0; i < recientes.length; i += 5){
+      const batch = recientes.slice(i, i+5);
+      const results = await Promise.all(batch.map(h => fetchOts(h.hash)));
+      estados.push(...results);
+    }
+
+    const total  = hist.length;
+    const conOts = estados.filter(e=>e.otsDisponible).length;
+    const sinOts = recientes.length - conOts;
+    const pct    = recientes.length > 0 ? Math.round(conOts/recientes.length*100) : 0;
 
     el.innerHTML = `
-      <!-- KPIs -->
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:16px">
         <div style="background:#f5f7fa;border-radius:10px;padding:14px;text-align:center;border:1px solid #e0e0e0">
           <div style="font-size:26px;font-weight:800;color:#003366">${total}</div>
@@ -1728,11 +1740,10 @@ async function cargarBlockchain(){
         </div>
         <div style="background:#EBF4FB;border-radius:10px;padding:14px;text-align:center;border:1px solid #B5D4F4">
           <div style="font-size:26px;font-weight:800;color:#1F5FA6">${pct}%</div>
-          <div style="font-size:10px;color:#1F5FA6;text-transform:uppercase;letter-spacing:.05em;margin-top:3px">Cobertura (últimas 20)</div>
+          <div style="font-size:10px;color:#1F5FA6;text-transform:uppercase;letter-spacing:.05em;margin-top:3px">Cobertura</div>
         </div>
       </div>
 
-      <!-- Barra de progreso -->
       <div style="margin-bottom:16px">
         <div style="display:flex;justify-content:space-between;font-size:11px;color:#888;margin-bottom:4px">
           <span>Cobertura blockchain (últimas 20 firmas)</span>
@@ -1743,48 +1754,42 @@ async function cargarBlockchain(){
         </div>
       </div>
 
-      <!-- Tabla de registros recientes -->
       <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">
-        Últimas 20 firmas — estado blockchain
+        Últimas ${recientes.length} firmas — estado blockchain
       </div>
       <div style="overflow-x:auto">
         <table class="ht" style="min-width:500px">
           <thead><tr>
-            <th>Inspector</th>
-            <th>Período</th>
-            <th>Firmado</th>
-            <th style="text-align:center">Bitcoin</th>
-            <th>Hash SHA-256</th>
+            <th>Inspector</th><th>Período</th><th>Firmado</th>
+            <th style="text-align:center">Bitcoin</th><th>Hash SHA-256</th>
           </tr></thead>
           <tbody>
             ${recientes.map((h,i)=>{
-              const ots = estados[i];
-              const btcBadge = ots.otsDisponible
-                ? '<span style="background:#E8F5E9;color:#1A5E2A;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;white-space:nowrap">Anclado</span>'
-                : '<span style="background:#fff3e0;color:#E65100;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;white-space:nowrap">Pendiente</span>';
+              const ots = estados[i] || {otsDisponible:false};
+              const badge = ots.otsDisponible
+                ? '<span style="background:#E8F5E9;color:#1A5E2A;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700">⛓ Anclado</span>'
+                : '<span style="background:#fff3e0;color:#E65100;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700">⏳ Pendiente</span>';
               const hashShort = h.hash ? h.hash.substring(0,12)+'...' : '—';
               return '<tr>' +
-                '<td><b>' + (h.inspNombre||'—') + '</b></td>' +
-                '<td>' + (h.mesNombre||'') + ' ' + (h.year||'') + '</td>' +
-                '<td style="font-size:10px">' + fmtDt(new Date(h.firmadoTs)) + '</td>' +
-                '<td style="text-align:center">' + btcBadge + '</td>' +
+                '<td><b>'+(h.inspNombre||'—')+'</b></td>' +
+                '<td>'+(h.mesNombre||'')+' '+(h.year||'')+'</td>' +
+                '<td style="font-size:10px">'+fmtDt(new Date(h.firmadoTs))+'</td>' +
+                '<td style="text-align:center">'+badge+'</td>' +
                 '<td style="font-family:monospace;font-size:10px;color:#888">' +
-                  (h.hash ? '<a href="/verificar/' + h.hash + '" target="_blank" style="color:#1F5FA6;text-decoration:none">' + hashShort + '</a>' : '—') +
-                '</td>' +
-              '</tr>';
+                  (h.hash ? '<a href="/verificar/'+h.hash+'" target="_blank" style="color:#1F5FA6;text-decoration:none">'+hashShort+'</a>' : '—') +
+                '</td></tr>';
             }).join('')}
           </tbody>
         </table>
       </div>
 
-      <!-- Info protocolo -->
       <div style="margin-top:14px;background:#f5f7fa;border-radius:10px;padding:12px 14px;font-size:11px;color:#666;line-height:1.7;border:1px solid #e0e0e0">
         <b style="color:#003366">Protocolo:</b> OpenTimestamps sobre Bitcoin · Gratuito · Open source<br>
-        <b style="color:#003366">Verificación:</b> Cada hash es verificable independientemente en <a href="https://opentimestamps.org" target="_blank" style="color:#1F5FA6">opentimestamps.org</a><br>
+        <b style="color:#003366">Verificación:</b> <a href="https://opentimestamps.org" target="_blank" style="color:#1F5FA6">opentimestamps.org</a><br>
         <b style="color:#003366">Permanencia:</b> Una vez anclado en Bitcoin, el registro es inmutable y permanente.
       </div>`;
   }catch(e){
-    el.innerHTML = '<div style="color:#e53935;font-size:12px">Error al cargar datos blockchain</div>';
+    el.innerHTML = '<div style="color:#e53935;font-size:12px;padding:16px">Error al cargar datos blockchain: '+e.message+'</div>';
   }
 }
 
