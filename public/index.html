@@ -374,24 +374,19 @@ canvas.sp{display:block;width:100%;touch-action:none;cursor:crosshair}
         <span style="font-weight:700;font-size:14px;color:#003366">📄 Planilla firmada</span>
         <button onclick="closePdfModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#888;padding:0 4px">✕</button>
       </div>
-      <div style="flex:1;overflow:hidden;min-height:400px">
-        <iframe id="pdfFrame" style="width:100%;height:100%;min-height:420px;border:none" src=""></iframe>
-        <!-- Mensaje para mobile cuando el iframe no puede mostrar el PDF -->
-        <div id="pdfMobileMsg" style="display:none;padding:30px 20px;text-align:center">
-          <div style="font-size:48px;margin-bottom:16px">📄</div>
-          <div style="font-size:16px;font-weight:700;color:#003366;margin-bottom:8px">Planilla firmada lista</div>
-          <p style="font-size:13px;color:#888;margin-bottom:20px;line-height:1.5">
-            Tu dispositivo abre los PDFs en una app separada.<br>Tocá el botón para verla.
-          </p>
-          <a id="pdfMobileLink" href="#" target="_blank"
-            style="display:inline-block;background:#003366;color:#fff;padding:13px 24px;border-radius:10px;font-size:14px;font-weight:700;text-decoration:none">
-            📂 Abrir PDF firmado
-          </a>
+      <!-- Visor PDF con PDF.js — funciona en iOS, Android y desktop -->
+      <div id="pdfVisorWrap" style="flex:1;overflow-y:auto;overflow-x:hidden;background:#525659;min-height:300px;position:relative">
+        <div id="pdfSpinner" style="display:flex;align-items:center;justify-content:center;height:200px;color:#fff;font-size:13px;gap:10px">
+          <div style="width:20px;height:20px;border:3px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:rot .7s linear infinite"></div>
+          Cargando PDF…
         </div>
+        <div id="pdfCanvasContainer" style="display:none;padding:10px;display:flex;flex-direction:column;gap:10px;align-items:center"></div>
+        <div id="pdfNavBar" style="display:none;position:sticky;bottom:0;background:rgba(0,0,0,.7);color:#fff;text-align:center;padding:6px;font-size:12px"></div>
       </div>
-      <div style="padding:12px 16px;border-top:1px solid #eee;display:flex;gap:8px;flex-shrink:0">
-        <a id="pdfDlBtn" href="#" download class="bs bsv" style="flex:1;text-align:center;text-decoration:none;padding:12px;font-size:13px">⬇️ Descargar PDF</a>
-        <button onclick="closePdfModal()" style="flex:1;padding:12px;font-size:13px;background:#f0f0f0;border:none;border-radius:10px;cursor:pointer;font-weight:600">Cerrar</button>
+      <div style="padding:10px 14px;border-top:1px solid #eee;display:flex;gap:8px;flex-shrink:0;align-items:center">
+        <a id="pdfDlBtn" href="#" download class="bs bsv" style="flex:1;text-align:center;text-decoration:none;padding:11px;font-size:13px">⬇️ Descargar</a>
+        <div id="pdfPaginas" style="flex-shrink:0;font-size:11px;color:#888;text-align:center;min-width:60px"></div>
+        <button onclick="closePdfModal()" style="flex:1;padding:11px;font-size:13px;background:#f0f0f0;border:none;border-radius:10px;cursor:pointer;font-weight:600">Cerrar</button>
       </div>
     </div>
   </div>
@@ -1228,58 +1223,95 @@ async function renderAdminHist(){
 //  VISOR PDF INLINE
 // ══════════════════════════════════════════
 
-function openPdfModal(b64url, filename){
-  if(!b64url) return;
-  const modal  = document.getElementById('pdfModal');
-  const frame  = document.getElementById('pdfFrame');
-  const dlBtn  = document.getElementById('pdfDlBtn');
+function b64toBlob(b64url) {
+  const base64 = b64url.split(',')[1];
+  const bytes  = atob(base64);
+  const arr    = new Uint8Array(bytes.length);
+  for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+  return new Blob([arr], { type: 'application/pdf' });
+}
 
-  // Convertir base64 a Blob URL — necesario para iOS Safari (no soporta data: en iframe)
-  const esMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-  try {
-    const base64 = b64url.split(',')[1];
-    const bytes  = atob(base64);
-    const arr    = new Uint8Array(bytes.length);
-    for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
-    const blob   = new Blob([arr], { type: 'application/pdf' });
-    const blobUrl = URL.createObjectURL(blob);
+// ── Visor PDF con PDF.js (funciona en iOS, Android y desktop) ──
+let _pdfBlobUrl = null;
 
-    if (esMobile) {
-      // En mobile: abrir directamente en nueva pestaña (Safari no muestra PDFs en iframe)
-      frame.src = '';
-      frame.style.display = 'none';
-      document.getElementById('pdfMobileMsg').style.display = 'block';
-      document.getElementById('pdfMobileLink').href = blobUrl;
-      document.getElementById('pdfMobileLink').download = filename || 'planilla_firmada.pdf';
-    } else {
-      frame.style.display = 'block';
-      document.getElementById('pdfMobileMsg').style.display = 'none';
-      frame.src = blobUrl;
-    }
-    dlBtn.href     = blobUrl;
-    dlBtn.download = filename || 'planilla_firmada.pdf';
-    // Guardar para revocar cuando se cierre
-    modal._blobUrl = blobUrl;
-  } catch(e) {
-    // Fallback: data URL directo
-    frame.src  = b64url;
-    dlBtn.href = b64url;
-    dlBtn.download = filename || 'planilla_firmada.pdf';
-  }
-  modal.style.display   = 'flex';
+async function openPdfModal(b64url, filename) {
+  if (!b64url) return;
+  const modal     = document.getElementById('pdfModal');
+  const dlBtn     = document.getElementById('pdfDlBtn');
+  const container = document.getElementById('pdfCanvasContainer');
+  const spinner   = document.getElementById('pdfSpinner');
+  const paginas   = document.getElementById('pdfPaginas');
+
+  // Mostrar modal con spinner mientras carga
+  modal.style.display = 'flex';
   document.body.style.overflow = 'hidden';
+  spinner.style.display = 'flex';
+  container.style.display = 'none';
+  container.innerHTML = '';
+  paginas.textContent = '';
+
+  try {
+    // Base64 → ArrayBuffer
+    const base64 = b64url.includes(',') ? b64url.split(',')[1] : b64url;
+    const raw = atob(base64);
+    const buf = new Uint8Array(raw.length);
+    for (let i = 0; i < raw.length; i++) buf[i] = raw.charCodeAt(i);
+
+    // Blob URL para el botón de descarga
+    const blob = new Blob([buf], { type: 'application/pdf' });
+    if (_pdfBlobUrl) URL.revokeObjectURL(_pdfBlobUrl);
+    _pdfBlobUrl    = URL.createObjectURL(blob);
+    dlBtn.href     = _pdfBlobUrl;
+    dlBtn.download = filename || 'planilla_firmada.pdf';
+
+    // Cargar PDF.js desde CDN si no está cargado
+    if (!window.pdfjsLib) {
+      await new Promise((res, rej) => {
+        const s = document.createElement('script');
+        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+        s.onload = res; s.onerror = rej;
+        document.head.appendChild(s);
+      });
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
+
+    // Renderizar cada página como canvas
+    const pdfDoc = await window.pdfjsLib.getDocument({ data: buf }).promise;
+    const total  = pdfDoc.numPages;
+    paginas.textContent = total + (total === 1 ? ' página' : ' páginas');
+    spinner.style.display = 'none';
+    container.style.display = 'flex';
+    const visorW = document.getElementById('pdfVisorWrap').clientWidth - 20;
+
+    for (let n = 1; n <= total; n++) {
+      const page     = await pdfDoc.getPage(n);
+      const vpBase   = page.getViewport({ scale: 1 });
+      const scale    = Math.min(visorW / vpBase.width, 2.5);
+      const viewport = page.getViewport({ scale });
+      const canvas   = document.createElement('canvas');
+      canvas.width   = viewport.width;
+      canvas.height  = viewport.height;
+      canvas.style.cssText = 'width:100%;max-width:'+viewport.width+'px;border-radius:4px;box-shadow:0 2px 8px rgba(0,0,0,.4);display:block';
+      container.appendChild(canvas);
+      await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+    }
+  } catch(e) {
+    spinner.style.display = 'none';
+    container.style.display = 'flex';
+    container.innerHTML = '<div style="color:#fff;padding:20px;text-align:center;font-size:13px">No se pudo mostrar el PDF.<br><small style="opacity:.7">'+e.message+'</small></div>';
+  }
 }
 
-function closePdfModal(){
+function closePdfModal() {
   const modal = document.getElementById('pdfModal');
-  // Revocar blob URL para liberar memoria
-  if (modal._blobUrl) { URL.revokeObjectURL(modal._blobUrl); modal._blobUrl = null; }
   modal.style.display = 'none';
-  document.getElementById('pdfFrame').src = '';
-  document.getElementById('pdfFrame').style.display = 'block';
-  document.getElementById('pdfMobileMsg').style.display = 'none';
   document.body.style.overflow = '';
+  document.getElementById('pdfCanvasContainer').innerHTML = '';
+  document.getElementById('pdfPaginas').textContent = '';
+  if (_pdfBlobUrl) { URL.revokeObjectURL(_pdfBlobUrl); _pdfBlobUrl = null; }
 }
+
 
 function downloadPdf(b64url, filename){
   if(!b64url)return;
@@ -1290,13 +1322,6 @@ function downloadPdf(b64url, filename){
 }
 
 async function verPdfHistorial(apiUrl, filename){
-  // Mostrar spinner en el modal mientras carga
-  const modal=document.getElementById('pdfModal');
-  const frame=document.getElementById('pdfFrame');
-  const dlBtn=document.getElementById('pdfDlBtn');
-  frame.src='';
-  modal.style.display='flex';
-  document.body.style.overflow='hidden';
   try{
     const r=await fetch(apiUrl);
     if(!r.ok)throw new Error('No se pudo cargar el PDF');
@@ -1307,11 +1332,8 @@ async function verPdfHistorial(apiUrl, filename){
       rd.onerror=rej;
       rd.readAsDataURL(blob);
     });
-    frame.src=b64;
-    dlBtn.href=b64;
-    dlBtn.download=filename||'planilla.pdf';
+    await openPdfModal(b64, filename||'planilla.pdf');
   }catch(e){
-    closePdfModal();
     alert('Error al cargar el PDF: '+e.message);
   }
 }
