@@ -370,6 +370,10 @@ function cap(s) {
 
 // POST /api/login
 app.post('/api/login', checkBruteForce, async (req, res) => {
+  // VUL-01: validar que username y password sean strings — evita crash por objetos NoSQL
+  if (typeof req.body.username !== 'string' || typeof req.body.password !== 'string') {
+    return res.status(400).json({ error: 'Usuario o contraseña incorrectos' });
+  }
   // VUL-03: delay constante para prevenir timing attacks
   const loginStart = Date.now();
   const minDelay = 200; // ms mínimos siempre, independiente del resultado
@@ -1022,7 +1026,9 @@ app.post('/api/admin/inspector/:id/planilla-firmada/:mes/:year', requireAdmin, (
 
 // POST /api/admin/inspector — agregar nuevo inspector
 app.post('/api/admin/inspector', requireAdmin, (req, res) => {
-  const { apellido, nombre, legajo, dni, username, password } = req.body;
+  const { apellido, nombre, legajo, dni, username } = req.body;
+  // VUL-02: ignorar password custom — contraseña inicial siempre = legajo
+  const password = null;
   if (!apellido || !nombre || !legajo || !dni)
     return res.status(400).json({ error: 'Faltan campos obligatorios: apellido, nombre, legajo, DNI' });
   const data = db.read('usuarios.json');
