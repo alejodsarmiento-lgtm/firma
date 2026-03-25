@@ -182,23 +182,38 @@ function logSecurity(tipo, ip, endpoint, detalle) {
 
 // ── Endpoint auditoría de seguridad ──────────────────────────
 app.get('/api/admin/security-log', requireAdmin, (req, res) => {
-  let log = [];
-  try { log = JSON.parse(fs.readFileSync(SEC_LOG_FILE, 'utf8')); } catch(e) { log = []; }
-  if (!Array.isArray(log)) log = [];
-  const tipos = {};
-  log.forEach(e => { tipos[e.tipo] = (tipos[e.tipo]||0)+1; });
-  res.json({
-    log:         log.slice(0, 200),
-    resumen:     tipos,
-    ipsBlockedActualmente: [..._blockedIPs.entries()].map(([ip, until]) => ({
-      ip, bloqueadaHasta: new Date(until).toISOString(),
-      segundosRestantes: Math.ceil((until-Date.now())/1000)
-    })),
-    intentosFallidos: [..._loginAttempts.entries()]
-      .map(([k,v])=>({clave:k, intentos:v.length}))
-      .filter(x=>x.intentos>2)
-      .sort((a,b)=>b.intentos-a.intentos),
-  });
+  // VUL-03: manejo robusto de errores, sin stack traces
+  try {
+    let log = [];
+    try {
+      const raw = fs.readFileSync(SEC_LOG_FILE, 'utf8');
+      const parsed = JSON.parse(raw);
+      log = Array.isArray(parsed) ? parsed : [];
+    } catch(e) {
+      log = []; // archivo inexistente o corrupto — continuar sin crash
+    }
+    const tipos = {};
+    log.forEach(e => {
+      if (e && e.tipo) tipos[e.tipo] = (tipos[e.tipo]||0)+1;
+    });
+    res.json({
+      log:     log.slice(0, 200),
+      resumen: tipos,
+      ipsBlockedActualmente: [..._blockedIPs.entries()].map(([ip, until]) => ({
+        ip,
+        bloqueadaHasta:    new Date(until).toISOString(),
+        segundosRestantes: Math.max(0, Math.ceil((until - Date.now()) / 1000)),
+      })),
+      intentosFallidos: [..._loginAttempts.entries()]
+        .map(([k, v]) => ({ clave: k, intentos: v.length }))
+        .filter(x => x.intentos > 2)
+        .sort((a, b) => b.intentos - a.intentos),
+    });
+  } catch(e) {
+    // VUL-03: nunca exponer stack trace en producción
+    console.error('[security-log]', e.message);
+    res.status(500).json({ error: 'Error al cargar el log de seguridad', log: [], resumen: {} });
+  }
 });
 
 // ── Rate limits por ruta ───────────────────────────────────────
@@ -243,6 +258,17 @@ function requireAuth(req, res, next) {
 function requireAdmin(req, res, next) {
   if (!req.session.user || req.session.user.role !== 'admin')
     return res.status(403).json({ error: 'Acceso denegado' });
+  next();
+}
+
+// ── Middleware: bloquear si primerLogin pendiente (VUL-02) ────
+function requirePrimerLoginCompletado(req, res, next) {
+  if (req.session.user?.primerLogin === true) {
+    return res.status(403).json({
+      error: 'Debés cambiar tu contraseña antes de continuar.',
+      primerLoginPendiente: true,
+    });
+  }
   next();
 }
 
@@ -355,19 +381,24 @@ app.post('/api/login', checkBruteForce, async (req, res) => {
     return res.status(401).json({ error: 'Usuario o contraseña incorrectos' });
   }
   clearLoginAttempts(req);
-  req.session.user = {
+  // VUL-04: regenerar session ID para prevenir session fixation
+  const userData = {
     id:          user.id || user.username,
     username:    user.username,
     role:        user.role,
     nombre:      user.nombre || `${cap(user.apellido)}, ${cap(user.nombre)}`,
     primerLogin: user.primerLogin === true,
+    inspId:      user.role === 'inspector' ? user.id : undefined,
   };
-  if (user.role === 'inspector') req.session.user.inspId = user.id;
-  res.json({
-    ok:          true,
-    role:        user.role,
-    nombre:      req.session.user.nombre,
-    primerLogin: user.primerLogin === true,
+  req.session.regenerate((err) => {
+    if (err) return res.status(500).json({ error: 'Error de sesión' });
+    req.session.user = userData;
+    res.json({
+      ok:          true,
+      role:        userData.role,
+      nombre:      userData.nombre,
+      primerLogin: userData.primerLogin,
+    });
   });
 });
 
@@ -401,7 +432,7 @@ app.get('/api/inspector/perfil', requireAuth, (req, res) => {
 });
 
 // POST /api/inspector/firma — Guarda la imagen de firma
-app.post('/api/inspector/firma', requireAuth, (req, res) => {
+app.post('/api/inspector/firma', requireAuth, requirePrimerLoginCompletado, (req, res) => {
   if (req.session.user.role !== 'inspector')
     return res.status(403).json({ error: 'Solo para inspectores' });
   const { firmaBase64 } = req.body;
@@ -414,7 +445,7 @@ app.post('/api/inspector/firma', requireAuth, (req, res) => {
 });
 
 // GET /api/inspector/planilla — PDF pendiente para el inspector
-app.get('/api/inspector/planilla', requireAuth, (req, res) => {
+app.get('/api/inspector/planilla', requireAuth, requirePrimerLoginCompletado, (req, res) => {
   if (req.session.user.role !== 'inspector')
     return res.status(403).json({ error: 'Solo para inspectores' });
   const plan = getPendingPlanilla(req.session.user.inspId);
@@ -432,7 +463,7 @@ app.get('/api/inspector/planilla', requireAuth, (req, res) => {
 });
 
 // GET /api/inspector/ver-planilla/:id — Sirve el PDF para visualización
-app.get('/api/inspector/ver-planilla/:id', requireAuth, (req, res) => {
+app.get('/api/inspector/ver-planilla/:id', requireAuth, requirePrimerLoginCompletado, (req, res) => {
   const planillas = db.read('planillas_asignadas.json');
   const plan = planillas.find(p => p.id === req.params.id);
   if (!plan) return res.status(404).send('Planilla no encontrada');
@@ -447,7 +478,7 @@ app.get('/api/inspector/ver-planilla/:id', requireAuth, (req, res) => {
 });
 
 // POST /api/inspector/firmar — Firma la planilla y devuelve el PDF firmado
-app.post('/api/inspector/firmar', requireAuth, async (req, res) => {
+app.post('/api/inspector/firmar', requireAuth, requirePrimerLoginCompletado, async (req, res) => {
   if (req.session.user.role !== 'inspector')
     return res.status(403).json({ error: 'Solo para inspectores' });
   try {
@@ -592,7 +623,7 @@ app.post('/api/inspector/firmar', requireAuth, async (req, res) => {
 });
 
 // GET /api/inspector/historial
-app.get('/api/inspector/historial', requireAuth, (req, res) => {
+app.get('/api/inspector/historial', requireAuth, requirePrimerLoginCompletado, (req, res) => {
   if (req.session.user.role !== 'inspector')
     return res.status(403).json({ error: 'Solo para inspectores' });
   const hist = db.read('historial.json');
@@ -738,9 +769,11 @@ app.get('/api/admin/descargar/:filename', requireAdmin, (req, res) => {
 // 1. Credenciales de todos los inspectores (CSV para distribución)
 app.get('/api/admin/credenciales', requireAdmin, (req, res) => {
   const { inspectores = [] } = db.read('usuarios.json');
-  const rows = ['Apellido,Nombre,Legajo,DNI,Usuario,Contraseña'];
+  // VUL-01: nunca exponer contraseñas en CSV — mostrar estado
+  const rows = ['Apellido,Nombre,Legajo,DNI,Usuario,Estado'];
   inspectores.forEach(i => {
-    rows.push(`"${i.apellido}","${i.nombre}","${i.legajo}","${i.dni}","${i.username}","${i.password}"`);
+    const estado = i.primerLogin === false ? 'Contraseña cambiada' : 'Primer login pendiente';
+    rows.push(`"${i.apellido}","${i.nombre}","${i.legajo}","${i.dni}","${i.username}","${estado}"`);
   });
   res.setHeader('Content-Type', 'text/csv; charset=utf-8');
   res.setHeader('Content-Disposition', 'attachment; filename="credenciales_firmared.csv"');
@@ -1757,7 +1790,7 @@ app.post('/api/webauthn/auth-verificar', requireAuth, (req, res) => {
 });
 
 // ── 5. Estado de biométrico del usuario ───────────────────────
-app.get('/api/webauthn/estado', requireAuth, (req, res) => {
+app.get('/api/webauthn/estado', requireAuth, requirePrimerLoginCompletado, (req, res) => {
   const userObjE = req.session.user;
   const user  = userObjE?.username || userObjE?.id || String(userObjE);
   const creds = waReadCreds();
