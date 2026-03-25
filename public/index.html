@@ -1007,7 +1007,7 @@ async function aTab(n){
   });
   if(n===2){await cargarEstadoFirmas();renderAdminInsp();}
   if(n===3) renderAdminHist();
-  if(n===4) cargarAnalytics();
+  if(n===4) { cargarAnalytics(); cargarBlockchain(); }
   if(n===5) cargarViaticos();
 }
 
@@ -2448,10 +2448,6 @@ function filtrarSesiones(){
 document.addEventListener('click', e => {
   const m=document.getElementById('modalNuevo');
   if(m && e.target===m) cerrarNuevoInsp();
-  // Cargar analytics de viáticos
-  cargarViatAnalytics(desde, hasta);
-  cargarBlockchain();
-
 });
 
 function fmtDt(d){const z=n=>('0'+n).slice(-2);return z(d.getDate())+'/'+z(d.getMonth()+1)+'/'+d.getFullYear()+' '+z(d.getHours())+':'+z(d.getMinutes());}
