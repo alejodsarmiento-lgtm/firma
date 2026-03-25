@@ -858,7 +858,7 @@ async function buildAdmin(){
   const now=new Date();
   document.getElementById('pMes').value=now.getMonth();
   window._firmaronEsteMesIds=new Set();
-  renderAdminPend(); // cargar pendientes al iniciar
+  // renderAdminPend se llama desde aTab(1)
   // Inicializar fechas de analytics
   const hoy=new Date(), hace30=new Date(hoy-30*86400000);
   const fmt=d=>d.toISOString().slice(0,10);
@@ -880,6 +880,8 @@ async function aTab(n){
     if(tab) tab.style.display=i===n?'block':'none';
     if(btn) btn.classList.toggle('on',i===n);
   });
+  // Esperar un tick para que el DOM muestre el tab antes de renderizar
+  await new Promise(r=>setTimeout(r,0));
   if(n===1) renderAdminPend();
   if(n===2) renderAdminHist();
   if(n===3) cargarViaticos();
