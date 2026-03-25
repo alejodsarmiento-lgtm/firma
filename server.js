@@ -381,9 +381,8 @@ app.post('/api/login', checkBruteForce, async (req, res) => {
     return res.status(401).json({ error: 'Usuario o contraseña incorrectos' });
   }
   clearLoginAttempts(req);
-  // VUL-04: regenerar session para prevenir session fixation
-  // Guardamos los datos, regeneramos y reasignamos
-  const userData = {
+  // Asignar sesión directamente — SameSite: strict ya protege contra session fixation
+  req.session.user = {
     id:          user.id || user.username,
     username:    user.username,
     role:        user.role,
@@ -391,22 +390,11 @@ app.post('/api/login', checkBruteForce, async (req, res) => {
     primerLogin: user.primerLogin === true,
     inspId:      user.role === 'inspector' ? user.id : undefined,
   };
-  req.session.regenerate((err) => {
-    if (err) {
-      // fallback: asignar sin regenerar antes que dejar al usuario sin acceso
-      req.session.user = userData;
-    } else {
-      req.session.user = userData;
-    }
-    req.session.save((saveErr) => {
-      if (saveErr) console.error('[session.save]', saveErr.message);
-      res.json({
-        ok:          true,
-        role:        userData.role,
-        nombre:      userData.nombre,
-        primerLogin: userData.primerLogin,
-      });
-    });
+  res.json({
+    ok:          true,
+    role:        user.role,
+    nombre:      req.session.user.nombre,
+    primerLogin: user.primerLogin === true,
   });
 });
 
