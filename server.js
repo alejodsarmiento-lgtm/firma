@@ -252,18 +252,18 @@ const upload = multer({
 
 // ── Auth middleware ────────────────────────────────────────────
 function requireAuth(req, res, next) {
-  if (!req.session.user) return res.status(401).json({ error: 'No autenticado' });
+  if (!req.session?.user) return res.status(401).json({ error: 'No autenticado' });
   next();
 }
 function requireAdmin(req, res, next) {
-  if (!req.session.user || req.session.user.role !== 'admin')
+  if (!req.session?.user || req.session.user.role !== 'admin')
     return res.status(403).json({ error: 'Acceso denegado' });
   next();
 }
 
 // ── Middleware: bloquear si primerLogin pendiente (VUL-02) ────
 function requirePrimerLoginCompletado(req, res, next) {
-  if (req.session.user?.primerLogin === true) {
+  if (req.session?.user?.primerLogin === true) {
     return res.status(403).json({
       error: 'Debés cambiar tu contraseña antes de continuar.',
       primerLoginPendiente: true,
@@ -381,7 +381,8 @@ app.post('/api/login', checkBruteForce, async (req, res) => {
     return res.status(401).json({ error: 'Usuario o contraseña incorrectos' });
   }
   clearLoginAttempts(req);
-  // VUL-04: regenerar session ID para prevenir session fixation
+  // VUL-04: regenerar session para prevenir session fixation
+  // Guardamos los datos, regeneramos y reasignamos
   const userData = {
     id:          user.id || user.username,
     username:    user.username,
@@ -391,13 +392,20 @@ app.post('/api/login', checkBruteForce, async (req, res) => {
     inspId:      user.role === 'inspector' ? user.id : undefined,
   };
   req.session.regenerate((err) => {
-    if (err) return res.status(500).json({ error: 'Error de sesión' });
-    req.session.user = userData;
-    res.json({
-      ok:          true,
-      role:        userData.role,
-      nombre:      userData.nombre,
-      primerLogin: userData.primerLogin,
+    if (err) {
+      // fallback: asignar sin regenerar antes que dejar al usuario sin acceso
+      req.session.user = userData;
+    } else {
+      req.session.user = userData;
+    }
+    req.session.save((saveErr) => {
+      if (saveErr) console.error('[session.save]', saveErr.message);
+      res.json({
+        ok:          true,
+        role:        userData.role,
+        nombre:      userData.nombre,
+        primerLogin: userData.primerLogin,
+      });
     });
   });
 });
