@@ -1971,18 +1971,28 @@ app.post('/api/inspector/primer-cambio-password', requireAuth, async (req, res) 
     return res.status(400).json({
       error: 'La contraseña debe tener al menos una mayúscula, una minúscula y un número'
     });
-  // Verificar que no sea igual al legajo (contraseña temporal)
+  // Buscar en inspectores Y admins
   const data = db.read('usuarios.json');
-  const idx  = data.inspectores.findIndex(i => i.username === user.username);
-  if (idx < 0) return res.status(404).json({ error: 'Inspector no encontrado' });
-  const insp = data.inspectores[idx];
-  if (nueva === String(insp.legajo))
+  const idxInsp  = data.inspectores.findIndex(i => i.username === user.username);
+  const idxAdmin = data.admins.findIndex(a => a.username === user.username);
+
+  if (idxInsp < 0 && idxAdmin < 0)
+    return res.status(404).json({ error: 'Usuario no encontrado' });
+
+  // Verificar que no sea igual al legajo
+  const legajo = idxInsp >= 0 ? data.inspectores[idxInsp].legajo : data.admins[idxAdmin].legajo;
+  if (nueva === String(legajo))
     return res.status(400).json({ error: 'La nueva contraseña no puede ser tu número de legajo' });
 
-  // Guardar nueva contraseña hasheada y marcar primerLogin como completado
-  data.inspectores[idx].password    = hashPassword(nueva);
-  data.inspectores[idx].primerLogin = false;
-  data.inspectores[idx].passwordCambios = 0; // no cuenta como cambio voluntario
+  // Guardar en el array correspondiente
+  if (idxInsp >= 0) {
+    data.inspectores[idxInsp].password    = hashPassword(nueva);
+    data.inspectores[idxInsp].primerLogin = false;
+    data.inspectores[idxInsp].passwordCambios = 0;
+  } else {
+    data.admins[idxAdmin].password    = hashPassword(nueva);
+    data.admins[idxAdmin].primerLogin = false;
+  }
   db.write('usuarios.json', data);
 
   // Actualizar sesión
