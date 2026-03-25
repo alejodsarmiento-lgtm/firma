@@ -2003,6 +2003,100 @@ app.post('/api/inspector/primer-cambio-password', requireAuth, async (req, res) 
   res.json({ ok: true, mensaje: 'Contraseña establecida correctamente. Ya podés usar FirmaRED.' });
 });
 
+
+// ═══════════════════════════════════════════════════════════════
+//  OBRAS IRREGULARES — Sistema de denuncias
+// ═══════════════════════════════════════════════════════════════
+
+const OBRAS_DIR  = path.join(DATA_DIR, 'obras');
+const OBRAS_FILE = path.join(OBRAS_DIR, 'denuncias.json');
+if (!fs.existsSync(OBRAS_DIR)) fs.mkdirSync(OBRAS_DIR, { recursive: true });
+if (!fs.existsSync(OBRAS_FILE)) fs.writeFileSync(OBRAS_FILE, '[]');
+
+// GET /obras — formulario público
+app.get('/obras', (req, res) => {
+  res.sendFile(path.join(PUBLIC_DIR, 'obras.html'));
+});
+
+// POST /api/obras/denuncia — recibir denuncia
+app.post('/api/obras/denuncia', rateLimit(10, 300000), (req, res) => {
+  const { lat, lng, direccion, descripcion, telefono, fotos, timestamp } = req.body;
+
+  if (!lat || !lng)
+    return res.status(400).json({ error: 'Ubicación requerida' });
+
+  // Guardar fotos en disco
+  const fotosPaths = [];
+  if (Array.isArray(fotos) && fotos.length > 0) {
+    fotos.slice(0, 6).forEach((b64, i) => {
+      try {
+        const ext  = b64.startsWith('data:image/png') ? 'png' : 'jpg';
+        const data = b64.replace(/^data:image\/[a-z]+;base64,/, '');
+        const fname = `foto_${Date.now()}_${i}.${ext}`;
+        fs.writeFileSync(path.join(OBRAS_DIR, fname), Buffer.from(data, 'base64'));
+        fotosPaths.push(fname);
+      } catch(e) {}
+    });
+  }
+
+  const denuncia = {
+    id:          'OBR-' + Date.now(),
+    lat:         parseFloat(lat),
+    lng:         parseFloat(lng),
+    direccion:   (direccion || '').trim(),
+    descripcion: (descripcion || '').trim(),
+    telefono:    (telefono || '').replace(/[^0-9+\s-]/g, '').trim(),
+    fotos:       fotosPaths,
+    estado:      'pendiente',  // pendiente | en_proceso | inspeccionada | cerrada
+    ip:          getIP(req),
+    ts:          timestamp || new Date().toISOString(),
+    inspectorAsignado: null,
+    notas:       '',
+  };
+
+  const denuncias = JSON.parse(fs.readFileSync(OBRAS_FILE, 'utf8'));
+  denuncias.unshift(denuncia);
+  fs.writeFileSync(OBRAS_FILE, JSON.stringify(denuncias, null, 2));
+
+  console.log(`[OBRAS] Nueva denuncia: ${denuncia.id} — ${denuncia.direccion}`);
+  res.json({ ok: true, id: denuncia.id });
+});
+
+// GET /api/admin/obras — panel de gestión (solo admin)
+app.get('/api/admin/obras', requireAdmin, (req, res) => {
+  try {
+    const denuncias = JSON.parse(fs.readFileSync(OBRAS_FILE, 'utf8'));
+    // No incluir fotos en el listado — solo metadatos
+    res.json(denuncias.map(d => ({
+      id: d.id, lat: d.lat, lng: d.lng, direccion: d.direccion,
+      descripcion: d.descripcion, telefono: d.telefono,
+      cantFotos: d.fotos?.length || 0, estado: d.estado,
+      ts: d.ts, inspectorAsignado: d.inspectorAsignado, notas: d.notas,
+    })));
+  } catch(e) { res.json([]); }
+});
+
+// GET /api/admin/obras/:id/fotos/:fname — ver foto de denuncia
+app.get('/api/admin/obras/foto/:fname', requireAdmin, (req, res) => {
+  const fname = req.params.fname.replace(/[^a-zA-Z0-9._-]/g, '');
+  const fpath = path.join(OBRAS_DIR, fname);
+  if (!fs.existsSync(fpath)) return res.status(404).send('No encontrada');
+  res.sendFile(fpath);
+});
+
+// PUT /api/admin/obras/:id/estado — actualizar estado
+app.put('/api/admin/obras/:id/estado', requireAdmin, (req, res) => {
+  const { estado, notas, inspectorAsignado } = req.body;
+  const denuncias = JSON.parse(fs.readFileSync(OBRAS_FILE, 'utf8'));
+  const d = denuncias.find(x => x.id === req.params.id);
+  if (!d) return res.status(404).json({ error: 'No encontrada' });
+  if (estado) d.estado = estado;
+  if (notas !== undefined) d.notas = notas;
+  if (inspectorAsignado !== undefined) d.inspectorAsignado = inspectorAsignado;
+  fs.writeFileSync(OBRAS_FILE, JSON.stringify(denuncias, null, 2));
+  res.json({ ok: true });
+});
+
 // ── SPA fallback ───────────────────────────────────────────────
 app.get('*', (req, res) => {
   res.sendFile(path.join(PUBLIC_DIR, 'index.html'));
