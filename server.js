@@ -181,40 +181,6 @@ function logSecurity(tipo, ip, endpoint, detalle) {
 }
 
 // ── Endpoint auditoría de seguridad ──────────────────────────
-app.get('/api/admin/security-log', requireAdmin, (req, res) => {
-  // VUL-03: manejo robusto de errores, sin stack traces
-  try {
-    let log = [];
-    try {
-      const raw = fs.readFileSync(SEC_LOG_FILE, 'utf8');
-      const parsed = JSON.parse(raw);
-      log = Array.isArray(parsed) ? parsed : [];
-    } catch(e) {
-      log = []; // archivo inexistente o corrupto — continuar sin crash
-    }
-    const tipos = {};
-    log.forEach(e => {
-      if (e && e.tipo) tipos[e.tipo] = (tipos[e.tipo]||0)+1;
-    });
-    res.json({
-      log:     log.slice(0, 200),
-      resumen: tipos,
-      ipsBlockedActualmente: [..._blockedIPs.entries()].map(([ip, until]) => ({
-        ip,
-        bloqueadaHasta:    new Date(until).toISOString(),
-        segundosRestantes: Math.max(0, Math.ceil((until - Date.now()) / 1000)),
-      })),
-      intentosFallidos: [..._loginAttempts.entries()]
-        .map(([k, v]) => ({ clave: k, intentos: v.length }))
-        .filter(x => x.intentos > 2)
-        .sort((a, b) => b.intentos - a.intentos),
-    });
-  } catch(e) {
-    // VUL-03: nunca exponer stack trace en producción
-    console.error('[security-log]', e.message);
-    res.status(500).json({ error: 'Error al cargar el log de seguridad', log: [], resumen: {} });
-  }
-});
 
 // ── Rate limits por ruta ───────────────────────────────────────
 app.use('/api/login',   rateLimit(10, 60000, 120000)); // 10/min → bloqueo 2min
@@ -271,6 +237,41 @@ function requirePrimerLoginCompletado(req, res, next) {
   }
   next();
 }
+
+app.get('/api/admin/security-log', requireAdmin, (req, res) => {
+  // VUL-03: manejo robusto de errores, sin stack traces
+  try {
+    let log = [];
+    try {
+      const raw = fs.readFileSync(SEC_LOG_FILE, 'utf8');
+      const parsed = JSON.parse(raw);
+      log = Array.isArray(parsed) ? parsed : [];
+    } catch(e) {
+      log = []; // archivo inexistente o corrupto — continuar sin crash
+    }
+    const tipos = {};
+    log.forEach(e => {
+      if (e && e.tipo) tipos[e.tipo] = (tipos[e.tipo]||0)+1;
+    });
+    res.json({
+      log:     log.slice(0, 200),
+      resumen: tipos,
+      ipsBlockedActualmente: [..._blockedIPs.entries()].map(([ip, until]) => ({
+        ip,
+        bloqueadaHasta:    new Date(until).toISOString(),
+        segundosRestantes: Math.max(0, Math.ceil((until - Date.now()) / 1000)),
+      })),
+      intentosFallidos: [..._loginAttempts.entries()]
+        .map(([k, v]) => ({ clave: k, intentos: v.length }))
+        .filter(x => x.intentos > 2)
+        .sort((a, b) => b.intentos - a.intentos),
+    });
+  } catch(e) {
+    // VUL-03: nunca exponer stack trace en producción
+    console.error('[security-log]', e.message);
+    res.status(500).json({ error: 'Error al cargar el log de seguridad', log: [], resumen: {} });
+  }
+});
 
 // ── Helpers ────────────────────────────────────────────────────
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
