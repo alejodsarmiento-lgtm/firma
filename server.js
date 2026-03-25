@@ -61,13 +61,15 @@ app.use((req, res, next) => {
   res.locals.cspNonce = cspNonce;
   res.setHeader('Content-Security-Policy',
     "default-src 'self'; " +
-    "script-src 'self' 'unsafe-inline'; " +  // mantenemos inline por compatibilidad con SPA
+    "script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; " +
     "style-src 'self' 'unsafe-inline'; " +
     "img-src 'self' data: blob:; " +
-    "connect-src 'self' https://firmared.com; " +
+    "connect-src 'self' https://cdnjs.cloudflare.com; " +
+    "worker-src 'self' blob: https://cdnjs.cloudflare.com; " +
     "form-action 'self'; " +
     "base-uri 'self'; " +
-    "object-src 'none'; " +
+    "object-src blob:; " +
+    "frame-src blob:; " +
     "frame-ancestors 'none';"
   );
   if (req.secure) {
