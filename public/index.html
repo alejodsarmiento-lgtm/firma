@@ -433,10 +433,11 @@ canvas.sp{display:block;width:100%;touch-action:none;cursor:crosshair}
 <div class="wrap">
   <div class="tabs">
     <button class="tab on" id="t1" onclick="aTab(1)">📤 Subir planilla</button>
-    <button class="tab"    id="t2" onclick="aTab(2)">👥 Inspectores</button>
-    <button class="tab"    id="t3" onclick="aTab(3)">📋 Historial viáticos</button>
-    <button class="tab"    id="t4" onclick="aTab(4)">📊 Analytics</button>
-    <button class="tab"    id="t5" onclick="aTab(5)">📋 Solicitud viáticos<span id="badgePend" style="display:none;background:#e53935;color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:8px;margin-left:4px;vertical-align:middle"></span></button>
+    <button class="tab"    id="t2" onclick="aTab(2)">📋 Historial viáticos</button>
+    <button class="tab"    id="t3" onclick="aTab(3)">📩 Solicitud viáticos<span id="badgePend" style="display:none;background:#e53935;color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:8px;margin-left:4px;vertical-align:middle"></span></button>
+    <button class="tab"    id="t4" onclick="aTab(4)">🏗️ Obras<span id="badgeObras" style="display:none;background:#e53935;color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:8px;margin-left:4px;vertical-align:middle"></span></button>
+    <button class="tab"    id="t5" onclick="aTab(5)">👥 Inspectores</button>
+    <button class="tab"    id="t6" onclick="aTab(6)">📊 Analytics</button>
   </div>
 
   <!-- TAB 1: SUBIR PLANILLA -->
@@ -490,49 +491,8 @@ canvas.sp{display:block;width:100%;touch-action:none;cursor:crosshair}
     </div>
   </div>
 
-  <!-- TAB 2: INSPECTORES -->
+  <!-- TAB 2: HISTORIAL -->
   <div id="tab2" style="display:none">
-    <!-- Resumen + Backup + Credenciales -->
-    <div class="card">
-      <div class="ctit">📊 Resumen del mes</div>
-      <div id="estadoFirmas" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-        <div class="spin-dark"></div>
-      </div>
-      <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
-        <a href="/api/admin/credenciales" download class="bs bsv" style="flex:1;padding:10px;font-size:12px;text-align:center;text-decoration:none;border-radius:8px">
-          📋 Descargar credenciales (CSV)
-        </a>
-        <button class="bs" style="flex:1;padding:10px;font-size:12px;background:#EBF4FB;color:#003366;border-radius:8px" onclick="backupFirmas()">
-          💾 Backup de firmas
-        </button>
-        <label class="bs" style="flex:1;padding:10px;font-size:12px;background:#EDF7F0;color:#1A7A3C;border-radius:8px;cursor:pointer;text-align:center">
-          📥 Restaurar backup<input type="file" accept=".json" style="display:none" onchange="restoreFirmas(event)">
-        </label>
-      </div>
-      <div class="st" id="stBackup"></div>
-    </div>
-    <!-- Lista con filtros -->
-    <!-- Botón agregar + modal -->
-    <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
-      <button onclick="abrirNuevoInsp()" style="background:#1A7A3C;color:#fff;border:none;border-radius:9px;padding:10px 16px;font-size:13px;font-weight:700;cursor:pointer">➕ Agregar inspector</button>
-    </div>
-    <div class="card">
-      <div class="ctit">👥 Inspectores habilitados (<span id="cInsp">207</span>)</div>
-      <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">
-        <button class="tab on" id="fTodos"   onclick="setFiltro('todos')"    style="flex:1;border-radius:8px;font-size:11px">Todos</button>
-        <button class="tab"    id="fFirmaron" onclick="setFiltro('firmaron')" style="flex:1;border-radius:8px;font-size:11px">✅ Firmaron este mes</button>
-        <button class="tab"    id="fFaltan"   onclick="setFiltro('faltan')"   style="flex:1;border-radius:8px;font-size:11px">⏳ Faltan firmar</button>
-        <button class="tab"    id="fSinFirma" onclick="setFiltro('sinFirma')" style="flex:1;border-radius:8px;font-size:11px">🖊️ Sin firma registrada</button>
-      </div>
-      <div class="fg" style="margin-bottom:10px">
-        <input type="text" id="busq" placeholder="Buscar por nombre, legajo o DNI…" oninput="filtrarInsp()" style="font-size:14px">
-      </div>
-      <div id="listInsp" style="max-height:520px;overflow-y:auto"><div class="spin-dark"></div></div>
-    </div>
-  </div>
-
-  <!-- TAB 3: HISTORIAL -->
-  <div id="tab3" style="display:none">
     <div class="card">
       <div class="ctit">📋 Historial completo (<span id="cHist">0</span>)</div>
       <!-- Filtros -->
@@ -566,94 +526,8 @@ canvas.sp{display:block;width:100%;touch-action:none;cursor:crosshair}
     </div>
   </div>
 
-  <!-- TAB 4: ANALYTICS -->
-  <div id="tab4" style="display:none">
-
-    <!-- Filtro de fechas -->
-    <div class="card">
-      <div class="ctit">📊 Control de Calidad — Analytics de Sesiones</div>
-      <div class="frow" style="margin-bottom:10px">
-        <div class="fg" style="margin:0">
-          <label>Desde</label>
-          <input type="date" id="aDesde" style="font-size:13px" onchange="cargarAnalytics()">
-        </div>
-        <div class="fg" style="margin:0">
-          <label>Hasta</label>
-          <input type="date" id="aHasta" style="font-size:13px" onchange="cargarAnalytics()">
-        </div>
-      </div>
-      <button class="bs bsv" style="padding:9px 16px;font-size:12px" onclick="cargarAnalytics()">🔄 Actualizar</button>
-    </div>
-
-    <!-- KPIs principales -->
-    <div id="aKpis" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px"></div>
-
-    <!-- Gráficos fila 1 -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
-      <div id="chartDispositivos" class="card"></div>
-      <div id="chartBrowsers" class="card"></div>
-    </div>
-
-    <!-- Sesiones por día -->
-    <div id="chartDias" class="card" style="margin-bottom:14px"></div>
-
-    <!-- Horas pico -->
-    <div id="chartHoras" class="card" style="margin-bottom:14px"></div>
-
-    <!-- Top inspectores -->
-    <div class="card" style="margin-bottom:14px">
-      <div class="ctit">🏆 Inspectores más activos</div>
-      <div id="aTopInsp"></div>
-    </div>
-
-    <!-- Últimas sesiones -->
-    <div class="card">
-      <div class="ctit" style="flex-wrap:wrap;gap:8px">
-        <span>🕐 Historial de sesiones</span>
-        <div style="display:flex;gap:6px;margin-left:auto;flex-wrap:wrap">
-          <select id="aSelRol" onchange="filtrarSesiones()" style="font-size:11px;padding:3px 7px;border:1px solid #ddd;border-radius:6px">
-            <option value="">Todos los roles</option>
-            <option value="inspector">Inspectores</option>
-            <option value="admin">Admins</option>
-          </select>
-          <select id="aSelLim" onchange="filtrarSesiones()" style="font-size:11px;padding:3px 7px;border:1px solid #ddd;border-radius:6px">
-            <option value="20">Últimas 20</option>
-            <option value="50">Últimas 50</option>
-            <option value="100">Últimas 100</option>
-            <option value="9999">Todas</option>
-          </select>
-        </div>
-      </div>
-      <div id="aUltimas" style="overflow-x:auto"></div>
-    </div>
-
-    <!-- Auditoría Biométrica -->
-    <div class="card" style="margin-top:12px">
-      <div class="ctit" onclick="toggleBioAudit()" style="cursor:pointer;user-select:none">
-        👆 Auditoría de firma biométrica
-        <span id="bioAuditArrow" style="margin-left:auto;font-size:12px">▼</span>
-      </div>
-      <div id="bioAuditPanel" style="display:none;margin-top:10px">
-        <div id="bioAuditData"><div class="spin-dark"></div></div>
-      </div>
-    </div>
-
-    <!-- Analytics Viáticos -->
-    <div class="card" style="margin-top:12px">
-      <div class="ctit">📋 Solicitudes de viáticos por delegación</div>
-      <div id="aViatStats"><div class="spin-dark"></div></div>
-    </div>
-
-    <!-- Blockchain Bitcoin -->
-    <div class="card" style="margin-top:12px">
-      <div class="ctit">⛓ Registro en blockchain Bitcoin</div>
-      <div id="aBlockchain"><div class="spin-dark"></div></div>
-    </div>
-
-  </div>
-
-    <!-- TAB 5: AUTORIZACIÓN DE VIÁTICOS -->
-  <div id="tab5" style="display:none">
+  <!-- TAB 3: AUTORIZACIÓN DE VIÁTICOS -->
+  <div id="tab3" style="display:none">
 
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:14px">
       <div style="display:flex;gap:6px;flex-wrap:wrap">
@@ -984,6 +858,7 @@ async function buildAdmin(){
   const now=new Date();
   document.getElementById('pMes').value=now.getMonth();
   window._firmaronEsteMesIds=new Set();
+  renderAdminPend(); // cargar pendientes al iniciar
   // Inicializar fechas de analytics
   const hoy=new Date(), hace30=new Date(hoy-30*86400000);
   const fmt=d=>d.toISOString().slice(0,10);
@@ -999,16 +874,18 @@ async function buildAdmin(){
 }
 
 async function aTab(n){
-  [1,2,3,4,5].forEach(i=>{
+  [1,2,3,4,5,6].forEach(i=>{
     const tab=document.getElementById('tab'+i);
     const btn=document.getElementById('t'+i);
     if(tab) tab.style.display=i===n?'block':'none';
     if(btn) btn.classList.toggle('on',i===n);
   });
-  if(n===2){await cargarEstadoFirmas();renderAdminInsp();}
-  if(n===3) renderAdminHist();
-  if(n===4) { cargarAnalytics(); cargarBlockchain(); }
-  if(n===5) cargarViaticos();
+  if(n===1) renderAdminPend();
+  if(n===2) renderAdminHist();
+  if(n===3) cargarViaticos();
+  if(n===4) cargarObras();
+  if(n===5){await cargarEstadoFirmas();renderAdminInsp();}
+  if(n===6){ cargarAnalytics(); cargarBlockchain(); }
 }
 
 function aPDFLoad(e){
@@ -2033,6 +1910,88 @@ function bufferToBase64url(buf) {
 }
 
 
+
+// ── Obras Irregulares ─────────────────────────────────────────
+let _obrasData = [];
+let _obrasFiltro = 'todos';
+
+async function cargarObras(){
+  document.getElementById('obrasList').innerHTML='<div class="spin-dark"></div>';
+  try{
+    const r = await api('GET', '/api/admin/obras');
+    _obrasData = Array.isArray(r) ? r : [];
+    // Badge pendientes
+    const pend = _obrasData.filter(o=>o.estado==='pendiente').length;
+    const badge = document.getElementById('badgeObras');
+    if(badge){ if(pend>0){badge.textContent=pend;badge.style.display='inline';}else badge.style.display='none'; }
+    renderObras();
+  }catch(e){
+    document.getElementById('obrasList').innerHTML='<div style="color:#888;padding:20px;text-align:center">Error al cargar denuncias</div>';
+  }
+}
+
+function filtrarObras(estado){
+  _obrasFiltro = estado;
+  ['ofTodos','ofPend','ofProceso','ofInsp','ofCerrada'].forEach(id=>{
+    const b=document.getElementById(id);
+    if(b){b.style.background='';b.style.color='';}
+  });
+  const map={todos:'ofTodos',pendiente:'ofPend',en_proceso:'ofProceso',inspeccionada:'ofInsp',cerrada:'ofCerrada'};
+  const btn=document.getElementById(map[estado]);
+  if(btn){btn.style.background='#003366';btn.style.color='#fff';}
+  renderObras();
+}
+
+function renderObras(){
+  const lista = _obrasFiltro==='todos' ? _obrasData : _obrasData.filter(o=>o.estado===_obrasFiltro);
+  const el = document.getElementById('obrasList');
+  if(!lista.length){
+    el.innerHTML='<div style="text-align:center;color:#aaa;padding:30px;font-size:13px">No hay denuncias'+(_obrasFiltro!=='todos'?' con este estado':'')+'</div>';
+    return;
+  }
+  const estadoColor={pendiente:'#E65100',en_proceso:'#1F5FA6',inspeccionada:'#1A7A3C',cerrada:'#888'};
+  const estadoBg   ={pendiente:'#FFF3E0',en_proceso:'#EBF4FB',inspeccionada:'#E8F5E9',cerrada:'#f5f5f5'};
+  const estadoLabel={pendiente:'⏳ Pendiente',en_proceso:'🔍 En proceso',inspeccionada:'✅ Inspeccionada',cerrada:'⬜ Cerrada'};
+  el.innerHTML = lista.map(o=>{
+    const ts = new Date(o.ts).toLocaleString('es-AR',{dateStyle:'short',timeStyle:'short'});
+    const mapsUrl = `https://www.google.com/maps?q=${o.lat},${o.lng}`;
+    return `
+    <div class="card" style="margin-bottom:10px;border:1.5px solid ${estadoBg[o.estado]||'#eee'}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+        <div>
+          <div style="font-weight:700;font-size:14px;color:#003366">${o.id}</div>
+          <div style="font-size:12px;color:#888;margin-top:2px">${ts}</div>
+        </div>
+        <span style="background:${estadoBg[o.estado]};color:${estadoColor[o.estado]};font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px">${estadoLabel[o.estado]||o.estado}</span>
+      </div>
+      <div style="font-size:13px;color:#555;line-height:1.8">
+        <div><b>📍 Dirección:</b> ${o.direccion||'Sin dirección detectada'}</div>
+        <div><b>🗺️ Coordenadas:</b> <a href="${mapsUrl}" target="_blank" style="color:#1F5FA6">${o.lat.toFixed(6)}, ${o.lng.toFixed(6)} → Ver en Google Maps</a></div>
+        ${o.descripcion?`<div><b>📝 Descripción:</b> ${o.descripcion}</div>`:''}
+        ${o.telefono?`<div><b>📞 Contacto:</b> ${o.telefono}</div>`:''}
+        ${o.cantFotos>0?`<div><b>📷 Fotos:</b> ${o.cantFotos} adjunta${o.cantFotos>1?'s':''}</div>`:''}
+        ${o.inspectorAsignado?`<div><b>👤 Inspector asignado:</b> ${o.inspectorAsignado}</div>`:''}
+      </div>
+      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+        <select onchange="cambiarEstadoObra('${o.id}',this.value)" style="flex:1;padding:7px;border:1px solid #ddd;border-radius:8px;font-size:12px;background:#f9f9f9">
+          <option value="pendiente"    ${o.estado==='pendiente'?'selected':''}>⏳ Pendiente</option>
+          <option value="en_proceso"   ${o.estado==='en_proceso'?'selected':''}>🔍 En proceso</option>
+          <option value="inspeccionada"${o.estado==='inspeccionada'?'selected':''}>✅ Inspeccionada</option>
+          <option value="cerrada"      ${o.estado==='cerrada'?'selected':''}>⬜ Cerrada</option>
+        </select>
+        <a href="${mapsUrl}" target="_blank" style="flex:1;padding:7px;background:#003366;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;text-align:center">🗺️ Ver en mapa</a>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function cambiarEstadoObra(id, estado){
+  try{
+    await api('PUT', '/api/admin/obras/'+id+'/estado', {estado});
+    await cargarObras();
+  }catch(e){ alert('Error al actualizar'); }
+}
+
 // ══════════════════════════════════════════
 //  CANVAS DE FIRMA
 // ══════════════════════════════════════════
@@ -2611,4 +2570,149 @@ window.addEventListener('load',()=>{
       </div>
 
     </div>
+  </div>
+  <!-- TAB 4: OBRAS IRREGULARES -->
+  <div id="tab4" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:14px">
+      <div style="font-size:13px;color:#888">Denuncias recibidas del formulario público</div>
+      <a href="/obras" target="_blank" style="background:#E8381A;color:#fff;padding:8px 14px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none">+ Ver formulario público</a>
+    </div>
+
+    <!-- Filtros -->
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+      <button class="bdg" id="ofTodos"    onclick="filtrarObras('todos')"       style="background:#003366;color:#fff">Todas</button>
+      <button class="bdg" id="ofPend"     onclick="filtrarObras('pendiente')"   >Pendientes</button>
+      <button class="bdg" id="ofProceso"  onclick="filtrarObras('en_proceso')"  >En proceso</button>
+      <button class="bdg" id="ofInsp"     onclick="filtrarObras('inspeccionada')">Inspeccionadas</button>
+      <button class="bdg" id="ofCerrada"  onclick="filtrarObras('cerrada')"     >Cerradas</button>
+    </div>
+
+    <div id="obrasList"><div class="spin-dark"></div></div>
+  </div>
+
+  <!-- TAB 5: INSPECTORES -->
+  <div id="tab5" style="display:none">
+    <!-- Resumen + Backup + Credenciales -->
+    <div class="card">
+      <div class="ctit">📊 Resumen del mes</div>
+      <div id="estadoFirmas" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div class="spin-dark"></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+        <a href="/api/admin/credenciales" download class="bs bsv" style="flex:1;padding:10px;font-size:12px;text-align:center;text-decoration:none;border-radius:8px">
+          📋 Descargar credenciales (CSV)
+        </a>
+        <button class="bs" style="flex:1;padding:10px;font-size:12px;background:#EBF4FB;color:#003366;border-radius:8px" onclick="backupFirmas()">
+          💾 Backup de firmas
+        </button>
+        <label class="bs" style="flex:1;padding:10px;font-size:12px;background:#EDF7F0;color:#1A7A3C;border-radius:8px;cursor:pointer;text-align:center">
+          📥 Restaurar backup<input type="file" accept=".json" style="display:none" onchange="restoreFirmas(event)">
+        </label>
+      </div>
+      <div class="st" id="stBackup"></div>
+    </div>
+    <!-- Lista con filtros -->
+    <!-- Botón agregar + modal -->
+    <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
+      <button onclick="abrirNuevoInsp()" style="background:#1A7A3C;color:#fff;border:none;border-radius:9px;padding:10px 16px;font-size:13px;font-weight:700;cursor:pointer">➕ Agregar inspector</button>
+    </div>
+    <div class="card">
+      <div class="ctit">👥 Inspectores habilitados (<span id="cInsp">207</span>)</div>
+      <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">
+        <button class="tab on" id="fTodos"   onclick="setFiltro('todos')"    style="flex:1;border-radius:8px;font-size:11px">Todos</button>
+        <button class="tab"    id="fFirmaron" onclick="setFiltro('firmaron')" style="flex:1;border-radius:8px;font-size:11px">✅ Firmaron este mes</button>
+        <button class="tab"    id="fFaltan"   onclick="setFiltro('faltan')"   style="flex:1;border-radius:8px;font-size:11px">⏳ Faltan firmar</button>
+        <button class="tab"    id="fSinFirma" onclick="setFiltro('sinFirma')" style="flex:1;border-radius:8px;font-size:11px">🖊️ Sin firma registrada</button>
+      </div>
+      <div class="fg" style="margin-bottom:10px">
+        <input type="text" id="busq" placeholder="Buscar por nombre, legajo o DNI…" oninput="filtrarInsp()" style="font-size:14px">
+      </div>
+      <div id="listInsp" style="max-height:520px;overflow-y:auto"><div class="spin-dark"></div></div>
+    </div>
+  </div>
+
+  <!-- TAB 6: ANALYTICS -->
+  <div id="tab6" style="display:none">
+
+    <!-- Filtro de fechas -->
+    <div class="card">
+      <div class="ctit">📊 Control de Calidad — Analytics de Sesiones</div>
+      <div class="frow" style="margin-bottom:10px">
+        <div class="fg" style="margin:0">
+          <label>Desde</label>
+          <input type="date" id="aDesde" style="font-size:13px" onchange="cargarAnalytics()">
+        </div>
+        <div class="fg" style="margin:0">
+          <label>Hasta</label>
+          <input type="date" id="aHasta" style="font-size:13px" onchange="cargarAnalytics()">
+        </div>
+      </div>
+      <button class="bs bsv" style="padding:9px 16px;font-size:12px" onclick="cargarAnalytics()">🔄 Actualizar</button>
+    </div>
+
+    <!-- KPIs principales -->
+    <div id="aKpis" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px"></div>
+
+    <!-- Gráficos fila 1 -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+      <div id="chartDispositivos" class="card"></div>
+      <div id="chartBrowsers" class="card"></div>
+    </div>
+
+    <!-- Sesiones por día -->
+    <div id="chartDias" class="card" style="margin-bottom:14px"></div>
+
+    <!-- Horas pico -->
+    <div id="chartHoras" class="card" style="margin-bottom:14px"></div>
+
+    <!-- Top inspectores -->
+    <div class="card" style="margin-bottom:14px">
+      <div class="ctit">🏆 Inspectores más activos</div>
+      <div id="aTopInsp"></div>
+    </div>
+
+    <!-- Últimas sesiones -->
+    <div class="card">
+      <div class="ctit" style="flex-wrap:wrap;gap:8px">
+        <span>🕐 Historial de sesiones</span>
+        <div style="display:flex;gap:6px;margin-left:auto;flex-wrap:wrap">
+          <select id="aSelRol" onchange="filtrarSesiones()" style="font-size:11px;padding:3px 7px;border:1px solid #ddd;border-radius:6px">
+            <option value="">Todos los roles</option>
+            <option value="inspector">Inspectores</option>
+            <option value="admin">Admins</option>
+          </select>
+          <select id="aSelLim" onchange="filtrarSesiones()" style="font-size:11px;padding:3px 7px;border:1px solid #ddd;border-radius:6px">
+            <option value="20">Últimas 20</option>
+            <option value="50">Últimas 50</option>
+            <option value="100">Últimas 100</option>
+            <option value="9999">Todas</option>
+          </select>
+        </div>
+      </div>
+      <div id="aUltimas" style="overflow-x:auto"></div>
+    </div>
+
+    <!-- Auditoría Biométrica -->
+    <div class="card" style="margin-top:12px">
+      <div class="ctit" onclick="toggleBioAudit()" style="cursor:pointer;user-select:none">
+        👆 Auditoría de firma biométrica
+        <span id="bioAuditArrow" style="margin-left:auto;font-size:12px">▼</span>
+      </div>
+      <div id="bioAuditPanel" style="display:none;margin-top:10px">
+        <div id="bioAuditData"><div class="spin-dark"></div></div>
+      </div>
+    </div>
+
+    <!-- Analytics Viáticos -->
+    <div class="card" style="margin-top:12px">
+      <div class="ctit">📋 Solicitudes de viáticos por delegación</div>
+      <div id="aViatStats"><div class="spin-dark"></div></div>
+    </div>
+
+    <!-- Blockchain Bitcoin -->
+    <div class="card" style="margin-top:12px">
+      <div class="ctit">⛓ Registro en blockchain Bitcoin</div>
+      <div id="aBlockchain"><div class="spin-dark"></div></div>
+    </div>
+
   </div>
