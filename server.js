@@ -354,13 +354,19 @@ app.post('/api/login', checkBruteForce, async (req, res) => {
   return res.status(401).json({ error: 'Usuario o contraseña incorrectos' });
   clearLoginAttempts(req);
   req.session.user = {
-    id:       user.id || user.username,
-    username: user.username,
-    role:     user.role,
-    nombre:   user.nombre || `${cap(user.apellido)}, ${cap(user.nombre)}`
+    id:          user.id || user.username,
+    username:    user.username,
+    role:        user.role,
+    nombre:      user.nombre || `${cap(user.apellido)}, ${cap(user.nombre)}`,
+    primerLogin: user.primerLogin === true,
   };
   if (user.role === 'inspector') req.session.user.inspId = user.id;
-  res.json({ ok: true, role: user.role, nombre: req.session.user.nombre });
+  res.json({
+    ok:          true,
+    role:        user.role,
+    nombre:      req.session.user.nombre,
+    primerLogin: user.primerLogin === true,
+  });
 });
 
 // POST /api/logout
@@ -1010,9 +1016,10 @@ app.post('/api/admin/inspector', requireAdmin, (req, res) => {
     legajo:   String(legajo).trim(),
     dni:      String(dni).trim(),
     username: username ? username.trim().toLowerCase() : genUser(),
-    password: password || String(legajo).trim(),
-    firma:    null,
-    passwordCambios: 0
+    password:    hashPassword(password || String(legajo).trim()), // VUL-04: hashear desde el inicio
+    firma:       null,
+    passwordCambios: 0,
+    primerLogin: true, // obligar cambio de contraseña al primer ingreso
   };
   data.inspectores.push(newInsp);
   // Ordenar por apellido
@@ -1909,6 +1916,48 @@ app.get('/api/verificar/:hash/estado-ots', (req, res) => {
   });
 });
 
+
+
+// POST /api/inspector/primer-cambio-password — cambio obligatorio primer login
+app.post('/api/inspector/primer-cambio-password', requireAuth, async (req, res) => {
+  const { nueva, confirmacion } = req.body;
+  const user = req.session.user;
+
+  if (!nueva || !confirmacion)
+    return res.status(400).json({ error: 'Completá todos los campos' });
+  if (nueva !== confirmacion)
+    return res.status(400).json({ error: 'Las contraseñas no coinciden' });
+  if (nueva.length < 8)
+    return res.status(400).json({ error: 'La contraseña debe tener al menos 8 caracteres' });
+  // Validar complejidad mínima
+  const tieneNumero   = /\d/.test(nueva);
+  const tieneMayuscula = /[A-Z]/.test(nueva);
+  const tieneMinuscula = /[a-z]/.test(nueva);
+  if (!tieneNumero || !tieneMayuscula || !tieneMinuscula)
+    return res.status(400).json({
+      error: 'La contraseña debe tener al menos una mayúscula, una minúscula y un número'
+    });
+  // Verificar que no sea igual al legajo (contraseña temporal)
+  const data = db.read('usuarios.json');
+  const idx  = data.inspectores.findIndex(i => i.username === user.username);
+  if (idx < 0) return res.status(404).json({ error: 'Inspector no encontrado' });
+  const insp = data.inspectores[idx];
+  if (nueva === String(insp.legajo))
+    return res.status(400).json({ error: 'La nueva contraseña no puede ser tu número de legajo' });
+
+  // Guardar nueva contraseña hasheada y marcar primerLogin como completado
+  data.inspectores[idx].password    = hashPassword(nueva);
+  data.inspectores[idx].primerLogin = false;
+  data.inspectores[idx].passwordCambios = 0; // no cuenta como cambio voluntario
+  db.write('usuarios.json', data);
+
+  // Actualizar sesión
+  req.session.user.primerLogin = false;
+  logSecurity('PRIMER_LOGIN_COMPLETADO', getIP(req), '/api/inspector/primer-cambio-password',
+    'Usuario: ' + user.username);
+
+  res.json({ ok: true, mensaje: 'Contraseña establecida correctamente. Ya podés usar FirmaRED.' });
+});
 
 // ── SPA fallback ───────────────────────────────────────────────
 app.get('*', (req, res) => {
