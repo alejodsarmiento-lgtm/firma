@@ -1458,11 +1458,13 @@ async function accionViat(id, accion){
       const sol = _viatData.find(s=>s.id===id);
       if(r.whatsapp){
         const fecha = sol.fecha ? `${sol.fecha.dia} de ${sol.fecha.mesNombre}` : sol.fecha;
-        const estadoLabel = accion==='aprobar'?'✅ APROBADA':'❌ RECHAZADA';
-        const msg = `Hola ${sol.solicitante}, su solicitud de viáticos para la delegación *${sol.delegacion}* del *${fecha}* con destino *${sol.destino}* ha sido *${estadoLabel}*.${obs?' Observaciones: '+obs:''}`;
+        const inspectores = (sol.inspectores||[]).map(i=>i.nombre||i.username).join(', ') || '—';
+        const saludo = accion==='aprobar'
+          ? `Hola *${sol.solicitante}*, te confirmo que tu solicitud de viáticos para *${inspectores}*, con destino *${sol.destino}*, para el día *${fecha}*, está *AUTORIZADA ✅*. Saludos, Subsecretaría de Inspección del Trabajo.`
+          : `Hola *${sol.solicitante}*, te informamos que tu solicitud de viáticos para *${inspectores}*, con destino *${sol.destino}*, para el día *${fecha}*, *NO ESTÁ AUTORIZADA ❌*.${obs ? ' Motivo: ' + obs : ''} Saludos, Subsecretaría de Inspección del Trabajo.`;
         const waNum = '549' + r.whatsapp.replace(/\D/g,'');
-        const waUrl = `https://wa.me/${waNum}?text=${encodeURIComponent(msg)}`;
-        if(confirm('Solicitud ' + (accion==='aprobar'?'aprobada':'rechazada') + '. ¿Notificar por WhatsApp al delegado?')){
+        const waUrl = `https://wa.me/${waNum}?text=${encodeURIComponent(saludo)}`;
+        if(confirm('Solicitud ' + (accion==='aprobar'?'aprobada':'rechazada') + '. ¿Enviar notificación por WhatsApp al delegado?')){
           window.open(waUrl,'_blank');
         }
       }
