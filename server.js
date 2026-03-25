@@ -61,10 +61,10 @@ app.use((req, res, next) => {
   res.locals.cspNonce = cspNonce;
   res.setHeader('Content-Security-Policy',
     "default-src 'self'; " +
-    "script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; " +
-    "style-src 'self' 'unsafe-inline'; " +
-    "img-src 'self' data: blob:; " +
-    "connect-src 'self' https://cdnjs.cloudflare.com; " +
+    "script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com; " +
+    "style-src 'self' 'unsafe-inline' https://unpkg.com; " +
+    "img-src 'self' data: blob: https://*.tile.openstreetmap.org; " +
+    "connect-src 'self' https://cdnjs.cloudflare.com https://nominatim.openstreetmap.org; " +
     "worker-src 'self' blob: https://cdnjs.cloudflare.com; " +
     "form-action 'self'; " +
     "base-uri 'self'; " +
