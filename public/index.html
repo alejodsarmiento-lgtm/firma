@@ -184,6 +184,53 @@ canvas.sp{display:block;width:100%;touch-action:none;cursor:crosshair}
 </div>
 
 
+
+<!-- ═══ PRIMER LOGIN ═══════════════════════════════════════════ -->
+<div id="vPrimerLogin" style="display:none;min-height:100vh;display:none;align-items:center;justify-content:center;padding:20px;background:linear-gradient(160deg,#002244,#1F5FA6)">
+  <div style="background:#fff;border-radius:18px;padding:36px 28px;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+    <div style="text-align:center;margin-bottom:24px">
+      <div style="font-size:40px;margin-bottom:10px">🔑</div>
+      <h2 style="font-size:20px;font-weight:800;color:#003366;margin-bottom:6px">Creá tu contraseña</h2>
+      <p style="font-size:13px;color:#888;line-height:1.5">Es tu primer ingreso. Debés establecer<br>una contraseña personal para continuar.</p>
+    </div>
+
+    <div style="background:#EBF4FB;border-radius:10px;padding:12px 14px;margin-bottom:20px;font-size:12px;color:#1F5FA6;line-height:1.6">
+      <b>Requisitos:</b> mínimo 8 caracteres, al menos una mayúscula, una minúscula y un número. No puede ser tu número de legajo.
+    </div>
+
+    <div style="margin-bottom:13px">
+      <label style="display:block;font-size:11px;font-weight:700;color:#003366;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">Nueva contraseña</label>
+      <input type="password" id="plNueva" placeholder="Mínimo 8 caracteres" autocomplete="new-password"
+        style="width:100%;padding:13px 15px;border:2px solid #D0DCE8;border-radius:10px;font-size:16px;outline:none;background:#F5F7FA;-webkit-appearance:none"
+        oninput="plValidar()">
+    </div>
+    <div style="margin-bottom:16px">
+      <label style="display:block;font-size:11px;font-weight:700;color:#003366;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">Repetir contraseña</label>
+      <input type="password" id="plConfirm" placeholder="Repetí la contraseña" autocomplete="new-password"
+        style="width:100%;padding:13px 15px;border:2px solid #D0DCE8;border-radius:10px;font-size:16px;outline:none;background:#F5F7FA;-webkit-appearance:none"
+        oninput="plValidar()">
+    </div>
+
+    <!-- Indicador de fortaleza -->
+    <div style="margin-bottom:14px">
+      <div id="plFuerzaBar" style="height:6px;border-radius:10px;background:#eee;overflow:hidden;margin-bottom:4px">
+        <div id="plFuerzaFill" style="height:100%;width:0%;border-radius:10px;transition:width .3s,background .3s"></div>
+      </div>
+      <div id="plFuerzaTxt" style="font-size:11px;color:#aaa"></div>
+    </div>
+
+    <div id="plErr" style="display:none;margin-bottom:12px;padding:10px 14px;background:#FDECEA;border-radius:9px;color:#C0392B;font-size:13px"></div>
+    <div id="plOk" style="display:none;margin-bottom:12px;padding:10px 14px;background:#EDF7F0;border-radius:9px;color:#1A7A3C;font-size:13px"></div>
+
+    <button id="plBtn" onclick="plGuardar()"
+      style="width:100%;padding:14px;background:#003366;color:#fff;border:none;border-radius:11px;font-size:16px;font-weight:700;cursor:pointer">
+      Establecer contraseña y continuar
+    </button>
+
+    <div id="plNombre" style="text-align:center;margin-top:14px;font-size:12px;color:#aaa"></div>
+  </div>
+</div>
+
 <!-- ═══ INSPECTOR ════════════════════════════════ -->
 <div id="vInsp" style="display:none">
 <div class="hdr">
@@ -667,6 +714,13 @@ async function doLogin() {
     if(r.error){errEl.textContent=r.error;errEl.style.display='block';return;}
     me = r;
     document.getElementById('lP').value='';
+    // Primer login — cambio de contraseña obligatorio
+    if(r.primerLogin === true){
+      document.getElementById('plNombre').textContent = r.nombre || '';
+      show('vPrimerLogin');
+      setTimeout(()=>document.getElementById('plNueva')?.focus(), 100);
+      return;
+    }
     // Registrar sesión en analytics (no bloquea)
     fetch('/api/analytics/session/start',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'}).catch(()=>{});
     if(r.role==='admin'){await buildAdmin();show('vAdmin');}
@@ -675,6 +729,86 @@ async function doLogin() {
     errEl.textContent='Error de conexión con el servidor.';errEl.style.display='block';
   }
 }
+
+// ══════════════════════════════════════════
+//  PRIMER LOGIN — Cambio obligatorio de contraseña
+// ══════════════════════════════════════════
+function plValidar() {
+  const nueva   = document.getElementById('plNueva').value;
+  const confirm = document.getElementById('plConfirm').value;
+  const fill    = document.getElementById('plFuerzaFill');
+  const txt     = document.getElementById('plFuerzaTxt');
+
+  // Calcular fortaleza
+  let score = 0;
+  if (nueva.length >= 8)              score++;
+  if (/[A-Z]/.test(nueva))            score++;
+  if (/[a-z]/.test(nueva))            score++;
+  if (/\d/.test(nueva))               score++;
+  if (/[^A-Za-z0-9]/.test(nueva))    score++;
+
+  const colores = ['#e53935','#E65100','#F9A825','#43A047','#1A5E2A'];
+  const labels  = ['Muy débil','Débil','Regular','Buena','Excelente'];
+  fill.style.width      = (score * 20) + '%';
+  fill.style.background = colores[score - 1] || '#eee';
+  txt.textContent       = nueva.length ? labels[score - 1] || '' : '';
+  txt.style.color       = colores[score - 1] || '#aaa';
+}
+
+async function plGuardar() {
+  const nueva    = document.getElementById('plNueva').value;
+  const confirm  = document.getElementById('plConfirm').value;
+  const errEl    = document.getElementById('plErr');
+  const okEl     = document.getElementById('plOk');
+  const btn      = document.getElementById('plBtn');
+  errEl.style.display = 'none';
+  okEl.style.display  = 'none';
+
+  if (!nueva || !confirm) {
+    errEl.textContent = 'Completá ambos campos.';
+    errEl.style.display = 'block'; return;
+  }
+  if (nueva !== confirm) {
+    errEl.textContent = 'Las contraseñas no coinciden.';
+    errEl.style.display = 'block'; return;
+  }
+  if (nueva.length < 8) {
+    errEl.textContent = 'La contraseña debe tener al menos 8 caracteres.';
+    errEl.style.display = 'block'; return;
+  }
+  if (!/[A-Z]/.test(nueva) || !/[a-z]/.test(nueva) || !/\d/.test(nueva)) {
+    errEl.textContent = 'Debe tener al menos una mayúscula, una minúscula y un número.';
+    errEl.style.display = 'block'; return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Guardando...';
+
+  try {
+    const r = await api('POST', '/api/inspector/primer-cambio-password', { nueva, confirmacion: confirm });
+    if (r.error) {
+      errEl.textContent = r.error;
+      errEl.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Establecer contraseña y continuar';
+      return;
+    }
+    okEl.textContent = '✅ ' + r.mensaje;
+    okEl.style.display = 'block';
+    me.primerLogin = false;
+    // Esperar 1.2s para que el inspector vea el mensaje y luego cargar la app
+    await new Promise(res => setTimeout(res, 1200));
+    fetch('/api/analytics/session/start',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'}).catch(()=>{});
+    await buildInsp();
+    show('vInsp');
+  } catch(e) {
+    errEl.textContent = 'Error de conexión. Intentá de nuevo.';
+    errEl.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Establecer contraseña y continuar';
+  }
+}
+
 async function doLogout(){
   await fetch('/api/analytics/session/end',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'}).catch(()=>{});
   await api('POST','/api/logout');
@@ -684,7 +818,7 @@ async function doLogout(){
   show('vLogin');
   setTimeout(()=>document.getElementById('lU').focus(),100);
 }
-function show(id){['vLogin','vInsp','vAdmin'].forEach(v=>{document.getElementById(v).style.display=v===id?(v==='vLogin'?'flex':'block'):'none';});}
+function show(id){['vLogin','vPrimerLogin','vInsp','vAdmin'].forEach(v=>{document.getElementById(v).style.display=v===id?(v==='vLogin'||v==='vPrimerLogin'?'flex':'block'):'none';});}
 
 // ══════════════════════════════════════════
 //  INSPECTOR
