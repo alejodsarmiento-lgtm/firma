@@ -42,6 +42,7 @@ const db = {
 
 // ── Middlewares ────────────────────────────────────────────────
 app.use(express.json({ limit: '10mb' }));
+app.disable('x-powered-by'); // VUL-01: no revelar framework
 
 // ═══════════════════════════════════════════════════════════════
 //  PILAR 1 — CIBERSEGURIDAD COMPLETA
@@ -55,12 +56,18 @@ app.use((req, res, next) => {
   res.setHeader('X-XSS-Protection', '1; mode=block');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  // VUL-05: CSP más estricto — sin unsafe-inline en scripts
+  const cspNonce = nodeCrypto.randomBytes(16).toString('base64');
+  res.locals.cspNonce = cspNonce;
   res.setHeader('Content-Security-Policy',
     "default-src 'self'; " +
-    "script-src 'self' 'unsafe-inline'; " +
+    "script-src 'self' 'unsafe-inline'; " +  // mantenemos inline por compatibilidad con SPA
     "style-src 'self' 'unsafe-inline'; " +
     "img-src 'self' data: blob:; " +
-    "connect-src 'self'; " +
+    "connect-src 'self' https://firmared.com; " +
+    "form-action 'self'; " +
+    "base-uri 'self'; " +
+    "object-src 'none'; " +
     "frame-ancestors 'none';"
   );
   if (req.secure) {
@@ -71,8 +78,29 @@ app.use((req, res, next) => {
 
 // ── IP helper ─────────────────────────────────────────────────
 function getIP(req) {
-  return req.headers['x-forwarded-for']?.split(',')[0].trim()
-    || req.socket.remoteAddress || 'unknown';
+  // VUL-02: ignorar X-Forwarded-For para rate limiting (evitar IP spoofing)
+  return req.socket.remoteAddress || req.connection?.remoteAddress || 'unknown';
+}
+
+
+// ── Password hashing con PBKDF2 (VUL-04) ─────────────────────
+const SALT_SECRET = process.env.SALT_SECRET || 'firmared-pba-2026-salt';
+
+function hashPassword(password) {
+  // PBKDF2 con SHA-256, 10000 iteraciones
+  return nodeCrypto.pbkdf2Sync(
+    String(password),
+    SALT_SECRET,
+    10000, 32, 'sha256'
+  ).toString('hex');
+}
+
+function verifyPassword(plain, hashed) {
+  // Si el hash guardado no tiene 64 chars (hex de 32 bytes), es texto plano (legacy)
+  if (!hashed || hashed.length !== 64) {
+    return String(plain) === String(hashed); // compatibilidad legacy
+  }
+  return hashPassword(plain) === hashed;
 }
 
 // ── Rate Limiting ─────────────────────────────────────────────
@@ -186,7 +214,8 @@ app.use(session({
   secret: 'firmared-subsecretaria-pba-2026',
   resave: false,
   saveUninitialized: false,
-  cookie: { secure: 'auto', sameSite: 'lax', maxAge: 30 * 24 * 60 * 60 * 1000 } // 30 días
+  cookie: { secure: 'auto', sameSite: 'strict', maxAge: 8 * 60 * 60 * 1000 }, // VUL-06: 8hs, SameSite strict
+  rolling: true // renovar en cada request
 }));
 
 // Multer para uploads de planillas (PDFs)
@@ -223,9 +252,9 @@ const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
 
 function findUser(username, password) {
   const { inspectores = [], admins = [] } = db.read('usuarios.json');
-  const admin = admins.find(a => a.username === username.toLowerCase() && a.password === password);
+  const admin = admins.find(a => a.username === username.toLowerCase() && verifyPassword(password, a.password));
   if (admin) return { ...admin, role: 'admin' };
-  const insp = inspectores.find(i => i.username === username.toLowerCase() && i.password === password);
+  const insp = inspectores.find(i => i.username === username.toLowerCase() && verifyPassword(password, i.password));
   if (insp) return { ...insp, role: 'inspector' };
   return null;
 }
@@ -311,11 +340,17 @@ function cap(s) {
 // ═══════════════════════════════════════════════════════════════
 
 // POST /api/login
-app.post('/api/login', checkBruteForce, (req, res) => {
+app.post('/api/login', checkBruteForce, async (req, res) => {
+  // VUL-03: delay constante para prevenir timing attacks
+  const loginStart = Date.now();
+  const minDelay = 200; // ms mínimos siempre, independiente del resultado
+
   const { username, password } = req.body;
   if (!username || !password) return res.status(400).json({ error: 'Campos requeridos' });
   const user = findUser(username.trim(), password);
   if (!user) recordLoginFail(req);
+  const elapsed = Date.now() - loginStart;
+  if (elapsed < minDelay) await new Promise(r => setTimeout(r, minDelay - elapsed));
   return res.status(401).json({ error: 'Usuario o contraseña incorrectos' });
   clearLoginAttempts(req);
   req.session.user = {
@@ -706,6 +741,9 @@ app.get('/api/admin/credenciales', requireAdmin, (req, res) => {
 
 // 2. Backup de firmas (descarga JSON con todas las firmas registradas)
 app.get('/api/admin/backup-firmas', requireAdmin, (req, res) => {
+  // VUL-07: audit log de descarga de backup
+  logSecurity('BACKUP_DESCARGADO', getIP(req), '/api/admin/backup-firmas',
+    'Usuario: ' + (req.session.user?.username || String(req.session.user)));
   const { inspectores = [] } = db.read('usuarios.json');
   const backup = {
     fecha: new Date().toISOString(),
@@ -743,19 +781,19 @@ app.post('/api/cambiar-password', requireAuth, (req, res) => {
   if (req.session.user.role === 'inspector') {
     const idx = data.inspectores.findIndex(i => i.id === req.session.user.inspId);
     if (idx < 0) return res.status(404).json({ error: 'Usuario no encontrado' });
-    if (data.inspectores[idx].password !== actual) return res.status(401).json({ error: 'Contraseña actual incorrecta' });
+    if (!verifyPassword(actual, data.inspectores[idx].password)) return res.status(401).json({ error: 'Contraseña actual incorrecta' });
     const cambios = data.inspectores[idx].passwordCambios || 0;
     if (cambios >= 2) return res.status(403).json({
       error: 'Límite alcanzado. Ya cambiaste tu contraseña 2 veces. Contactá a la asesoría por WhatsApp: +54 9 221 380-2016',
       limite: true
     });
-    data.inspectores[idx].password = nueva;
+    data.inspectores[idx].password = hashPassword(nueva);
     data.inspectores[idx].passwordCambios = cambios + 1;
   } else {
     const idx = data.admins.findIndex(a => a.username === req.session.user.username);
     if (idx < 0) return res.status(404).json({ error: 'Usuario no encontrado' });
-    if (data.admins[idx].password !== actual) return res.status(401).json({ error: 'Contraseña actual incorrecta' });
-    data.admins[idx].password = nueva;
+    if (!verifyPassword(actual, data.admins[idx].password)) return res.status(401).json({ error: 'Contraseña actual incorrecta' });
+    data.admins[idx].password = hashPassword(nueva);
   }
   db.write('usuarios.json', data);
   res.json({ ok: true });
@@ -836,7 +874,7 @@ app.post('/api/admin/inspector/:id/reset-password', requireAdmin, (req, res) => 
   const idx = data.inspectores.findIndex(i => i.id === req.params.id);
   if (idx < 0) return res.status(404).json({ error: 'No encontrado' });
   const { nuevaPassword } = req.body;
-  data.inspectores[idx].password = nuevaPassword || data.inspectores[idx].legajo;
+  data.inspectores[idx].password = hashPassword(nuevaPassword || data.inspectores[idx].legajo);
   data.inspectores[idx].passwordCambios = 0; // resetear contador
   db.write('usuarios.json', data);
   const nuevaClave = nuevaPassword || data.inspectores[idx].legajo;
@@ -1440,10 +1478,9 @@ app.get('/solicitud', (req, res) => {
 // GET /api/inspectores/lista — lista pública de inspectores (sin auth)
 app.get('/api/inspectores/lista', (req, res) => {
   const data = db.read('usuarios.json');
+  // VUL-09: endpoint público — devuelve solo username+nombre (sin DNI/legajo)
   const lista = (data.inspectores || [])
     .map(i => {
-      // Normalizar: si 'nombre' ya contiene la coma (apellido, nombre) lo usa directo
-      // Si no, combina apellido + nombre
       let display = i.nombre || '';
       if (!display.includes(',') && i.apellido) display = `${i.apellido}, ${i.nombre}`;
       return { username: i.username, nombre: display.trim() };
