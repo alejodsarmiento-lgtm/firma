@@ -680,14 +680,33 @@ function formatAddr(a, display) {
 }
 
 function irAMiUbicacion() {
-  if (!navigator.geolocation) return;
+  if (!navigator.geolocation) {
+    document.getElementById('mapHint').innerHTML = `
+      <span class="map-hint-icon">🔍</span>
+      <div class="map-hint-title">Buscá la dirección</div>
+      <div class="map-hint-sub">Tu dispositivo no soporta GPS.<br>Usá el buscador o mové el mapa.</div>`;
+    return;
+  }
+  // Mostrar hint de que se va a pedir permiso
+  document.getElementById('mapHint').innerHTML = `
+    <span class="map-hint-icon">📍</span>
+    <div class="map-hint-title">Permitir ubicación</div>
+    <div class="map-hint-sub">Necesitamos tu ubicación para centrar el mapa.<br>Solo se usa en este momento, no se almacena.</div>`;
+  document.getElementById('mapHint').classList.remove('hidden');
+
   navigator.geolocation.getCurrentPosition(pos => {
     const { latitude: lat, longitude: lng } = pos.coords;
     map.setView([lat, lng], 17, { animate: true });
-  }, () => {
-    // Sin permiso — centrar en PBA
-    map.setView([-34.9205, -57.9536], 13, { animate: true });
-  });
+    document.getElementById('mapHint').classList.add('hidden');
+  }, (err) => {
+    // Sin permiso o error — mostrar mensaje útil
+    document.getElementById('mapHint').innerHTML = `
+      <span class="map-hint-icon">👆</span>
+      <div class="map-hint-title">Tocá donde está la obra</div>
+      <div class="map-hint-sub">Buscá la dirección arriba o mové el mapa<br>hasta la ubicación de la obra.</div>`;
+    document.getElementById('mapHint').classList.remove('hidden');
+    map.setView([-34.9205, -57.9536], 12, { animate: true });
+  }, { timeout: 8000, enableHighAccuracy: true });
 }
 
 function confirmarUbicacion() {
