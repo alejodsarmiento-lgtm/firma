@@ -348,10 +348,12 @@ app.post('/api/login', checkBruteForce, async (req, res) => {
   const { username, password } = req.body;
   if (!username || !password) return res.status(400).json({ error: 'Campos requeridos' });
   const user = findUser(username.trim(), password);
-  if (!user) recordLoginFail(req);
-  const elapsed = Date.now() - loginStart;
-  if (elapsed < minDelay) await new Promise(r => setTimeout(r, minDelay - elapsed));
-  return res.status(401).json({ error: 'Usuario o contraseña incorrectos' });
+  if (!user) {
+    recordLoginFail(req);
+    const elapsed = Date.now() - loginStart;
+    if (elapsed < minDelay) await new Promise(r => setTimeout(r, minDelay - elapsed));
+    return res.status(401).json({ error: 'Usuario o contraseña incorrectos' });
+  }
   clearLoginAttempts(req);
   req.session.user = {
     id:          user.id || user.username,
