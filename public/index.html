@@ -141,6 +141,7 @@ canvas.sp{display:block;width:100%;touch-action:none;cursor:crosshair}
 .empty{text-align:center;padding:24px;color:#bbb;font-size:13px}
 @media(max-width:420px){.frow,.mg{grid-template-columns:1fr}.tab{font-size:11px;padding:8px 2px}}
 </style>
+<style>#tab4,#tab5,#tab6{max-width:680px;margin:0 auto;padding:16px 14px 60px;width:100%;box-sizing:border-box;display:none;}</style>
 </head>
 <body>
 
@@ -179,6 +180,17 @@ canvas.sp{display:block;width:100%;touch-action:none;cursor:crosshair}
     </div>
   </div>
 
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  const wrap = document.querySelector('#vAdmin .wrap');
+  [4,5,6].forEach(function(n){
+    const tab = document.getElementById('tab'+n);
+      wrap.appendChild(tab);
+    }
+  });
+});
+</script>
 </body>
 </html></div>
 </div>
@@ -699,7 +711,7 @@ async function doLogout(){
   show('vLogin');
   setTimeout(()=>document.getElementById('lU').focus(),100);
 }
-function show(id){['vLogin','vPrimerLogin','vInsp','vAdmin'].forEach(v=>{document.getElementById(v).style.display=v===id?(v==='vLogin'||v==='vPrimerLogin'?'flex':'block'):'none';});}
+function show(id){['vLogin','vPrimerLogin','vInsp','vAdmin'].forEach(v=>{document.getElementById(v).style.display=v===id?(v==='vLogin'||v==='vPrimerLogin'?'flex':'block'):'none';});['tab4','tab5','tab6'].forEach(t=>{const el=document.getElementById(t);if(el)el.style.display='none';});}
 
 // ══════════════════════════════════════════
 //  INSPECTOR
@@ -854,6 +866,11 @@ async function renderIHist(){
 //  ADMIN
 // ══════════════════════════════════════════
 async function buildAdmin(){
+  // Ocultar Analytics si el usuario no tiene acceso
+  if(me.noAnalytics){
+    const t6=document.getElementById('t6');
+    if(t6) t6.style.display='none';
+  }
   document.getElementById('aChip').innerHTML=(me.nombre||me.username||'Admin')+'<br><span style="opacity:.7;font-size:10px">Admin</span>';
   const now=new Date();
   document.getElementById('pMes').value=now.getMonth();
@@ -887,7 +904,7 @@ async function aTab(n){
   if(n===3) cargarViaticos();
   if(n===4) cargarObras();
   if(n===5){await cargarEstadoFirmas();renderAdminInsp();}
-  if(n===6){ cargarAnalytics(); cargarBlockchain(); }
+  if(n===6){ if(me&&me.noAnalytics){aTab(1);return;} cargarAnalytics(); cargarBlockchain(); }
 }
 
 function aPDFLoad(e){
@@ -2573,6 +2590,7 @@ window.addEventListener('load',()=>{
 
     </div>
   </div>
+</div>
   <!-- TAB 4: OBRAS IRREGULARES -->
   <div id="tab4" style="display:none">
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:14px">
