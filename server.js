@@ -369,7 +369,7 @@ function cap(s) {
 // ═══════════════════════════════════════════════════════════════
 
 // POST /api/login
-app.post('/api/login', checkBruteForce, async (req, res) => {
+app.post('/api/login', (req,res,next)=>{ if(typeof req.body.username!=='string'||typeof req.body.password!=='string') return res.status(400).json({error:'Usuario o contraseña incorrectos'}); next(); }, checkBruteForce, async (req, res) => {
   // VUL-01: validar que username y password sean strings — evita crash por objetos NoSQL
   if (typeof req.body.username !== 'string' || typeof req.body.password !== 'string') {
     return res.status(400).json({ error: 'Usuario o contraseña incorrectos' });
