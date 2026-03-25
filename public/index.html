@@ -376,6 +376,18 @@ canvas.sp{display:block;width:100%;touch-action:none;cursor:crosshair}
       </div>
       <div style="flex:1;overflow:hidden;min-height:400px">
         <iframe id="pdfFrame" style="width:100%;height:100%;min-height:420px;border:none" src=""></iframe>
+        <!-- Mensaje para mobile cuando el iframe no puede mostrar el PDF -->
+        <div id="pdfMobileMsg" style="display:none;padding:30px 20px;text-align:center">
+          <div style="font-size:48px;margin-bottom:16px">📄</div>
+          <div style="font-size:16px;font-weight:700;color:#003366;margin-bottom:8px">Planilla firmada lista</div>
+          <p style="font-size:13px;color:#888;margin-bottom:20px;line-height:1.5">
+            Tu dispositivo abre los PDFs en una app separada.<br>Tocá el botón para verla.
+          </p>
+          <a id="pdfMobileLink" href="#" target="_blank"
+            style="display:inline-block;background:#003366;color:#fff;padding:13px 24px;border-radius:10px;font-size:14px;font-weight:700;text-decoration:none">
+            📂 Abrir PDF firmado
+          </a>
+        </div>
       </div>
       <div style="padding:12px 16px;border-top:1px solid #eee;display:flex;gap:8px;flex-shrink:0">
         <a id="pdfDlBtn" href="#" download class="bs bsv" style="flex:1;text-align:center;text-decoration:none;padding:12px;font-size:13px">⬇️ Descargar PDF</a>
@@ -1217,22 +1229,56 @@ async function renderAdminHist(){
 // ══════════════════════════════════════════
 
 function openPdfModal(b64url, filename){
-  if(!b64url)return;
-  const modal=document.getElementById('pdfModal');
-  const frame=document.getElementById('pdfFrame');
-  const dlBtn=document.getElementById('pdfDlBtn');
-  frame.src=b64url;
-  dlBtn.href=b64url;
-  dlBtn.download=filename||'planilla_firmada.pdf';
-  modal.style.display='flex';
-  document.body.style.overflow='hidden';
+  if(!b64url) return;
+  const modal  = document.getElementById('pdfModal');
+  const frame  = document.getElementById('pdfFrame');
+  const dlBtn  = document.getElementById('pdfDlBtn');
+
+  // Convertir base64 a Blob URL — necesario para iOS Safari (no soporta data: en iframe)
+  const esMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  try {
+    const base64 = b64url.split(',')[1];
+    const bytes  = atob(base64);
+    const arr    = new Uint8Array(bytes.length);
+    for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+    const blob   = new Blob([arr], { type: 'application/pdf' });
+    const blobUrl = URL.createObjectURL(blob);
+
+    if (esMobile) {
+      // En mobile: abrir directamente en nueva pestaña (Safari no muestra PDFs en iframe)
+      frame.src = '';
+      frame.style.display = 'none';
+      document.getElementById('pdfMobileMsg').style.display = 'block';
+      document.getElementById('pdfMobileLink').href = blobUrl;
+      document.getElementById('pdfMobileLink').download = filename || 'planilla_firmada.pdf';
+    } else {
+      frame.style.display = 'block';
+      document.getElementById('pdfMobileMsg').style.display = 'none';
+      frame.src = blobUrl;
+    }
+    dlBtn.href     = blobUrl;
+    dlBtn.download = filename || 'planilla_firmada.pdf';
+    // Guardar para revocar cuando se cierre
+    modal._blobUrl = blobUrl;
+  } catch(e) {
+    // Fallback: data URL directo
+    frame.src  = b64url;
+    dlBtn.href = b64url;
+    dlBtn.download = filename || 'planilla_firmada.pdf';
+  }
+  modal.style.display   = 'flex';
+  document.body.style.overflow = 'hidden';
 }
 
 function closePdfModal(){
-  const modal=document.getElementById('pdfModal');
-  modal.style.display='none';
-  document.getElementById('pdfFrame').src='';
-  document.body.style.overflow='';
+  const modal = document.getElementById('pdfModal');
+  // Revocar blob URL para liberar memoria
+  if (modal._blobUrl) { URL.revokeObjectURL(modal._blobUrl); modal._blobUrl = null; }
+  modal.style.display = 'none';
+  document.getElementById('pdfFrame').src = '';
+  document.getElementById('pdfFrame').style.display = 'block';
+  document.getElementById('pdfMobileMsg').style.display = 'none';
+  document.body.style.overflow = '';
 }
 
 function downloadPdf(b64url, filename){
