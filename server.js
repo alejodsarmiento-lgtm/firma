@@ -2420,6 +2420,13 @@ const TRUST_STORE_LATAM = (() => {
     { file: 'ar_ac_onti_2020.crt',    pais: 'AR', nombre: 'AC ONTI 2020',            fmt: 'PEM' },
     { file: 'ar_ac_modernizacion.crt',pais: 'AR', nombre: 'AC Modernizacion PFDR',   fmt: 'AUTO' },
     { file: 'uy_acrn.cer',            pais: 'UY', nombre: 'ACRN Uruguay',            fmt: 'PEM' },
+    { file: 'br_icpbrasil_acraiz.crt',       pais: 'BR', nombre: 'ICP-Brasil AC Raiz',           fmt: 'DER' },
+    { file: 'br_icpbrasil_v10.crt',           pais: 'BR', nombre: 'ICP-Brasil v10',               fmt: 'DER' },
+    { file: 'docusign_digicert_root.crt',      pais: 'US', nombre: 'DigiCert Root (DocuSign)',     fmt: 'DER' },
+    { file: 'adobe_globalsign_root.crt',       pais: 'US', nombre: 'GlobalSign Root R3 (Adobe)',   fmt: 'DER' },
+    { file: 'f5_zapsign_globalsign.crt', pais: 'US', nombre: 'GlobalSign R3 (ZapSign/Adobe)', fmt: 'DER' },
+    { file: 'f5_docusign_intermediate.crt', pais: 'US', nombre: 'DigiCert SHA2 HA (DocuSign)', fmt: 'DER' },
+    { file: 'f5_docusign_root.crt', pais: 'US', nombre: 'DigiCert Root (DocuSign/Adobe)', fmt: 'DER' },
   ];
   const store = [];
   for (const { file, pais, nombre, fmt } of archivos) {
@@ -2613,6 +2620,28 @@ app.get('/api/inspector/mis-firmas', requireAuth, (req, res) => {
     derechos: 'Ley 25.326 — podés solicitar rectificacion o supresion a firmared@subsecretaria.gob.ar',
   });
 });
+
+
+// ── RFC 3161 Timestamp Verifier ──────────────────────────────────
+async function verificarRFC3161(pdfBuffer) {
+  try {
+    const { execSync } = require('child_process');
+    const os = require('os');
+    const tmpPDF = require('path').join(os.tmpdir(), 'rfc3161_' + Date.now() + '.pdf');
+    fs.writeFileSync(tmpPDF, pdfBuffer);
+    // Extraer timestamp embebido en el PDF
+    const result = execSync(
+      'openssl cms -in ' + tmpPDF + ' -inform DER -noverify -noout -print 2>&1 | grep -i "signingTime\|genTime" | head -3',
+      { encoding: 'utf8', timeout: 5000 }
+    ).trim();
+    fs.unlinkSync(tmpPDF);
+    if (result) {
+      return { disponible: true, timestamp: result };
+    }
+    return { disponible: false };
+  } catch(e) { return { disponible: false, error: e.message }; }
+}
+// rfc3161 marker
 
 // ── SPA fallback ───────────────────────────────────────────────
 app.get('*', (req, res) => {
