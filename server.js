@@ -205,6 +205,7 @@ app.use('/solicitud',   rateLimit(30,  60000));            // 30/min formulario
 
 
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.get('/', (req, res) => res.sendFile(path.join(PUBLIC_DIR, 'landing.html')));
 app.use(express.static(PUBLIC_DIR));
 app.use(session({
   secret: 'firmared-subsecretaria-pba-2026',
@@ -2343,6 +2344,12 @@ app.post('/api/verificar/universal', rateLimit(30, 60000), (req, res) => {
   res.redirect(307, '/api/motor/hash');
 });
 
+
+// ── Rutas /inspeccion ────────────────────────────────────────────
+app.get('/inspeccion/obras', (req, res) => res.sendFile(path.join(PUBLIC_DIR, 'obras.html')));
+app.get('/inspeccion/solicitud', (req, res) => res.sendFile(path.join(PUBLIC_DIR, 'solicitud.html')));
+app.get('/inspeccion', (req, res) => res.sendFile(path.join(PUBLIC_DIR, 'index.html')));
+app.get('/inspeccion/*', (req, res) => res.sendFile(path.join(PUBLIC_DIR, 'index.html')));
 
 // ── SPA fallback ───────────────────────────────────────────────
 app.get('*', (req, res) => {
