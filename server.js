@@ -533,6 +533,7 @@ app.post('/api/inspector/firmar', requireAuth, requirePrimerLoginCompletado, asy
 
     // Agregar QR al PDF
     const pdfDocQR  = await PDFDocument.load(signedBytes);
+    pdfDocQR.setSubject(provisionalHash); // FirmaRED: hash para verificacion
     const pages     = pdfDocQR.getPages();
     const lastPage  = pages[pages.length - 1];
     const { width: pgW } = lastPage.getSize();
@@ -2161,8 +2162,18 @@ app.post('/api/motor/pdf', rateLimit(20, 60000), multer({ storage: multer.memory
   const pdfBuffer = req.file.buffer;
   const resultados = [];
 
-  // Calcular hash SHA-256 del PDF
-  const hash = require('crypto').createHash('sha256').update(pdfBuffer).digest('hex');
+  // Leer hash desde metadatos del PDF (campo Subject, guardado por FirmaRED al firmar)
+  let hashFromMeta = null;
+  try {
+    const { PDFDocument: PDFDoc2 } = require('pdf-lib');
+    const pdfDoc2 = await PDFDoc2.load(pdfBuffer, { ignoreEncryption: true });
+    const subject = pdfDoc2.getSubject();
+    if (subject && /^[a-fA-F0-9]{64}$/.test(subject.trim())) {
+      hashFromMeta = subject.trim();
+    }
+  } catch(e) {}
+  const hashFile = require('crypto').createHash('sha256').update(pdfBuffer).digest('hex');
+  const hash = hashFromMeta || hashFile;
 
   // ── CAPA 1: FirmaRED ──────────────────────────────────
   const hist = db.read('historial.json');
@@ -2267,6 +2278,34 @@ app.post('/api/motor/hash', rateLimit(60, 60000), async (req, res) => {
 
   const resultados = [];
 
+  // ── CAPA 0: Woleet (blockchain independiente) ─────────────
+  const woleetCapa = await (async () => {
+    try {
+      const r = await new Promise(resolve => {
+        const req2 = require('https').request(
+          { hostname:'api.woleet.io', path:'/v1/anchorids?hash='+raw+'&size=1', method:'GET',
+            headers:{'User-Agent':'FirmaRED/2.0'}, timeout:5000 },
+          res2 => { let d=''; res2.on('data',c=>d+=c); res2.on('end',()=>resolve({s:res2.statusCode,b:d})); }
+        );
+        req2.on('error',()=>resolve({s:0,b:''}));
+        req2.on('timeout',()=>{req2.destroy();resolve({s:0,b:''});});
+        req2.end();
+      });
+      if (r.s === 200) {
+        const data = JSON.parse(r.b);
+        const ids = Array.isArray(data) ? data : (data.content || data.anchorIds || []);
+        if (ids.length > 0) {
+          return { capa:'Woleet · Blockchain', tipo:'blockchain', valido:true, icono:'⛓',
+            certeza:'Criptografica — fuente independiente',
+            data:{ estado:'Documento anclado en blockchain via Woleet', anchorId:ids[0], verificar:'https://app.woleet.io' }};
+        }
+      }
+    } catch(e) {}
+    return { capa:'Woleet · Blockchain', tipo:'blockchain', valido:false, icono:'—',
+      certeza:'Criptografica', data:{ estado:'Sin registro en Woleet' }};
+  })();
+  resultados.push(woleetCapa);
+
   // ── CAPA 1: FirmaRED ──────────────────────────────────────
   const hist = db.read('historial.json');
   const entry = hist.find(e => e.hash === raw);
@@ -2350,6 +2389,101 @@ app.get('/inspeccion/obras', (req, res) => res.sendFile(path.join(PUBLIC_DIR, 'o
 app.get('/inspeccion/solicitud', (req, res) => res.sendFile(path.join(PUBLIC_DIR, 'solicitud.html')));
 app.get('/inspeccion', (req, res) => res.sendFile(path.join(PUBLIC_DIR, 'index.html')));
 app.get('/inspeccion/*', (req, res) => res.sendFile(path.join(PUBLIC_DIR, 'index.html')));
+
+
+// ════════════════════════════════════════════════════════════════
+//  TRUST STORE LATAM — AC Raices: Argentina, Uruguay, Chile, Brasil
+// ════════════════════════════════════════════════════════════════
+const TRUST_STORE_DIR = path.join(__dirname, 'trust-store', 'latam');
+const TRUST_STORE_LATAM = (() => {
+  const { execSync } = require('child_process');
+  const archivos = [
+    { file: 'ar_acraiz_2007.crt',     pais: 'AR', nombre: 'AC Raiz Argentina 2007',  fmt: 'DER' },
+    { file: 'ar_acraiz_2016.crt',     pais: 'AR', nombre: 'AC Raiz Argentina 2016',  fmt: 'DER' },
+    { file: 'ar_ac_onti_2020.crt',    pais: 'AR', nombre: 'AC ONTI 2020',            fmt: 'DER' },
+    { file: 'ar_ac_modernizacion.crt',pais: 'AR', nombre: 'AC Modernizacion PFDR',   fmt: 'DER' },
+    { file: 'uy_acrn.cer',            pais: 'UY', nombre: 'ACRN Uruguay',            fmt: 'PEM' },
+  ];
+  const store = [];
+  for (const { file, pais, nombre, fmt } of archivos) {
+    const ruta = path.join(TRUST_STORE_DIR, file);
+    if (!fs.existsSync(ruta)) { console.log('[TS] Skip:', file); continue; }
+    try {
+      const pem = fmt === 'DER'
+        ? execSync('openssl x509 -inform DER -in "' + ruta + '" -out -', { encoding: 'utf8' })
+        : fs.readFileSync(ruta, 'utf8');
+      const subject = execSync('openssl x509 -noout -subject', { input: pem, encoding: 'utf8' }).trim();
+      const dates   = execSync('openssl x509 -noout -dates',   { input: pem, encoding: 'utf8' }).trim();
+      store.push({ pais, nombre, pem, subject, dates });
+    } catch(e) { console.error('[TS] Error:', file, e.message); }
+  }
+  console.log('[TrustStore LATAM] Cargados', store.length, 'certificados raiz');
+  return store;
+})();
+
+const TRUST_LISTS = (() => {
+  const lists = {};
+  for (const [file, nombre] of [['mercosur_tsl.xml','Mercosur TSL'],['cl_tsl.xml','Chile TSL ETSI']]) {
+    const ruta = path.join(TRUST_STORE_DIR, file);
+    if (fs.existsSync(ruta)) {
+      lists[file] = { xml: fs.readFileSync(ruta, 'utf8'), nombre, size: fs.statSync(ruta).size };
+      console.log('[TrustList] Cargado:', nombre, lists[file].size, 'bytes');
+    }
+  }
+  return lists;
+})();
+
+app.get('/api/truststore', (req, res) => {
+  res.json({
+    certificados: TRUST_STORE_LATAM.map(c => ({ pais: c.pais, nombre: c.nombre, subject: c.subject, dates: c.dates })),
+    trustLists: Object.entries(TRUST_LISTS).map(([k,v]) => ({ archivo: k, nombre: v.nombre, bytes: v.size })),
+    total_certs: TRUST_STORE_LATAM.length,
+    total_lists: Object.keys(TRUST_LISTS).length,
+  });
+});
+
+
+
+// ── Función auxiliar Woleet ───────────────────────────────────────
+async function verificarWoleet(hash) {
+  const https = require('https');
+  const buscar = (path) => new Promise(resolve => {
+    const req = https.request({ hostname:'api.woleet.io', path, method:'GET',
+      headers:{'User-Agent':'FirmaRED/2.0'}, timeout:6000 },
+      r => { let d=''; r.on('data',c=>d+=c); r.on('end',()=>resolve({status:r.statusCode,body:d})); });
+    req.on('error',()=>resolve({status:0,body:''}));
+    req.on('timeout',()=>{req.destroy();resolve({status:0,body:''});});
+    req.end();
+  });
+
+  try {
+    // Buscar anchorIds por hash SHA-256
+    const r1 = await buscar('/v1/anchorids?hash=' + hash + '&size=1');
+    if (r1.status === 200) {
+      const data = JSON.parse(r1.body);
+      const ids = data.content || data.anchorIds || [];
+      if (ids.length > 0) {
+        // Obtener receipt del primer anchor
+        const anchorId = ids[0];
+        const r2 = await buscar('/v1/receipt/' + anchorId);
+        if (r2.status === 200) {
+          const receipt = JSON.parse(r2.body);
+          return {
+            encontrado: true,
+            anchorId,
+            timestamp: receipt.timestamp,
+            txId: receipt.txId,
+            chain: receipt.chain || 'bitcoin',
+            receipt
+          };
+        }
+      }
+    }
+    return { encontrado: false };
+  } catch(e) {
+    return { encontrado: false, error: e.message };
+  }
+}
 
 // ── SPA fallback ───────────────────────────────────────────────
 app.get('*', (req, res) => {
