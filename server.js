@@ -2643,6 +2643,41 @@ async function verificarRFC3161(pdfBuffer) {
 }
 // rfc3161 marker
 
+
+// ── Proxy → AutoGuard (puerto 8082) ──────────────────────────────
+app.get('/api/autoguard/status', requireAuth, async (req, res) => {
+  try {
+    const r = await new Promise(resolve => {
+      const req2 = require('http').request(
+        { hostname:'127.0.0.1', port:8082, path:'/status', method:'GET', timeout:5000 },
+        r2 => { let d=''; r2.on('data',c=>d+=c); r2.on('end',()=>resolve({s:r2.statusCode,b:d})); }
+      );
+      req2.on('error',()=>resolve({s:0,b:''}));
+      req2.on('timeout',()=>{req2.destroy();resolve({s:0,b:''});});
+      req2.end();
+    });
+    if (r.s===200) return res.json(JSON.parse(r.b));
+    res.status(503).json({ok:false,error:'AutoGuard no disponible'});
+  } catch(e) { res.status(503).json({ok:false,error:e.message}); }
+});
+
+app.post('/api/autoguard/scan', requireAuth, async (req, res) => {
+  try {
+    const r = await new Promise(resolve => {
+      const req2 = require('http').request(
+        { hostname:'127.0.0.1', port:8082, path:'/scan', method:'POST', timeout:60000 },
+        r2 => { let d=''; r2.on('data',c=>d+=c); r2.on('end',()=>resolve({s:r2.statusCode,b:d})); }
+      );
+      req2.on('error',()=>resolve({s:0,b:''}));
+      req2.on('timeout',()=>{req2.destroy();resolve({s:0,b:''});});
+      req2.end();
+    });
+    if (r.s===200) return res.json(JSON.parse(r.b));
+    res.status(503).json({ok:false});
+  } catch(e) { res.status(503).json({ok:false,error:e.message}); }
+});
+
+
 // ── SPA fallback ───────────────────────────────────────────────
 app.get('*', (req, res) => {
   res.sendFile(path.join(PUBLIC_DIR, 'index.html'));

@@ -1,0 +1,88 @@
+[
+  {
+    "ts": "2026-03-26T23:26:29.101Z",
+    "nivel": "INFO",
+    "msg": "=== SCAN COMPLETO en 2.0s ==="
+  },
+  {
+    "ts": "2026-03-26T23:26:29.100Z",
+    "nivel": "INFO",
+    "msg": "Chile TSL OK — próxima actualización en NaN días"
+  },
+  {
+    "ts": "2026-03-26T23:26:29.097Z",
+    "nivel": "WARN",
+    "msg": "Paquetes críticos con actualización disponible: express, multer",
+    "paquetes": [
+      {
+        "nombre": "express",
+        "actual": "4.22.1",
+        "nueva": "5.2.1"
+      },
+      {
+        "nombre": "multer",
+        "actual": "1.4.5-lts.2",
+        "nueva": "2.1.1"
+      }
+    ]
+  },
+  {
+    "ts": "2026-03-26T23:26:28.578Z",
+    "nivel": "INFO",
+    "msg": "Integridad OK — ningún archivo modificado inesperadamente"
+  },
+  {
+    "ts": "2026-03-26T23:26:28.576Z",
+    "nivel": "WARN",
+    "msg": "Puertos inesperados detectados",
+    "ports": "State  Recv-Q Send-Q Local Address:Port Peer Address:PortProcess                                                 \nLISTEN 0      4096   127.0.0.53%lo:53        0.0.0.0:*    users:((\"systemd-resolve\",pi"
+  },
+  {
+    "ts": "2026-03-26T23:26:28.518Z",
+    "nivel": "INFO",
+    "msg": "npm audit OK — 0 vulnerabilidades bajas"
+  },
+  {
+    "ts": "2026-03-26T23:26:27.590Z",
+    "nivel": "INFO",
+    "msg": "Certificados verificados — 1 alertas"
+  },
+  {
+    "ts": "2026-03-26T23:26:27.223Z",
+    "nivel": "INFO",
+    "msg": "SSL OK — vence en 87 días"
+  },
+  {
+    "ts": "2026-03-26T23:26:27.168Z",
+    "nivel": "INFO",
+    "msg": "Alerta CRITICAL — WhatsApp generado",
+    "url": "https://api.whatsapp.com/send?phone=5492213802016&text=%F0%9F%9A%A8%20*FirmaRED%20AutoGuard*%0A%0A*A"
+  },
+  {
+    "ts": "2026-03-26T23:26:27.167Z",
+    "nivel": "CRITICAL",
+    "msg": "Health check: 1 fallas",
+    "fallaron": [
+      {
+        "check": "motor_hash",
+        "ok": "",
+        "detail": "HTTP 0"
+      }
+    ]
+  },
+  {
+    "ts": "2026-03-26T23:26:27.120Z",
+    "nivel": "INFO",
+    "msg": "AutoGuard HTTP API en http://127.0.0.1:8082"
+  },
+  {
+    "ts": "2026-03-26T23:26:27.112Z",
+    "nivel": "INFO",
+    "msg": "=== SCAN INICIADO ==="
+  },
+  {
+    "ts": "2026-03-26T23:26:27.111Z",
+    "nivel": "INFO",
+    "msg": "FirmaRED AutoGuard arrancando..."
+  }
+]
