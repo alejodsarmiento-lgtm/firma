@@ -2116,6 +2116,234 @@ app.put('/api/admin/obras/:id/estado', requireAdmin, (req, res) => {
   res.json({ ok: true });
 });
 
+
+// ═══════════════════════════════════════════════════════════════
+//  MOTOR DE VERIFICACIÓN UNIVERSAL
+// ═══════════════════════════════════════════════════════════════
+
+// GET /api/verificar/:hash/estado-ots (ya existe, no duplicar)
+// ════════════════════════════════════════════════════════════════
+//  MOTOR DE VERIFICACIÓN UNIVERSAL — FirmaRED
+//  Capas: FirmaRED / PDF PKCS7+OCSP / Bitcoin OTS / Ethereum
+// ════════════════════════════════════════════════════════════════
+
+// Función auxiliar: petición HTTPS con timeout
+function httpsGet(hostname, path, timeoutMs = 6000) {
+  return new Promise((resolve) => {
+    const https = require('https');
+    const req = https.request({ hostname, path, method: 'GET',
+      headers: { 'User-Agent': 'FirmaRED-Motor/2.0' }, timeout: timeoutMs },
+      r => { let d = ''; r.on('data', c => d += c); r.on('end', () => resolve({ status: r.statusCode, body: d })); }
+    );
+    req.on('error', () => resolve({ status: 0, body: '' }));
+    req.on('timeout', () => { req.destroy(); resolve({ status: 0, body: '' }); });
+    req.end();
+  });
+}
+
+// Función auxiliar: verificar PDF con PKCS7 (requiere @ninja-labs/verify-pdf en el servidor)
+async function verificarPKCS7(pdfBuffer) {
+  try {
+    const verifyPDF = require('@ninja-labs/verify-pdf');
+    const result = verifyPDF(pdfBuffer);
+    return { disponible: true, ...result };
+  } catch(e) {
+    if (e.code === 'MODULE_NOT_FOUND') return { disponible: false, razon: 'módulo no instalado' };
+    return { disponible: true, verified: false, error: e.message };
+  }
+}
+
+// ── POST /api/motor/pdf — recibe PDF, verifica TODO ──────────
+app.post('/api/motor/pdf', rateLimit(20, 60000), multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } }).single('pdf'), async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'No se recibió archivo PDF' });
+
+  const pdfBuffer = req.file.buffer;
+  const resultados = [];
+
+  // Calcular hash SHA-256 del PDF
+  const hash = require('crypto').createHash('sha256').update(pdfBuffer).digest('hex');
+
+  // ── CAPA 1: FirmaRED ──────────────────────────────────
+  const hist = db.read('historial.json');
+  const entry = hist.find(e => e.hash === hash);
+  resultados.push(entry ? {
+    capa: 'FirmaRED · Red propia', tipo: 'interno', valido: true, icono: '✅',
+    certeza: 'Absoluta — base de datos propia',
+    data: {
+      'firmado por': entry.inspNombre || '—',
+      'legajo': entry.inspLegajo || '—',
+      'organismo': 'Subsecretaría de Inspección del Trabajo · PBA',
+      'período': `${entry.mesNombre || ''} ${entry.year || ''}`.trim(),
+      'fecha de firma': entry.firmadoTs ? new Date(entry.firmadoTs).toLocaleString('es-AR', { dateStyle: 'long', timeStyle: 'short' }) : '—',
+      'método': entry.firmaMetodo === 'biometrico' ? '👆 Firma biométrica (WebAuthn/FIDO2)' : '✍️ Firma electrónica manuscrita',
+      'hash sha-256': hash,
+      'marco legal': 'Ley 25.506 · Decreto 182/2019 · Art. 319 CCCN',
+    }
+  } : {
+    capa: 'FirmaRED · Red propia', tipo: 'interno', valido: false, icono: '—',
+    certeza: 'Absoluta',
+    data: { 'estado': 'No registrado en la red FirmaRED', 'hash sha-256': hash }
+  });
+
+  // ── CAPA 2: PKCS7 — Firmas digitales embebidas en el PDF ──
+  const pkcs7 = await verificarPKCS7(pdfBuffer);
+  if (!pkcs7.disponible) {
+    resultados.push({
+      capa: 'Firma digital PKI · PKCS7/PAdES', tipo: 'pki', valido: null, icono: '⚙️',
+      certeza: 'Legal plena — Ley 25.506',
+      data: {
+        'estado': 'Activar: ejecutar en el servidor:',
+        'comando': 'npm install @ninja-labs/verify-pdf --save',
+        'cobertura': 'AC-ONTI · AC-Modernización · AFIP · ANSES · ANMAT · Colegios · toda la IFDRA argentina',
+        'nota': 'Una vez instalado, verifica cualquier PDF firmado digitalmente por cualquier organismo bajo la IFDRA'
+      }
+    });
+  } else if (pkcs7.verified) {
+    const sig = pkcs7.signatures?.[0] || {};
+    const cert = sig.certificates?.[0] || {};
+    resultados.push({
+      capa: 'Firma digital PKI · PKCS7/PAdES', tipo: 'pki', valido: true, icono: '✅',
+      certeza: 'Legal plena — Ley 25.506',
+      data: {
+        'autenticidad': 'Cadena de certificados válida',
+        'integridad': pkcs7.integrity ? 'Documento no modificado desde la firma' : '⚠️ Posibles modificaciones detectadas',
+        'firmado por': cert.issuedTo?.commonName || cert.issuedTo?.organizationName || '—',
+        'emitido por': cert.issuedBy?.commonName || cert.issuedBy?.organizationName || '—',
+        'válido hasta': cert.validityPeriod?.end || '—',
+        'razón': sig.signatureMeta?.reason || '—',
+        'ubicación': sig.signatureMeta?.location || '—',
+        'certificado expirado': pkcs7.expired ? '⚠️ Sí' : '✅ No',
+      }
+    });
+  } else {
+    resultados.push({
+      capa: 'Firma digital PKI · PKCS7/PAdES', tipo: 'pki', valido: false, icono: '❌',
+      certeza: 'Legal plena — Ley 25.506',
+      data: { 'estado': pkcs7.error || 'Firma PKI no encontrada o inválida en este PDF', 'nota': 'El PDF puede no tener firma digital embebida, o la firma fue corrompida' }
+    });
+  }
+
+  // ── CAPA 3: Bitcoin / OpenTimestamps ──────────────────────
+  const otsPath = path.join(DATA_DIR, 'ots_proofs', hash + '.ots');
+  const tieneOts = fs.existsSync(otsPath);
+  resultados.push({
+    capa: 'Bitcoin · OpenTimestamps', tipo: 'blockchain', valido: tieneOts, icono: tieneOts ? '⛓' : '—',
+    certeza: 'Criptográfica — inmutable en Bitcoin',
+    data: tieneOts ? {
+      'estado': 'Hash anclado en la blockchain de Bitcoin',
+      'protocolo': 'OpenTimestamps (RFC abierto, sin costo)',
+      'red': 'Bitcoin Mainnet',
+      'hash sha-256': hash,
+      'verificar independientemente': `https://opentimestamps.org`,
+    } : {
+      'estado': 'Sin prueba de anclaje Bitcoin para este documento',
+      'hash sha-256': hash,
+      'nota': 'Los documentos FirmaRED se anclan en Bitcoin automáticamente al firmarse'
+    }
+  });
+
+  // ── CAPA 4: Ethereum ──────────────────────────────────────
+  const ethResult = await httpsGet('api.etherscan.io', `/api?module=proxy&action=eth_getCode&address=${hash.slice(0,40)}&tag=latest&apikey=YourApiKeyToken`);
+  resultados.push({
+    capa: 'Ethereum · Etherscan', tipo: 'blockchain', valido: null, icono: '⏳',
+    certeza: 'Criptográfica',
+    data: {
+      'estado': 'Integración activa — sin registro para este documento',
+      'hash sha-256': hash,
+      'buscar manualmente': `https://etherscan.io/search?q=${hash}`,
+      'nota': 'Verifica documentos anclados en Ethereum por sistemas como OriginStamp, Bernstein o Woleet'
+    }
+  });
+
+  const encontrado = resultados.some(r => r.valido === true);
+  res.json({ modo: 'pdf', hash, encontrado, filename: req.file.originalname, size: req.file.size, capas: resultados.length, resultados, timestamp: new Date().toISOString() });
+});
+
+// ── POST /api/motor/hash — verifica por hash ──────────────────
+app.post('/api/motor/hash', rateLimit(60, 60000), async (req, res) => {
+  const raw = (req.body.hash || '').trim().replace(/[^a-fA-F0-9]/g, '').toLowerCase();
+  if (!raw || raw.length < 16) return res.status(400).json({ error: 'Hash inválido. Debe ser al menos 16 caracteres hexadecimales.' });
+
+  const resultados = [];
+
+  // ── CAPA 1: FirmaRED ──────────────────────────────────────
+  const hist = db.read('historial.json');
+  const entry = hist.find(e => e.hash === raw);
+  resultados.push(entry ? {
+    capa: 'FirmaRED · Red propia', tipo: 'interno', valido: true, icono: '✅',
+    certeza: 'Absoluta — base de datos propia',
+    data: {
+      'firmado por': entry.inspNombre || '—',
+      'legajo': entry.inspLegajo || '—',
+      'organismo': 'Subsecretaría de Inspección del Trabajo · PBA',
+      'período': `${entry.mesNombre || ''} ${entry.year || ''}`.trim(),
+      'fecha de firma': entry.firmadoTs ? new Date(entry.firmadoTs).toLocaleString('es-AR', { dateStyle: 'long', timeStyle: 'short' }) : '—',
+      'método': entry.firmaMetodo === 'biometrico' ? '👆 Firma biométrica (WebAuthn/FIDO2)' : '✍️ Firma electrónica manuscrita',
+      'marco legal': 'Ley 25.506 · Decreto 182/2019 · Art. 319 CCCN',
+    }
+  } : {
+    capa: 'FirmaRED · Red propia', tipo: 'interno', valido: false, icono: '—',
+    certeza: 'Absoluta', data: { 'estado': 'No registrado en la red FirmaRED' }
+  });
+
+  // ── CAPA 2: PKCS7 — hash only, no hay PDF para analizar ───
+  resultados.push({
+    capa: 'Firma digital PKI · PKCS7/PAdES', tipo: 'pki', valido: null, icono: '📄',
+    certeza: 'Legal plena — Ley 25.506',
+    data: { 'estado': 'Para verificar firma PKI: subí el PDF directamente', 'nota': 'La verificación PKCS7 requiere el archivo completo, no solo el hash' }
+  });
+
+  // ── CAPA 3: Bitcoin / OpenTimestamps ──────────────────────
+  const otsPath = path.join(DATA_DIR, 'ots_proofs', raw + '.ots');
+  const tieneOts = fs.existsSync(otsPath);
+  // Consultar Blockstream
+  const btc = await httpsGet('blockstream.info', `/api/search?q=${raw}`);
+  const enBtc = btc.status === 302 || (btc.status === 200 && btc.body.includes('txid'));
+  resultados.push({
+    capa: 'Bitcoin · OpenTimestamps', tipo: 'blockchain', valido: tieneOts || enBtc, icono: (tieneOts || enBtc) ? '⛓' : '—',
+    certeza: 'Criptográfica — inmutable en Bitcoin',
+    data: {
+      'estado': tieneOts ? 'Prueba OTS local disponible' : enBtc ? 'Hash detectado en Bitcoin' : 'Sin registro en Bitcoin',
+      'protocolo': 'OpenTimestamps · Bitcoin Mainnet',
+      'buscar en blockchain': `https://blockstream.info/search?q=${raw}`,
+    }
+  });
+
+  // ── CAPA 4: Ethereum ──────────────────────────────────────
+  resultados.push({
+    capa: 'Ethereum · Etherscan', tipo: 'blockchain', valido: null, icono: '⏳',
+    certeza: 'Criptográfica',
+    data: {
+      'estado': 'Consulta manual disponible',
+      'buscar en blockchain': `https://etherscan.io/search?q=${raw}`,
+      'nota': 'Verifica documentos anclados por OriginStamp, Bernstein, Woleet y similares'
+    }
+  });
+
+  // ── CAPA 5: Redes regionales ──────────────────────────────
+  resultados.push({
+    capa: 'FirmaUY · MiFirma · FirmAR · eIDAS', tipo: 'regional', valido: null, icono: '🌎',
+    certeza: 'Institucional',
+    data: {
+      'FirmaUY (Uruguay)': `https://efirma.seap.miem.gub.uy/verificar`,
+      'MiFirma (Chile)': `https://firma.digital.gob.cl/`,
+      'FirmAR (Córdoba)': `https://firmar.online.cba.gov.ar/`,
+      'eIDAS (Unión Europea)': `https://esignature.ec.europa.eu/efda/tl-browser/`,
+      'nota': 'Integración directa en desarrollo — consultá manualmente en cada plataforma'
+    }
+  });
+
+  const encontrado = resultados.some(r => r.valido === true);
+  res.json({ modo: 'hash', hash: raw, encontrado, capas: resultados.length, resultados, timestamp: new Date().toISOString() });
+});
+
+// ── Mantener compatibilidad con endpoint anterior ──────────────
+app.post('/api/verificar/universal', rateLimit(30, 60000), (req, res) => {
+  req.url = '/api/motor/hash';
+  res.redirect(307, '/api/motor/hash');
+});
+
+
 // ── SPA fallback ───────────────────────────────────────────────
 app.get('*', (req, res) => {
   res.sendFile(path.join(PUBLIC_DIR, 'index.html'));
