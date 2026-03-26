@@ -553,3 +553,15 @@ function pulsar(id) {
 (()=>{
   const p = new URLSearchParams(location.search);
   const h = p.get('hash') || location.pathname
+.match(/verificar\/([a-fA-F0-9]{32,})/)?.[1];
+  if(h) { document.getElementById('hashInput').value=h; window.addEventListener('load',()=>setTimeout(()=>ejecutar('hash',h),600)); }
+})();
+</script>
+</body>
+</html>
+.match(/verificar\/([a-fA-F0-9]{32,})/)?.[1];
+  if(h) { document.getElementById('hashInput').value=h; window.addEventListener('load',()=>setTimeout(()=>ejecutar('hash',h),600)); }
+})();
+</script>
+</body>
+</html>
