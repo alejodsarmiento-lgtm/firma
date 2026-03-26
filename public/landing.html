@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FirmaRED — Motor de verificación universal</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,200;0,400;0,700;1,200;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080808;--s:rgba(255,255,255,.04);--b:rgba(255,255,255,.08);
+  --t:#f5f5f2;--m:rgba(245,245,242,.4);--d:rgba(245,245,242,.15);
+  --green:#00c87a;--gd:rgba(0,200,122,.1);--gb:rgba(0,200,122,.25);
+  --red:#e05555;--rd:rgba(224,85,85,.08);--rb:rgba(224,85,85,.2);
+  --blue:rgba(120,160,255,.85);--bd:rgba(120,160,255,.06);--bb:rgba(120,160,255,.2);
+  --amber:#f0a500;--ad:rgba(240,165,0,.08);--ab:rgba(240,165,0,.2);
+  --gray:rgba(245,245,242,.5);
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--t);font-family:'Fraunces',serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;opacity:.028;pointer-events:none;z-index:0;
+  background:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:20;padding:22px 48px;display:flex;align-items:center;justify-content:space-between}
+.logo{font-weight:700;font-size:18px;letter-spacing:-.02em;color:var(--t);text-decoration:none}
+.nav-link{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--m);text-decoration:none;transition:color .2s}
+.nav-link:hover{color:var(--t)}
+
+/* HERO */
+.hero{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:100px 20px 60px}
+.eyebrow{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.25em;text-transform:uppercase;color:var(--d);margin-bottom:32px;display:flex;align-items:center;gap:12px}
+.eyebrow::before,.eyebrow::after{content:'';flex:0 0 24px;height:1px;background:var(--d)}
+h1{font-size:clamp(42px,7vw,96px);font-weight:200;line-height:.97;letter-spacing:-.04em;margin-bottom:12px;max-width:840px}
+h1 em{font-style:italic}
+h1 strong{font-weight:700}
+.tagline{font-size:clamp(14px,1.6vw,18px);font-weight:200;font-style:italic;color:var(--m);margin-bottom:48px}
+
+/* MOTOR */
+.motor{width:100%;max-width:700px}
+.motor-tabs{display:flex;gap:0;margin-bottom:12px;border:1px solid var(--b);border-radius:6px;overflow:hidden}
+.mtab{flex:1;background:transparent;border:none;color:var(--m);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;padding:11px;cursor:pointer;transition:all .2s;border-right:1px solid var(--b)}
+.mtab:last-child{border-right:none}
+.mtab.on{background:var(--s);color:var(--t)}
+.mtab:hover:not(.on){background:rgba(255,255,255,.02);color:var(--gray)}
+
+/* Tab contenido */
+.tab-content{display:none}
+.tab-content.on{display:block}
+
+/* Hash input */
+.hash-box{display:flex;border:1px solid var(--b);border-radius:6px;overflow:hidden;background:var(--s);transition:border-color .2s}
+.hash-box:focus-within{border-color:rgba(245,245,242,.3)}
+.hash-input{flex:1;background:transparent;border:none;outline:none;font-family:'DM Mono',monospace;font-size:13px;color:var(--t);padding:18px 20px;letter-spacing:.02em}
+.hash-input::placeholder{color:var(--d)}
+.go-btn{background:rgba(245,245,242,.07);border:none;border-left:1px solid var(--b);color:var(--t);font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;padding:18px 28px;cursor:pointer;transition:background .15s;white-space:nowrap}
+.go-btn:hover{background:rgba(245,245,242,.14)}
+.go-btn:disabled{opacity:.3;cursor:not-allowed}
+
+/* PDF drop zone */
+.drop-zone{border:1px dashed var(--b);border-radius:6px;padding:32px;text-align:center;cursor:pointer;transition:all .2s;background:var(--s);position:relative}
+.drop-zone:hover,.drop-zone.drag{border-color:rgba(245,245,242,.3);background:rgba(255,255,255,.03)}
+.drop-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.drop-icon{font-size:28px;margin-bottom:8px}
+.drop-title{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--gray);margin-bottom:4px}
+.drop-sub{font-size:13px;color:var(--m);font-weight:200;font-style:italic}
+.drop-file-name{font-family:'DM Mono',monospace;font-size:11px;color:var(--green);margin-top:8px}
+
+/* QR */
+.qr-area{border:1px solid var(--b);border-radius:6px;padding:28px;text-align:center;background:var(--s)}
+.qr-icon{font-size:36px;margin-bottom:10px}
+.qr-label{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--gray);margin-bottom:6px}
+.qr-note{font-size:13px;color:var(--m);font-weight:200;font-style:italic;margin-bottom:16px}
+.qr-btn{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;background:var(--s);border:1px solid var(--b);color:var(--t);padding:12px 24px;border-radius:4px;cursor:pointer;transition:all .2s}
+.qr-btn:hover{background:rgba(245,245,242,.08)}
+
+/* Progress */
+.progress{width:100%;max-width:700px;display:none;margin-top:12px}
+.p-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--m);margin-bottom:6px;text-align:left}
+.p-bar{height:1px;background:var(--b);border-radius:1px;overflow:hidden}
+.p-fill{height:100%;background:var(--green);width:0%;transition:width .4s ease}
+
+/* Hint */
+.hint{width:100%;max-width:700px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.06em;color:var(--d);text-align:center;margin-top:10px}
+
+/* RESULTADOS */
+.results{width:100%;max-width:700px;margin-top:16px;display:none;text-align:left;animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* Global badge */
+.global{border-radius:6px;padding:18px 22px;margin-bottom:10px;display:flex;align-items:center;gap:14px}
+.global.found{background:var(--gd);border:1px solid var(--gb)}
+.global.notfound{background:var(--rd);border:1px solid var(--rb)}
+.global.loading{background:var(--s);border:1px solid var(--b)}
+.g-icon{font-size:26px;flex-shrink:0}
+.g-title{font-family:'Fraunces',serif;font-size:clamp(17px,2.5vw,22px);font-weight:700;letter-spacing:-.02em;margin-bottom:2px}
+.g-title.found{color:var(--green)}
+.g-title.notfound{color:var(--red)}
+.g-sub{font-size:13px;font-weight:200;font-style:italic;color:var(--m)}
+
+/* Capas */
+.capas{display:flex;flex-direction:column;gap:6px}
+.capa{border-radius:6px;overflow:hidden;animation:fadeIn .35s ease both}
+.ch{display:flex;align-items:center;gap:12px;padding:13px 16px;cursor:pointer;transition:background .15s;border:1px solid transparent;border-radius:6px}
+.ch.open{border-radius:6px 6px 0 0}
+.ch.found{background:var(--gd);border-color:var(--gb)}
+.ch.missing{background:var(--s);border-color:var(--b)}
+.ch.pending{background:var(--ad);border-color:var(--ab)}
+.ch.info{background:var(--bd);border-color:var(--bb)}
+.ch.action{background:rgba(255,200,0,.05);border-color:rgba(255,200,0,.2)}
+.ch:hover:not(.found){background:rgba(255,255,255,.04)}
+.c-icon{font-size:17px;flex-shrink:0;width:22px;text-align:center}
+.c-name{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.05em;text-transform:uppercase;flex:1}
+.c-name.found{color:var(--green)}
+.c-name.missing{color:var(--m)}
+.c-name.pending{color:var(--amber)}
+.c-name.info{color:var(--blue)}
+.c-name.action{color:#ffd060}
+.c-cert{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.06em;color:var(--d)}
+.c-tog{font-family:'DM Mono',monospace;font-size:10px;color:var(--d);flex-shrink:0;transition:transform .2s}
+.c-tog.open{transform:rotate(180deg)}
+.cb{border:1px solid var(--b);border-top:none;border-radius:0 0 6px 6px;background:rgba(0,0,0,.2);display:none;padding:14px 16px}
+.cb.open{display:block}
+.dr{display:flex;gap:10px;padding:6px 0;border-bottom:1px solid rgba(245,245,242,.04)}
+.dr:last-child{border-bottom:none}
+.dk{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--d);flex:0 0 120px;padding-top:1px}
+.dv{font-size:13px;font-weight:200;color:rgba(245,245,242,.75);line-height:1.4;word-break:break-all}
+.dv.mono{font-family:'DM Mono',monospace;font-size:11px}
+.dv.cmd{font-family:'DM Mono',monospace;font-size:11px;background:rgba(255,200,0,.08);border:1px solid rgba(255,200,0,.2);padding:4px 8px;border-radius:3px;color:#ffd060;display:inline-block;margin-top:2px}
+.ext{color:var(--green);text-decoration:none;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.04em;border-bottom:1px solid var(--gb);padding-bottom:1px;transition:all .15s}
+.ext:hover{border-bottom-color:var(--green)}
+
+/* Contador */
+.counter{margin-top:48px;display:flex;flex-direction:column;align-items:center;gap:4px}
+.cnt-n{font-size:clamp(36px,5vw,60px);font-weight:700;letter-spacing:-.05em;line-height:1;font-variant-numeric:tabular-nums}
+.cnt-l{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--d)}
+
+/* Hash feed */
+.hash-feed{margin-top:24px;width:100%;max-width:540px}
+.hrow{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(245,245,242,.05);animation:fadeIn .4s ease both}
+.hv{font-family:'DM Mono',monospace;font-size:11px;color:var(--d)}
+.ha{font-family:'DM Mono',monospace;font-size:10px;color:rgba(245,245,242,.14)}
+
+/* CTA */
+.cta{margin-top:44px;display:flex;flex-direction:column;align-items:center;gap:12px}
+.btn-join{border:1px solid rgba(245,245,242,.2);color:var(--t);font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;padding:14px 36px;text-decoration:none;position:relative;overflow:hidden;transition:all .2s}
+.btn-join::before{content:'';position:absolute;inset:0;background:var(--t);transform:scaleX(0);transform-origin:left;transition:transform .25s}
+.btn-join:hover::before{transform:scaleX(1)}
+.btn-join span{position:relative;z-index:1;transition:color .25s}
+.btn-join:hover span{color:var(--bg)}
+.access{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--d);text-decoration:none;transition:color .2s}
+.access:hover{color:var(--m)}
+
+/* Pie */
+.adopters{position:relative;z-index:1;border-top:1px solid var(--b);padding:20px 48px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.al{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--d)}
+.alist{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.aitem{font-size:13px;font-weight:200;font-style:italic;color:rgba(245,245,242,.32)}
+.adot{width:4px;height:4px;border-radius:50%;background:var(--d)}
+.acta{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--d);text-decoration:none;border-bottom:1px solid var(--b);padding-bottom:1px;transition:all .2s}
+.acta:hover{color:var(--m)}
+.lbar{border-top:1px solid rgba(245,245,242,.04);padding:16px 48px;display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+.li{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.05em;color:rgba(245,245,242,.12)}
+@media(max-width:600px){nav,adopters,.lbar{padding:16px 20px}.hero{padding:90px 20px 60px}.mtab{font-size:9px;padding:9px 6px}.motor-tabs .mtab:nth-child(3){display:none}}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="logo">FirmaRED</a>
+  <a href="/inspeccion" class="nav-link">Acceder al sistema →</a>
+</nav>
+
+<section class="hero">
+  <div class="eyebrow">Protocolo abierto de firma digital</div>
+  <h1><em>Cualquier</em> documento.<br><strong>Un solo protocolo abierto.</strong></h1>
+  <p class="tagline">Verificable. Permanente. Sin intermediarios.</p>
+
+  <!-- MOTOR -->
+  <div class="motor">
+    <div class="motor-tabs">
+      <button class="mtab on" onclick="setTab('hash')">🔍 Por código / hash</button>
+      <button class="mtab" onclick="setTab('pdf')">📄 Subir PDF</button>
+      <button class="mtab" onclick="setTab('qr')">📷 Escanear QR</button>
+    </div>
+
+    <!-- Tab hash -->
+    <div class="tab-content on" id="tab-hash">
+      <div class="hash-box">
+        <input class="hash-input" id="hashInput" type="text"
+          placeholder="Pegá el código de verificación o hash SHA-256..."
+          autocomplete="off" spellcheck="false"
+          onkeydown="if(event.key==='Enter')runHash()">
+        <button class="go-btn" id="hashBtn" onclick="runHash()">Verificar</button>
+      </div>
+    </div>
+
+    <!-- Tab PDF -->
+    <div class="tab-content" id="tab-pdf">
+      <div class="drop-zone" id="dropZone"
+        ondragover="event.preventDefault();this.classList.add('drag')"
+        ondragleave="this.classList.remove('drag')"
+        ondrop="handleDrop(event)">
+        <input type="file" accept="application/pdf" onchange="handleFile(event)">
+        <div class="drop-icon">📄</div>
+        <div class="drop-title">Subir documento PDF</div>
+        <div class="drop-sub">Arrastrá o hacé clic para seleccionar</div>
+        <div class="drop-file-name" id="dropFileName"></div>
+      </div>
+    </div>
+
+    <!-- Tab QR -->
+    <div class="tab-content" id="tab-qr">
+      <div class="qr-area">
+        <div class="qr-icon">📷</div>
+        <div class="qr-label">Escanear código QR del documento</div>
+        <div class="qr-note">Apuntá la cámara al QR impreso en el documento firmado</div>
+        <button class="qr-btn" onclick="abrirCamara()">Abrir cámara</button>
+        <div id="qrMsg" style="font-family:'DM Mono',monospace;font-size:11px;color:var(--m);margin-top:10px"></div>
+        <video id="qrVideo" style="display:none;width:100%;max-width:300px;margin:12px auto;border-radius:6px;border:1px solid var(--b)" playsinline></video>
+      </div>
+    </div>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress" id="progress">
+    <div class="p-label" id="pLabel">Verificando...</div>
+    <div class="p-bar"><div class="p-fill" id="pFill"></div></div>
+  </div>
+
+  <!-- Hint -->
+  <div class="hint" id="hint">
+    Ingresá el código de cualquier documento firmado con FirmaRED, subí el PDF directamente, o escaneá su QR
+  </div>
+
+  <!-- Resultados -->
+  <div class="results" id="results"></div>
+
+  <!-- Contador -->
+  <div class="counter">
+    <div class="cnt-n" id="cTotal">—</div>
+    <div class="cnt-l">documentos verificados en la red</div>
+  </div>
+  <div class="hash-feed" id="hashFeed"></div>
+
+  <div class="cta">
+    <a href="mailto:firmared@subsecretaria.gob.ar" class="btn-join"><span>Sumate al protocolo</span></a>
+    <a href="/inspeccion" class="access">Acceder al sistema →</a>
+  </div>
+</section>
+
+<div class="adopters">
+  <span class="al">En la red</span>
+  <div class="alist">
+    <span class="adot"></span>
+    <span class="aitem">Subsecretaría de Inspección del Trabajo · PBA</span>
+    <span class="adot"></span>
+    <span class="aitem" style="opacity:.35;font-size:12px">Tu organismo</span>
+  </div>
+  <a href="mailto:firmared@subsecretaria.gob.ar" class="acta">Adoptar el protocolo</a>
+</div>
+<div class="lbar">
+  <span class="li">Ley 25.506</span><span class="li">·</span>
+  <span class="li">Decreto 182/2019</span><span class="li">·</span>
+  <span class="li">Art. 319 CCCN</span><span class="li">·</span>
+  <span class="li">Ley 25.326</span><span class="li">·</span>
+  <span class="li">Bitcoin · OpenTimestamps</span>
+</div>
+
+<script>
+// ════════════════════════════════════════════
+// ESTADO
+// ════════════════════════════════════════════
+let activeTab = 'hash';
+let selectedFile = null;
+let qrStream = null;
+
+// ════════════════════════════════════════════
+// TABS
+// ════════════════════════════════════════════
+function setTab(t) {
+  activeTab = t;
+  document.querySelectorAll('.mtab').forEach((b,i) => b.classList.toggle('on', ['hash','pdf','qr'][i]===t));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('on'));
+  document.getElementById('tab-'+t).classList.add('on');
+  limpiar();
+  if(t==='hash') setTimeout(()=>document.getElementById('hashInput').focus(),100);
+}
+
+// ════════════════════════════════════════════
+// HASH
+// ════════════════════════════════════════════
+async function runHash() {
+  const v = document.getElementById('hashInput').value.trim();
+  const h = v.replace(/[^a-fA-F0-9]/g,'').toLowerCase();
+  if(!h||h.length<16){ pulsar('hashInput'); return; }
+  await ejecutar('hash', h);
+}
+
+// ════════════════════════════════════════════
+// PDF
+// ════════════════════════════════════════════
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('dropZone').classList.remove('drag');
+  const f = e.dataTransfer.files[0];
+  if(f && f.type==='application/pdf') procesarFile(f);
+}
+function handleFile(e) {
+  const f = e.target.files[0];
+  if(f) procesarFile(f);
+}
+function procesarFile(f) {
+  selectedFile = f;
+  document.getElementById('dropFileName').textContent = '📋 ' + f.name + ' (' + (f.size/1024).toFixed(1) + ' KB)';
+  setTimeout(()=>ejecutar('pdf'), 300);
+}
+
+// ════════════════════════════════════════════
+// QR SCANNER
+// ════════════════════════════════════════════
+async function abrirCamara() {
+  const msg = document.getElementById('qrMsg');
+  const video = document.getElementById('qrVideo');
+  try {
+    qrStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+    video.srcObject = qrStream;
+    video.style.display = 'block';
+    await video.play();
+    msg.textContent = 'Cámara activa — apuntá al QR del documento';
+    // Intentar leer QR con BarcodeDetector si está disponible
+    if('BarcodeDetector' in window) {
+      const bd = new BarcodeDetector({ formats: ['qr_code'] });
+      const scan = setInterval(async () => {
+        try {
+          const codes = await bd.detect(video);
+          if(codes.length > 0) {
+            clearInterval(scan);
+            const val = codes[0].rawValue;
+            cerrarCamara();
+            // Extraer hash de la URL si viene del QR de FirmaRED
+            const match = val.match(/verificar\/([a-fA-F0-9]{32,})/);
+            const hash = match ? match[1] : val.replace(/[^a-fA-F0-9]/g,'');
+            if(hash.length >= 16) {
+              document.getElementById('hashInput').value = hash;
+              setTab('hash');
+              await ejecutar('hash', hash);
+            }
+          }
+        } catch(e){}
+      }, 500);
+      setTimeout(()=>clearInterval(scan), 30000);
+    } else {
+      msg.textContent = 'Cámara activa. Copiá el código del QR y pegalo en la pestaña "Por código".';
+    }
+  } catch(e) {
+    msg.textContent = 'No se pudo acceder a la cámara. Copiá el código manualmente.';
+    video.style.display = 'none';
+  }
+}
+function cerrarCamara() {
+  if(qrStream) { qrStream.getTracks().forEach(t=>t.stop()); qrStream=null; }
+  document.getElementById('qrVideo').style.display='none';
+}
+
+// ════════════════════════════════════════════
+// MOTOR CENTRAL
+// ════════════════════════════════════════════
+async function ejecutar(modo, hashVal) {
+  limpiar();
+  document.getElementById('hashBtn') && (document.getElementById('hashBtn').disabled = true);
+  mostrarProgress(15, 'Verificando en FirmaRED...');
+
+  try {
+    let data;
+
+    if(modo === 'pdf' && selectedFile) {
+      mostrarProgress(25, 'Calculando hash del documento...');
+      await delay(200);
+      mostrarProgress(45, 'Verificando firmas digitales embebidas (PKCS7)...');
+      const fd = new FormData();
+      fd.append('pdf', selectedFile);
+      const r = await fetch('/api/motor/pdf', { method: 'POST', body: fd });
+      mostrarProgress(75, 'Consultando blockchain Bitcoin...');
+      await delay(300);
+      mostrarProgress(95, 'Analizando resultados...');
+      data = await r.json();
+
+    } else {
+      mostrarProgress(35, 'Consultando red FirmaRED...');
+      await delay(200);
+      mostrarProgress(65, 'Consultando blockchain Bitcoin...');
+      const r = await fetch('/api/motor/hash', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ hash: hashVal })
+      });
+      mostrarProgress(90, 'Analizando resultados...');
+      data = await r.json();
+    }
+
+    mostrarProgress(100, 'Verificación completada');
+    await delay(350);
+    ocultarProgress();
+    renderResultados(data);
+
+  } catch(e) {
+    ocultarProgress();
+    renderError('Error de conexión. Verificá tu internet e intentá de nuevo.');
+  }
+
+  document.getElementById('hashBtn') && (document.getElementById('hashBtn').disabled = false);
+}
+
+// ════════════════════════════════════════════
+// RENDER
+// ════════════════════════════════════════════
+function renderResultados(data) {
+  const el = document.getElementById('results');
+  el.style.display = 'block';
+  document.getElementById('hint').style.display = 'none';
+
+  const gCls = data.encontrado ? 'found' : 'notfound';
+  const gIco = data.encontrado ? '✅' : '🔍';
+  const gTit = data.encontrado ? 'Documento auténtico' : 'No encontrado en la red';
+  const capasValidas = (data.resultados||[]).filter(r=>r.valido===true).length;
+  const gSub = data.encontrado
+    ? `Verificado en ${capasValidas} fuente${capasValidas>1?'s':''} · ${data.modo==='pdf'?'Análisis de archivo PDF':'Búsqueda por hash'}`
+    : 'El documento no está registrado en ninguna fuente verificable conocida.';
+
+  let html = `<div class="global ${gCls}"><div class="g-icon">${gIco}</div><div>
+    <div class="g-title ${gCls}">${gTit}</div>
+    <div class="g-sub">${gSub}</div>
+    ${data.filename ? `<div class="g-sub" style="font-family:'DM Mono',monospace;font-size:10px;margin-top:3px">${data.filename}</div>` : ''}
+  </div></div><div class="capas">`;
+
+  (data.resultados||[]).forEach((capa, idx) => {
+    const cls = capa.valido===true?'found':capa.valido===false?'missing':capa.tipo==='blockchain'?'pending':capa.tipo==='regional'?'info':'action';
+    const autoOpen = capa.valido===true;
+
+    let rows = '';
+    if(capa.data) {
+      Object.entries(capa.data).forEach(([k,v]) => {
+        if(!v) return;
+        const isLink = typeof v==='string' && v.startsWith('http');
+        const isCmd  = k==='comando';
+        if(isCmd) rows += `<div class="dr"><span class="dk">${k}</span><span class="dv"><span class="dv cmd">${v}</span></span></div>`;
+        else if(isLink) rows += `<div class="dr"><span class="dk">${k}</span><span class="dv"><a href="${v}" target="_blank" class="ext">${v.replace('https://','').split('/')[0]} →</a></span></div>`;
+        else rows += `<div class="dr"><span class="dk">${k}</span><span class="dv${String(v).length<50&&!String(v).includes(' ')?' mono':''}">${v}</span></div>`;
+      });
+    }
+
+    html += `<div class="capa" style="animation-delay:${idx*70}ms">
+      <div class="ch ${cls}${autoOpen?' open':''}" onclick="toggle(${idx})" id="ch${idx}">
+        <span class="c-icon">${capa.icono||'—'}</span>
+        <span class="c-name ${cls}">${capa.capa}</span>
+        <span class="c-cert">${capa.certeza||''}</span>
+        <span class="c-tog${autoOpen?' open':''}" id="ct${idx}">▼</span>
+      </div>
+      <div class="cb${autoOpen?' open':''}" id="cb${idx}">${rows||'<div class="dr"><span class="dk">estado</span><span class="dv">Sin datos</span></div>'}</div>
+    </div>`;
+  });
+
+  html += '</div>';
+  el.innerHTML = html;
+  el.scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
+function toggle(i) {
+  const body = document.getElementById('cb'+i);
+  const tog  = document.getElementById('ct'+i);
+  const head = document.getElementById('ch'+i);
+  const open = body.classList.contains('open');
+  body.classList.toggle('open', !open);
+  tog.classList.toggle('open', !open);
+  head.classList.toggle('open', !open);
+}
+
+function renderError(msg) {
+  const el = document.getElementById('results');
+  el.style.display = 'block';
+  el.innerHTML = `<div class="global notfound"><div class="g-icon">⚠️</div><div><div class="g-title notfound">Error</div><div class="g-sub">${msg}</div></div></div>`;
+}
+
+// ════════════════════════════════════════════
+// UTILITIES
+// ════════════════════════════════════════════
+function limpiar() {
+  document.getElementById('results').style.display = 'none';
+  document.getElementById('results').innerHTML = '';
+  ocultarProgress();
+  document.getElementById('hint').style.display = 'block';
+}
+function mostrarProgress(pct, lbl) {
+  document.getElementById('progress').style.display = 'block';
+  document.getElementById('hint').style.display = 'none';
+  document.getElementById('pLabel').textContent = lbl;
+  document.getElementById('pFill').style.width = pct + '%';
+}
+function ocultarProgress() {
+  document.getElementById('progress').style.display = 'none';
+  document.getElementById('pFill').style.width = '0%';
+}
+function delay(ms) { return new Promise(r=>setTimeout(r,ms)); }
+function pulsar(id) {
+  const el = document.getElementById(id);
+  el.style.outline = '1px solid var(--red)';
+  setTimeout(()=>el.style.outline='',800);
+  el.focus();
+}
+
+// ════════════════════════════════════════════
+// STATS
+// ════════════════════════════════════════════
+(async () => {
+  try {
+    const d = await fetch('/api/stats').then(r=>r.json());
+    if(d.total !== undefined) {
+      const el = document.getElementById('cTotal');
+      let cur = Math.max(0, d.total - 10);
+      el.textContent = cur.toLocaleString('es-AR');
+      const iv = setInterval(()=>{ cur++; el.textContent=cur.toLocaleString('es-AR'); if(cur>=d.total)clearInterval(iv); }, 60);
+    }
+    if(d.recientes?.length) {
+      document.getElementById('hashFeed').innerHTML = d.recientes.slice(0,4).map((h,i)=>{
+        const diff = Math.floor((Date.now()-new Date(h.ts))/1000);
+        const ago  = diff<60?diff+'s':diff<3600?Math.floor(diff/60)+'m':Math.floor(diff/3600)+'h';
+        return `<div class="hrow" style="animation-delay:${i*100}ms"><span class="hv">${h.hash}</span><span class="ha">${ago}</span></div>`;
+      }).join('');
+    }
+  } catch(e){}
+})();
+
+// Leer hash de URL (cuando viene de un QR)
+(()=>{
+  const p = new URLSearchParams(location.search);
+  const h = p.get('hash') || location.pathname.match(/verificar\/([a-fA-F0-9]{32,})/)?.[1];
+  if(h) { document.getElementById('hashInput').value=h; window.addEventListener('load',()=>setTimeout(()=>ejecutar('hash',h),600)); }
+})();
+</script>
+</body>
+</html>
