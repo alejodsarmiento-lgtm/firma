@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Política de Privacidad — FirmaRED</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,200;0,400;0,700;1,200&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#080808;--t:#f5f5f2;--m:rgba(245,245,242,.5);--d:rgba(245,245,242,.15);--b:rgba(245,245,242,.08);--green:#00c87a}
+body{background:var(--bg);color:var(--t);font-family:'Fraunces',serif;-webkit-font-smoothing:antialiased;line-height:1.7}
+nav{padding:22px 48px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--b)}
+.logo{font-weight:700;font-size:18px;letter-spacing:-.02em;color:var(--t);text-decoration:none}
+.back{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--m);text-decoration:none;transition:color .2s}
+.back:hover{color:var(--t)}
+.container{max-width:740px;margin:0 auto;padding:64px 24px 96px}
+.eyebrow{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.25em;text-transform:uppercase;color:var(--d);margin-bottom:24px}
+h1{font-size:clamp(32px,5vw,52px);font-weight:200;letter-spacing:-.03em;line-height:1.1;margin-bottom:8px}
+.subtitle{font-size:15px;font-weight:200;font-style:italic;color:var(--m);margin-bottom:48px;padding-bottom:48px;border-bottom:1px solid var(--b)}
+.updated{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.08em;color:var(--d)}
+h2{font-size:20px;font-weight:400;letter-spacing:-.02em;margin:40px 0 12px;color:var(--t)}
+p{font-size:15px;font-weight:200;color:var(--m);margin-bottom:16px}
+ul{margin:0 0 16px 20px;font-size:15px;font-weight:200;color:var(--m)}
+li{margin-bottom:8px}
+.highlight{background:rgba(0,200,122,.06);border:1px solid rgba(0,200,122,.15);border-radius:6px;padding:16px 20px;margin:24px 0}
+.highlight p{margin:0;color:rgba(245,245,242,.7)}
+.mono{font-family:'DM Mono',monospace;font-size:12px;color:var(--d)}
+table{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:14px}
+th{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--d);text-align:left;padding:8px 12px;border-bottom:1px solid var(--b)}
+td{padding:10px 12px;border-bottom:1px solid rgba(245,245,242,.04);color:var(--m);font-weight:200;vertical-align:top}
+td:first-child{color:var(--t);font-weight:400;width:35%}
+.contact{margin-top:48px;padding-top:32px;border-top:1px solid var(--b)}
+a{color:var(--green);text-decoration:none}
+a:hover{text-decoration:underline}
+footer{border-top:1px solid var(--b);padding:20px 48px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.08em;color:rgba(245,245,242,.15);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+</style>
+</head>
+<body>
+<nav>
+  <a href="/" class="logo">FirmaRED</a>
+  <a href="/" class="back">← Volver al inicio</a>
+</nav>
+
+<div class="container">
+  <div class="eyebrow">Transparencia y protección de datos</div>
+  <h1>Política de Privacidad</h1>
+  <p class="subtitle">FirmaRED es un protocolo abierto de firma digital operado por la Subsecretaría de Inspección del Trabajo de la Provincia de Buenos Aires. Esta política describe qué datos procesamos, por qué y cómo.</p>
+  <div class="updated">Última actualización: 27 de marzo de 2026 · Versión 1.0</div>
+
+  <h2>1. Responsable del tratamiento</h2>
+  <p><strong>Subsecretaría de Inspección del Trabajo</strong><br>
+  Provincia de Buenos Aires, República Argentina<br>
+  Calle 12 N° 1802, La Plata (1900), Buenos Aires<br>
+  Contacto: <a href="mailto:firmared@subsecretaria.gob.ar">firmared@subsecretaria.gob.ar</a></p>
+
+  <h2>2. Datos que procesamos</h2>
+  <table>
+    <tr><th>Dato</th><th>Para qué se usa</th><th>Base legal</th></tr>
+    <tr><td>Nombre y legajo del inspector</td><td>Identificar al firmante del documento</td><td>Ley 25.506 · función pública</td></tr>
+    <tr><td>Trazo de firma manuscrita</td><td>Registrar la firma del viático</td><td>Ley 25.506 · función pública</td></tr>
+    <tr><td>Firma biométrica (si aplica)</td><td>Verificación de identidad reforzada (WebAuthn)</td><td>Consentimiento explícito</td></tr>
+    <tr><td>Hash SHA-256 del documento</td><td>Verificación de integridad documental</td><td>Ley 25.506 · función pública</td></tr>
+    <tr><td>Timestamp de firma</td><td>Registro cronológico del acto</td><td>Ley 25.506 · Decreto 182/2019</td></tr>
+    <tr><td>Dirección IP (log de seguridad)</td><td>Auditoría y detección de fraudes</td><td>Interés legítimo · seguridad</td></tr>
+    <tr><td>Sesión de usuario (cookie)</td><td>Mantener la sesión activa en el panel</td><td>Necesidad técnica</td></tr>
+  </table>
+
+  <div class="highlight">
+    <p>FirmaRED <strong>no vende, comparte ni comercializa</strong> datos personales con terceros. Los datos se almacenan exclusivamente en servidores bajo control de la Subsecretaría de Inspección del Trabajo (Hostinger VPS, datacenter en Vilnius, Lituania — cubierto por normativa RGPD).</p>
+  </div>
+
+  <h2>3. Base legal del tratamiento</h2>
+  <p>El tratamiento de datos personales en FirmaRED se sustenta en:</p>
+  <ul>
+    <li><strong>Ley 25.506</strong> — Ley de Firma Digital de la República Argentina. Habilita y regula el uso de firma digital para actos administrativos.</li>
+    <li><strong>Decreto 182/2019</strong> — Reglamentación de firma digital remota (AC Modernización PFDR).</li>
+    <li><strong>Ley 25.326</strong> — Ley de Protección de Datos Personales de la República Argentina. Base principal para todos los derechos del titular.</li>
+    <li><strong>Ley 13.666/2007</strong> — Adhesión de la Provincia de Buenos Aires a la Ley Nacional de Firma Digital.</li>
+    <li><strong>Art. 319 CCCN</strong> — Instrumentos privados con firma digital.</li>
+  </ul>
+
+  <h2>4. Retención de datos</h2>
+  <table>
+    <tr><th>Categoría</th><th>Período de retención</th></tr>
+    <tr><td>Registros de firma de viáticos</td><td>10 años (obligación previsional, LCT art. 143)</td></tr>
+    <tr><td>Logs de seguridad (IP, intentos)</td><td>12 meses</td></tr>
+    <tr><td>Sesiones de usuario</td><td>24 horas desde el último acceso</td></tr>
+    <tr><td>Pruebas de anclaje OTS (Bitcoin)</td><td>Indefinido — son registros públicos en blockchain</td></tr>
+  </table>
+
+  <h2>5. Tus derechos como titular de datos</h2>
+  <p>En virtud de la Ley 25.326 y el RGPD (cuando aplique), tenés derecho a:</p>
+  <ul>
+    <li><strong>Acceso:</strong> Solicitar qué datos tuyos están almacenados en FirmaRED.</li>
+    <li><strong>Rectificación:</strong> Corregir datos inexactos o incompletos.</li>
+    <li><strong>Supresión:</strong> Solicitar la eliminación de tus datos, salvo obligación legal de retención.</li>
+    <li><strong>Limitación del tratamiento:</strong> Solicitar que dejemos de tratar tus datos mientras se resuelve una disputa.</li>
+    <li><strong>Portabilidad:</strong> Recibir tus datos en formato estructurado y legible por máquina.</li>
+    <li><strong>Oposición:</strong> Oponerte al tratamiento basado en interés legítimo.</li>
+  </ul>
+  <p>Para ejercer cualquiera de estos derechos, contactá a <a href="mailto:firmared@subsecretaria.gob.ar">firmared@subsecretaria.gob.ar</a> con tu nombre, legajo y la solicitud concreta. Respondemos en 15 días hábiles.</p>
+  <p>También podés presentar una reclamación ante la <strong>Agencia de Acceso a la Información Pública</strong> (AAIP) de Argentina: <a href="https://www.argentina.gob.ar/aaip">www.argentina.gob.ar/aaip</a></p>
+
+  <h2>6. Transferencias internacionales</h2>
+  <p>FirmaRED almacena datos en un servidor VPS ubicado en la Unión Europea (Lituania, Hostinger). Esto se considera una transferencia adecuada bajo el RGPD dado que la UE ha determinado que Lituania ofrece un nivel de protección equivalente. No se transfieren datos personales a terceros países fuera de la UE sin garantías adecuadas.</p>
+  <p>El anclaje en blockchain de Bitcoin es un hash SHA-256 — no contiene datos personales identificables. El hash es el "nombre digital" del documento, no del firmante.</p>
+
+  <h2>7. Seguridad técnica</h2>
+  <ul>
+    <li>Comunicaciones cifradas con TLS 1.3 (HTTPS)</li>
+    <li>Contraseñas almacenadas con PBKDF2 (100.000 iteraciones, salt único por usuario)</li>
+    <li>Rate limiting en todos los endpoints sensibles</li>
+    <li>Logs de seguridad con detección de fuerza bruta y bloqueo automático</li>
+    <li>Integridad documental verificable mediante SHA-256 + anclaje Bitcoin</li>
+    <li>Sesiones con cookie HttpOnly + SameSite:strict</li>
+  </ul>
+
+  <h2>8. Cookies</h2>
+  <p>FirmaRED usa una única cookie de sesión (<span class="mono">firmared.sid</span>) estrictamente necesaria para mantener la sesión de usuarios autenticados en el panel. No se usan cookies de seguimiento, analytics ni publicidad. La cookie expira al cerrar sesión o tras 24 horas de inactividad.</p>
+  <p>El sitio público (<span class="mono">firmared.com</span>) no instala cookies en usuarios no autenticados.</p>
+
+  <h2>9. Menores de edad</h2>
+  <p>FirmaRED es un sistema de uso institucional destinado exclusivamente a empleados públicos mayores de 18 años. No se recogen ni procesan intencionalmente datos de menores.</p>
+
+  <h2>10. Cambios a esta política</h2>
+  <p>Cualquier modificación sustancial se publicará en esta página con al menos 15 días de anticipación. La fecha de última actualización figura en el encabezado.</p>
+
+  <div class="contact">
+    <h2>Contacto</h2>
+    <p>Para cualquier consulta sobre privacidad o protección de datos:</p>
+    <p>📧 <a href="mailto:firmared@subsecretaria.gob.ar">firmared@subsecretaria.gob.ar</a><br>
+    📍 Subsecretaría de Inspección del Trabajo · Provincia de Buenos Aires<br>
+    Calle 12 N° 1802, La Plata (1900)</p>
+  </div>
+</div>
+
+<footer>
+  <span>© 2026 Subsecretaría de Inspección del Trabajo · Provincia de Buenos Aires</span>
+  <span>Ley 25.506 · Ley 25.326 · RGPD</span>
+</footer>
+</body>
+</html>
