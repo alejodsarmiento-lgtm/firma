@@ -2492,6 +2492,45 @@ async function verificarWoleet(hash) {
   }
 }
 
+
+// ── Proxy → DSS Validator (puerto 8081) ──────────────────────────
+app.get('/api/dss/health', async (req, res) => {
+  try {
+    const r = await new Promise(resolve => {
+      const req2 = require('http').request(
+        { hostname:'127.0.0.1', port:8081, path:'/health', method:'GET', timeout:3000 },
+        r2 => { let d=''; r2.on('data',c=>d+=c); r2.on('end',()=>resolve({s:r2.statusCode,b:d})); }
+      );
+      req2.on('error',()=>resolve({s:0,b:''}));
+      req2.on('timeout',()=>{req2.destroy();resolve({s:0,b:''});});
+      req2.end();
+    });
+    if (r.s===200) return res.json(JSON.parse(r.b));
+    res.status(503).json({ok:false,error:'DSS validator no disponible'});
+  } catch(e) { res.status(503).json({ok:false,error:e.message}); }
+});
+
+app.post('/api/dss/validate', rateLimit(20,60000), multer({storage:multer.memoryStorage(),limits:{fileSize:20*1024*1024}}).single('pdf'), async (req,res) => {
+  if (!req.file) return res.status(400).json({error:'No se recibio PDF'});
+  try {
+    const pdfB64 = req.file.buffer.toString('base64');
+    const r = await new Promise(resolve => {
+      const body = JSON.stringify({pdf: pdfB64});
+      const req2 = require('http').request(
+        { hostname:'127.0.0.1', port:8081, path:'/validate', method:'POST',
+          headers:{'Content-Type':'application/json','Content-Length':Buffer.byteLength(body)}, timeout:15000 },
+        r2 => { let d=''; r2.on('data',c=>d+=c); r2.on('end',()=>resolve({s:r2.statusCode,b:d})); }
+      );
+      req2.on('error',()=>resolve({s:0,b:'{"error":"timeout"}'}));
+      req2.on('timeout',()=>{req2.destroy();resolve({s:0,b:'{"error":"timeout"}'});});
+      req2.write(body); req2.end();
+    });
+    const result = JSON.parse(r.b);
+    res.json({...result, filename: req.file.originalname, size: req.file.size});
+  } catch(e) { res.status(500).json({error:e.message}); }
+});
+
+
 // ── SPA fallback ───────────────────────────────────────────────
 app.get('*', (req, res) => {
   res.sendFile(path.join(PUBLIC_DIR, 'index.html'));
