@@ -243,7 +243,7 @@ h1 strong{font-weight:700}
   <div class="hash-feed" id="hashFeed"></div>
 
   <div class="cta">
-    <a href="mailto:firmared@subsecretaria.gob.ar" class="btn-join"><span>Sumate al protocolo</span></a>
+    <a href="/cdn-cgi/l/email-protection#4b2d2239262a392e2f0b383e29382e28392e3f2a39222a652c2429652a39" class="btn-join"><span>Sumate al protocolo</span></a>
     <a href="/inspeccion" class="access">Acceder al sistema →</a>
   </div>
 </section>
@@ -256,7 +256,7 @@ h1 strong{font-weight:700}
     <span class="adot"></span>
     <span class="aitem" style="opacity:.35;font-size:12px">Tu organismo</span>
   </div>
-  <a href="mailto:firmared@subsecretaria.gob.ar" class="acta">Adoptar el protocolo</a>
+  <a href="/cdn-cgi/l/email-protection#3b5d5249565a495e5f7b484e59485e58495e4f5a49525a155c5459155a49" class="acta">Adoptar el protocolo</a>
 </div>
 <div class="lbar">
   <span class="li">Ley 25.506</span><span class="li">·</span>
@@ -266,7 +266,7 @@ h1 strong{font-weight:700}
   <span class="li">Bitcoin · OpenTimestamps</span>
 </div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // ════════════════════════════════════════════
 // ESTADO
 // ════════════════════════════════════════════
@@ -418,13 +418,16 @@ function renderResultados(data) {
   el.style.display = 'block';
   document.getElementById('hint').style.display = 'none';
 
-  const gCls = data.encontrado ? 'found' : 'notfound';
-  const gIco = data.encontrado ? '✅' : '🔍';
-  const gTit = data.encontrado ? 'Documento auténtico' : 'No encontrado en la red';
-  const capasValidas = (data.resultados||[]).filter(r=>r.valido===true).length;
-  const gSub = data.encontrado
-    ? `Verificado en ${capasValidas} fuente${capasValidas>1?'s':''} · ${data.modo==='pdf'?'Análisis de archivo PDF':'Búsqueda por hash'}`
-    : 'El documento no está registrado en ninguna fuente verificable conocida.';
+  // Solo cuentan las verificaciones directas (FirmaRED + Bitcoin propios)
+  const verificadas = (data.resultados||[]).filter(r=>r.valido===true && (r.tipo==='interno'||r.tipo==='blockchain'));
+  const noEncontradas = (data.resultados||[]).filter(r=>r.valido===false && (r.tipo==='interno'||r.tipo==='blockchain'));
+
+  const gCls = verificadas.length > 0 ? 'found' : 'notfound';
+  const gIco = verificadas.length > 0 ? '✅' : '🔍';
+  const gTit = verificadas.length > 0 ? 'Documento verificado' : 'No encontrado en FirmaRED';
+  const gSub = verificadas.length > 0
+    ? `Autenticidad confirmada en ${verificadas.length} fuente${verificadas.length>1?'s':''} · ${data.modo==='pdf'?'Análisis de archivo PDF':'Verificación por hash'}`
+    : 'Este documento no está registrado en la red FirmaRED ni en Bitcoin vía OpenTimestamps.';
 
   let html = `<div class="global ${gCls}"><div class="g-icon">${gIco}</div><div>
     <div class="g-title ${gCls}">${gTit}</div>
@@ -432,8 +435,25 @@ function renderResultados(data) {
     ${data.filename ? `<div class="g-sub" style="font-family:'DM Mono',monospace;font-size:10px;margin-top:3px">${data.filename}</div>` : ''}
   </div></div><div class="capas">`;
 
-  (data.resultados||[]).forEach((capa, idx) => {
-    const cls = capa.valido===true?'found':capa.valido===false?'missing':capa.tipo==='blockchain'?'pending':capa.tipo==='regional'?'info':'action';
+  // Separar en verificaciones directas vs consultas externas
+  const directas = (data.resultados||[]).filter(r=>r.tipo==='interno'||r.tipo==='blockchain'||r.tipo==='pki');
+  const externas  = (data.resultados||[]).filter(r=>r.tipo==='regional'||r.tipo==='plataformas');
+
+  const todasCapas = [...directas];
+  if(externas.length > 0) {
+    todasCapas.push({
+      _separador: true,
+      label: 'PLATAFORMAS EXTERNAS — FirmaRED no consulta estas fuentes directamente. Son links para que verifiques vos si el documento proviene de esos sistemas.'
+    });
+    todasCapas.push(...externas);
+  }
+
+  todasCapas.forEach((capa, idx) => {
+    if(capa._separador) {
+      html += `<div style="margin:10px 0 6px;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:rgba(245,245,242,.2);padding:8px 0;border-top:1px solid rgba(245,245,242,.06)">${capa.label}</div>`;
+      return;
+    }
+    const cls = capa.valido===true?'found':capa.valido===false?'missing':capa.tipo==='regional'||capa.tipo==='plataformas'?'info':capa.tipo==='pki'?'action':'pending';
     const autoOpen = capa.valido===true;
 
     let rows = '';
@@ -532,9 +552,4 @@ function pulsar(id) {
 // Leer hash de URL (cuando viene de un QR)
 (()=>{
   const p = new URLSearchParams(location.search);
-  const h = p.get('hash') || location.pathname.match(/verificar\/([a-fA-F0-9]{32,})/)?.[1];
-  if(h) { document.getElementById('hashInput').value=h; window.addEventListener('load',()=>setTimeout(()=>ejecutar('hash',h),600)); }
-})();
-</script>
-</body>
-</html>
+  const h = p.get('hash') || location.pathname
