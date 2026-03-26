@@ -2400,8 +2400,8 @@ const TRUST_STORE_LATAM = (() => {
   const archivos = [
     { file: 'ar_acraiz_2007.crt',     pais: 'AR', nombre: 'AC Raiz Argentina 2007',  fmt: 'DER' },
     { file: 'ar_acraiz_2016.crt',     pais: 'AR', nombre: 'AC Raiz Argentina 2016',  fmt: 'DER' },
-    { file: 'ar_ac_onti_2020.crt',    pais: 'AR', nombre: 'AC ONTI 2020',            fmt: 'DER' },
-    { file: 'ar_ac_modernizacion.crt',pais: 'AR', nombre: 'AC Modernizacion PFDR',   fmt: 'DER' },
+    { file: 'ar_ac_onti_2020.crt',    pais: 'AR', nombre: 'AC ONTI 2020',            fmt: 'PEM' },
+    { file: 'ar_ac_modernizacion.crt',pais: 'AR', nombre: 'AC Modernizacion PFDR',   fmt: 'AUTO' },
     { file: 'uy_acrn.cer',            pais: 'UY', nombre: 'ACRN Uruguay',            fmt: 'PEM' },
   ];
   const store = [];
@@ -2409,9 +2409,16 @@ const TRUST_STORE_LATAM = (() => {
     const ruta = path.join(TRUST_STORE_DIR, file);
     if (!fs.existsSync(ruta)) { console.log('[TS] Skip:', file); continue; }
     try {
-      const pem = fmt === 'DER'
-        ? execSync('openssl x509 -inform DER -in "' + ruta + '" -out -', { encoding: 'utf8' })
-        : fs.readFileSync(ruta, 'utf8');
+      let pem;
+      if (fmt === 'DER') {
+        pem = execSync('openssl x509 -inform DER -in "' + ruta + '" -out -', { encoding: 'utf8' });
+      } else if (fmt === 'PEM') {
+        pem = fs.readFileSync(ruta, 'utf8');
+      } else {
+        // AUTO: intentar PEM primero, luego DER
+        try { pem = fs.readFileSync(ruta, 'utf8'); execSync('openssl x509 -noout', { input: pem }); }
+        catch { pem = execSync('openssl x509 -inform DER -in "' + ruta + '" -out -', { encoding: 'utf8' }); }
+      }
       const subject = execSync('openssl x509 -noout -subject', { input: pem, encoding: 'utf8' }).trim();
       const dates   = execSync('openssl x509 -noout -dates',   { input: pem, encoding: 'utf8' }).trim();
       store.push({ pais, nombre, pem, subject, dates });
