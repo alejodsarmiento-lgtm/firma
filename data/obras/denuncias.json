@@ -1,1 +1,16 @@
-[]
+[
+  {
+    "id": "OBR-1774495536254",
+    "lat": -34.901311801195554,
+    "lng": -57.95144498348236,
+    "direccion": "Calle 115 446, Barrio Hipódromo, La Plata, Buenos Aires",
+    "descripcion": "",
+    "telefono": "",
+    "fotos": [],
+    "estado": "pendiente",
+    "ip": "::ffff:181.23.113.245",
+    "ts": "2026-03-26T03:25:36.133Z",
+    "inspectorAsignado": null,
+    "notas": ""
+  }
+]

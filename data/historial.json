@@ -1,1 +1,21 @@
-[]
+[
+  {
+    "id": "h1774494902735",
+    "inspId": "222222",
+    "inspNombre": "Alejo, Sarmiento",
+    "inspDni": "37802906",
+    "inspLegajo": "222222",
+    "mes": 2,
+    "mesNombre": "Marzo",
+    "year": "2026",
+    "firmadoTs": "2026-03-26T03:15:02.377Z",
+    "signedFile": "firmado_222222_2026_03_1774494902377.pdf",
+    "hash": "59a171c8dea31daf27c22220f96a7116aad83b49eb21b158ed3839a71f3a97a3",
+    "verifyUrl": "https://firmared.com/verificar/59a171c8dea31daf27c22220f96a7116aad83b49eb21b158ed3839a71f3a97a3",
+    "firmaMetodo": "manuscrita",
+    "firmaIp": "::ffff:181.23.113.245",
+    "otsEstado": "pendiente",
+    "otsTs": "2026-03-26T03:15:03.683Z",
+    "otsFile": "59a171c8dea31daf27c22220f96a7116aad83b49eb21b158ed3839a71f3a97a3.ots"
+  }
+]

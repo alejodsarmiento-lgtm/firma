@@ -1,1 +1,31 @@
-[]
+[
+  {
+    "id": "sol_1774494805225",
+    "delegacion": "CAMPANA",
+    "solicitante": "CINGOLANI DARIO MARIO",
+    "inspectores": [
+      {
+        "username": "cabalos",
+        "nombre": "ABALOS, CHRISTIAN HERNAN"
+      }
+    ],
+    "fecha": {
+      "dia": "12",
+      "mes": "8",
+      "mesNombre": "Agosto"
+    },
+    "destino": "tapalque",
+    "objetivos": "cc",
+    "estado": "rechazada",
+    "estadoTs": "2026-03-26T03:13:43.487Z",
+    "estadoAdmin": {
+      "id": "admin",
+      "username": "admin",
+      "role": "admin",
+      "nombre": "Administrador",
+      "primerLogin": false
+    },
+    "observaciones": "",
+    "timestamp": "2026-03-26T03:13:25.225Z"
+  }
+]
