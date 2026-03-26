@@ -30,13 +30,26 @@ const PUBLIC_DIR    = path.join(__dirname, 'public');
 });
 
 // ── DB helpers (JSON en disco) ─────────────────────────────────
+// ── Write Queue — previene race conditions en escrituras concurrentes ──
+const _writeQueues = {};
+
 const db = {
   read(file) {
     try { return JSON.parse(fs.readFileSync(path.join(DATA_DIR, file), 'utf8')); }
     catch(e) { return file.includes('historial') || file.includes('planillas') ? [] : {}; }
   },
   write(file, data) {
-    fs.writeFileSync(path.join(DATA_DIR, file), JSON.stringify(data, null, 2), 'utf8');
+    // Encolar la escritura detrás de la anterior para este archivo
+    const prev = _writeQueues[file] || Promise.resolve();
+    const next = prev.then(() =>
+      fs.promises.writeFile(
+        path.join(DATA_DIR, file),
+        JSON.stringify(data, null, 2),
+        'utf8'
+      )
+    ).catch(err => console.error('[db.write] Error escribiendo '+file+':', err.message));
+    _writeQueues[file] = next;
+    return next;
   }
 };
 
@@ -369,7 +382,7 @@ function cap(s) {
 // ═══════════════════════════════════════════════════════════════
 
 // POST /api/login
-app.post('/api/login', (req,res,next)=>{ if(typeof req.body.username!=='string'||typeof req.body.password!=='string') return res.status(400).json({error:'Usuario o contraseña incorrectos'}); next(); }, checkBruteForce, async (req, res) => {
+app.post('/api/login', checkBruteForce, async (req, res) => {
   // VUL-01: validar que username y password sean strings — evita crash por objetos NoSQL
   if (typeof req.body.username !== 'string' || typeof req.body.password !== 'string') {
     return res.status(400).json({ error: 'Usuario o contraseña incorrectos' });
