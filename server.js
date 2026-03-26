@@ -2306,6 +2306,23 @@ app.post('/api/motor/hash', rateLimit(60, 60000), async (req, res) => {
   })();
   resultados.push(woleetCapa);
 
+  // Capa OriginStamp
+  const originResult = await verificarOriginStamp(raw);
+  resultados.push({
+    capa:'OriginStamp · Multi-chain', tipo:'blockchain',
+    valido: originResult.encontrado,
+    icono: originResult.encontrado ? '⛓' : '—',
+    certeza:'Criptografica — Bitcoin + Ethereum',
+    data: originResult.encontrado ? {
+      estado:'Documento anclado en blockchain via OriginStamp',
+      bitcoin: originResult.bitcoin ? 'Anclado en Bitcoin' : 'Sin registro BTC',
+      ethereum: originResult.ethereum ? 'Anclado en Ethereum' : 'Sin registro ETH',
+      'tx bitcoin': originResult.btcTx || '—',
+      'tx ethereum': originResult.ethTx || '—',
+      'fecha': originResult.date || '—',
+    } : { estado:'Sin registro en OriginStamp (multi-chain)' }
+  });
+
   // ── CAPA 1: FirmaRED ──────────────────────────────────────
   const hist = db.read('historial.json');
   const entry = hist.find(e => e.hash === raw);
@@ -2530,6 +2547,72 @@ app.post('/api/dss/validate', rateLimit(20,60000), multer({storage:multer.memory
   } catch(e) { res.status(500).json({error:e.message}); }
 });
 
+
+
+// ── OriginStamp multi-chain verifier ─────────────────────────────
+async function verificarOriginStamp(hash) {
+  try {
+    const r = await new Promise(resolve => {
+      const req = require('https').request(
+        { hostname:'api.originstamp.com', path:'/v3/timestamp/'+hash, method:'GET',
+          headers:{'User-Agent':'FirmaRED/2.0','Authorization':'api_key anonymous'}, timeout:6000 },
+        res => { let d=''; res.on('data',c=>d+=c); res.on('end',()=>resolve({s:res.statusCode,b:d})); }
+      );
+      req.on('error',()=>resolve({s:0,b:''}));
+      req.on('timeout',()=>{req.destroy();resolve({s:0,b:''});});
+      req.end();
+    });
+    if (r.s===200) {
+      const data = JSON.parse(r.b);
+      const timestamps = data.data?.timestamps || [];
+      const btc  = timestamps.find(t=>t.cryptocurrency==='BTC' && t.seed_id);
+      const eth  = timestamps.find(t=>t.cryptocurrency==='ETH' && t.seed_id);
+      if (btc||eth) return {
+        encontrado:true, bitcoin:!!btc, ethereum:!!eth,
+        btcTx: btc?.tx_hash, ethTx: eth?.tx_hash,
+        date: data.data?.created_at
+      };
+    }
+    return {encontrado:false};
+  } catch(e) { return {encontrado:false,error:e.message}; }
+}
+
+
+// ── OCSP check via OpenSSL ──────────────────────────────────────
+function checkOCSP(certPem, issuerPem) {
+  try {
+    const { execSync } = require('child_process');
+    const os = require('os');
+    const tmp1 = path.join(os.tmpdir(),'cert_'+Date.now()+'.pem');
+    const tmp2 = path.join(os.tmpdir(),'issuer_'+Date.now()+'.pem');
+    fs.writeFileSync(tmp1, certPem);
+    fs.writeFileSync(tmp2, issuerPem);
+    // Extraer URL OCSP del certificado
+    const ocspUrl = execSync('openssl x509 -in '+tmp1+' -noout -ocsp_uri 2>/dev/null',{encoding:'utf8'}).trim();
+    fs.unlinkSync(tmp1); fs.unlinkSync(tmp2);
+    return {disponible:!!ocspUrl, url:ocspUrl||null};
+  } catch(e) { return {disponible:false,error:e.message}; }
+}
+// ocsp-check marker
+
+
+// ── GET /api/inspector/mis-firmas — RGPD Art. 15 acceso ─────────
+app.get('/api/inspector/mis-firmas', requireAuth, (req, res) => {
+  const hist = db.read('historial.json');
+  const mias = hist.filter(e => e.inspLegajo === req.session.user.legajo);
+  res.json({
+    titular: { nombre: req.session.user.nombre, legajo: req.session.user.legajo },
+    total: mias.length,
+    firmas: mias.map(e => ({
+      hash:      e.hash,
+      periodo:   (e.mesNombre||'') + ' ' + (e.year||''),
+      fecha:     e.firmadoTs ? new Date(e.firmadoTs).toLocaleString('es-AR') : '—',
+      metodo:    e.firmaMetodo,
+      ots:       fs.existsSync(path.join(DATA_DIR,'ots_proofs',e.hash+'.ots')),
+    })),
+    derechos: 'Ley 25.326 — podés solicitar rectificacion o supresion a firmared@subsecretaria.gob.ar',
+  });
+});
 
 // ── SPA fallback ───────────────────────────────────────────────
 app.get('*', (req, res) => {
