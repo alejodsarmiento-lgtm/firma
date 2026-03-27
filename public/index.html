@@ -480,6 +480,12 @@ document.addEventListener('DOMContentLoaded', function(){
       <button class="rgpd-btn sec" style="margin-top:10px" onclick="irAFirmar()">✍️ Actualizar biometría</button>
     </div>
     <div class="rgpd-card">
+      <div class="rgpd-tit">🔔 Notificaciones</div>
+      <p style="font-size:12px;color:#888;margin-bottom:12px;line-height:1.5">Recibí una alerta en tu dispositivo cuando tenés una planilla pendiente de firma — aunque tengas el browser cerrado.</p>
+      <div id="pushStatus" style="font-size:12px;margin-bottom:10px;color:#888">Verificando…</div>
+      <button class="rgpd-btn primary" id="pushBtn" onclick="togglePush()" style="display:none">🔔 Activar notificaciones</button>
+    </div>
+    <div class="rgpd-card">
       <div class="rgpd-tit">📦 Mis datos (RGPD Art. 15)</div>
       <p style="font-size:12px;color:#888;margin-bottom:12px;line-height:1.5">Tenés derecho a ver todos los datos personales que FirmaRED almacena sobre vos, y a solicitar su rectificación o supresión.</p>
       <button class="rgpd-btn primary" onclick="descargarMisDatos()">⬇️ Descargar mis datos</button>
@@ -2681,6 +2687,7 @@ async function cargarDatosRGPD() {
       <div class="rgpd-row"><span>Retención</span><span class="rgpd-val">10 años (LCT Art. 143)</span></div>
     `;
   } catch(e) { elPerfil.innerHTML = '<div style="font-size:12px;color:#aaa">Error cargando perfil</div>'; }
+  initPush();
 
   // Biometría
   if (elBio) {
@@ -2722,6 +2729,91 @@ async function solicitarSupresion() {
     window.open('mailto:firmared@subsecretaria.gob.ar?subject=Solicitud%20de%20supresión%20de%20datos%20-%20Ley%2025.326&body=Solicito%20la%20supresión%20de%20mis%20datos%20personales%20almacenados%20en%20FirmaRED%20conforme%20al%20Art.%2016%20de%20la%20Ley%2025.326.%0A%0ANombre:%20'+encodeURIComponent(perfilInsp?.nombre||'')+'%0ALegajo:%20'+encodeURIComponent(perfilInsp?.legajo||''));
   }
 }
+
+// ── Web Push Notifications ───────────────────────────────────
+let pushRegistration = null;
+
+async function initPush() {
+  const statusEl = document.getElementById('pushStatus');
+  const btnEl    = document.getElementById('pushBtn');
+  if (!statusEl) return;
+
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+    statusEl.textContent = '⚠️ Tu navegador no soporta notificaciones push';
+    return;
+  }
+
+  try {
+    // Obtener VAPID key
+    const vr = await fetch('/api/push/vapid-key').then(r=>r.json());
+    const vapidKey = vr.publicKey;
+
+    // Registrar Service Worker
+    const reg = await navigator.serviceWorker.register('/sw.js');
+    pushRegistration = reg;
+
+    // Ver si ya tiene suscripción
+    const existing = await reg.pushManager.getSubscription();
+    if (existing) {
+      statusEl.innerHTML = '✅ <strong>Notificaciones activas</strong> — te avisamos cuando tenés una planilla pendiente';
+      statusEl.style.color = '#2E7D32';
+      if (btnEl) { btnEl.textContent = '🔕 Desactivar notificaciones'; btnEl.style.display='block'; btnEl.style.background='#FFEBEE'; btnEl.style.color='#C62828'; }
+    } else {
+      statusEl.textContent = 'Sin notificaciones — activá para recibir alertas';
+      if (btnEl) { btnEl.textContent = '🔔 Activar notificaciones'; btnEl.style.display='block'; btnEl.style.background='#003366'; btnEl.style.color='#fff'; }
+    }
+  } catch(e) {
+    statusEl.textContent = 'No disponible en este dispositivo';
+  }
+}
+
+async function togglePush() {
+  const btn = document.getElementById('pushBtn');
+  const statusEl = document.getElementById('pushStatus');
+  if (!pushRegistration) return;
+
+  const existing = await pushRegistration.pushManager.getSubscription();
+  
+  if (existing) {
+    // Desactivar
+    await existing.unsubscribe();
+    await fetch('/api/push/unsubscribe', {method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({endpoint: existing.endpoint})});
+    statusEl.textContent = 'Notificaciones desactivadas';
+    statusEl.style.color = '#888';
+    btn.textContent = '🔔 Activar notificaciones';
+    btn.style.background = '#003366'; btn.style.color = '#fff';
+  } else {
+    // Activar
+    const perm = await Notification.requestPermission();
+    if (perm !== 'granted') {
+      statusEl.textContent = '⚠️ Permiso denegado — habilitá notificaciones en la configuración del browser';
+      return;
+    }
+    const vr = await fetch('/api/push/vapid-key').then(r=>r.json());
+    const sub = await pushRegistration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(vr.publicKey)
+    });
+    await api('POST', '/api/push/subscribe', { subscription: sub.toJSON() });
+    statusEl.innerHTML = '✅ <strong>Notificaciones activas</strong>';
+    statusEl.style.color = '#2E7D32';
+    btn.textContent = '🔕 Desactivar'; btn.style.background = '#FFEBEE'; btn.style.color='#C62828';
+  }
+}
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = window.atob(base64);
+  return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)));
+}
+
+// Inicializar push cuando el inspector abre tab 3
+const _origCargarDatosRGPD = typeof cargarDatosRGPD === 'function' ? cargarDatosRGPD : null;
+// initPush se llama desde cargarDatosRGPD — se agrega al final de esa función
+
 // ── FIN PANEL INSPECTOR ──────────────────────────────────────
 
 
@@ -2890,6 +2982,91 @@ async function solicitarSupresion() {
     window.open('mailto:firmared@subsecretaria.gob.ar?subject=Solicitud%20de%20supresión%20de%20datos%20-%20Ley%2025.326&body=Solicito%20la%20supresión%20de%20mis%20datos%20personales%20almacenados%20en%20FirmaRED%20conforme%20al%20Art.%2016%20de%20la%20Ley%2025.326.%0A%0ANombre:%20'+encodeURIComponent(perfilInsp?.nombre||'')+'%0ALegajo:%20'+encodeURIComponent(perfilInsp?.legajo||''));
   }
 }
+
+// ── Web Push Notifications ───────────────────────────────────
+let pushRegistration = null;
+
+async function initPush() {
+  const statusEl = document.getElementById('pushStatus');
+  const btnEl    = document.getElementById('pushBtn');
+  if (!statusEl) return;
+
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+    statusEl.textContent = '⚠️ Tu navegador no soporta notificaciones push';
+    return;
+  }
+
+  try {
+    // Obtener VAPID key
+    const vr = await fetch('/api/push/vapid-key').then(r=>r.json());
+    const vapidKey = vr.publicKey;
+
+    // Registrar Service Worker
+    const reg = await navigator.serviceWorker.register('/sw.js');
+    pushRegistration = reg;
+
+    // Ver si ya tiene suscripción
+    const existing = await reg.pushManager.getSubscription();
+    if (existing) {
+      statusEl.innerHTML = '✅ <strong>Notificaciones activas</strong> — te avisamos cuando tenés una planilla pendiente';
+      statusEl.style.color = '#2E7D32';
+      if (btnEl) { btnEl.textContent = '🔕 Desactivar notificaciones'; btnEl.style.display='block'; btnEl.style.background='#FFEBEE'; btnEl.style.color='#C62828'; }
+    } else {
+      statusEl.textContent = 'Sin notificaciones — activá para recibir alertas';
+      if (btnEl) { btnEl.textContent = '🔔 Activar notificaciones'; btnEl.style.display='block'; btnEl.style.background='#003366'; btnEl.style.color='#fff'; }
+    }
+  } catch(e) {
+    statusEl.textContent = 'No disponible en este dispositivo';
+  }
+}
+
+async function togglePush() {
+  const btn = document.getElementById('pushBtn');
+  const statusEl = document.getElementById('pushStatus');
+  if (!pushRegistration) return;
+
+  const existing = await pushRegistration.pushManager.getSubscription();
+  
+  if (existing) {
+    // Desactivar
+    await existing.unsubscribe();
+    await fetch('/api/push/unsubscribe', {method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({endpoint: existing.endpoint})});
+    statusEl.textContent = 'Notificaciones desactivadas';
+    statusEl.style.color = '#888';
+    btn.textContent = '🔔 Activar notificaciones';
+    btn.style.background = '#003366'; btn.style.color = '#fff';
+  } else {
+    // Activar
+    const perm = await Notification.requestPermission();
+    if (perm !== 'granted') {
+      statusEl.textContent = '⚠️ Permiso denegado — habilitá notificaciones en la configuración del browser';
+      return;
+    }
+    const vr = await fetch('/api/push/vapid-key').then(r=>r.json());
+    const sub = await pushRegistration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(vr.publicKey)
+    });
+    await api('POST', '/api/push/subscribe', { subscription: sub.toJSON() });
+    statusEl.innerHTML = '✅ <strong>Notificaciones activas</strong>';
+    statusEl.style.color = '#2E7D32';
+    btn.textContent = '🔕 Desactivar'; btn.style.background = '#FFEBEE'; btn.style.color='#C62828';
+  }
+}
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = window.atob(base64);
+  return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)));
+}
+
+// Inicializar push cuando el inspector abre tab 3
+const _origCargarDatosRGPD = typeof cargarDatosRGPD === 'function' ? cargarDatosRGPD : null;
+// initPush se llama desde cargarDatosRGPD — se agrega al final de esa función
+
 // ── FIN PANEL INSPECTOR ──────────────────────────────────────
 
 </script>
