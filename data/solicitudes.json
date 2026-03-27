@@ -49,9 +49,15 @@
     },
     "destino": "Arrecifes",
     "objetivos": "OI: 866368, EL AVESTRUZ DE LOS CAMINOS SA\nRUTA 8 N° 172, (ROAM SST).\nOI: 866372, SUPER MAX, FRANCIA 867 (LAB)\nOI:866376, SUPER MAX, FRANCIA 867 (SST).\nOI: 866378, SUPERMERCADO BELGRANO, AV. BELGRANO N° 256 (LAB).\nOI: 866384, SUPERMERCADO BELGRANO, AV. BELGRANO N° 256 (SST).",
-    "estado": "pendiente",
-    "estadoTs": null,
-    "estadoAdmin": null,
+    "estado": "aprobada",
+    "estadoTs": "2026-03-27T11:45:59.749Z",
+    "estadoAdmin": {
+      "id": "admin",
+      "username": "admin",
+      "role": "admin",
+      "nombre": "Administrador",
+      "primerLogin": false
+    },
     "observaciones": "",
     "timestamp": "2026-03-26T12:42:57.382Z"
   }

@@ -1,5 +1,246 @@
 [
   {
+    "ts": "2026-03-27T17:26:30.705Z",
+    "nivel": "INFO",
+    "msg": "=== SCAN COMPLETO en 3.6s ==="
+  },
+  {
+    "ts": "2026-03-27T17:26:30.704Z",
+    "nivel": "INFO",
+    "msg": "Chile TSL OK — próxima actualización en NaN días"
+  },
+  {
+    "ts": "2026-03-27T17:26:30.684Z",
+    "nivel": "WARN",
+    "msg": "Paquetes críticos con actualización disponible: express, multer",
+    "paquetes": [
+      {
+        "nombre": "express",
+        "actual": "4.22.1",
+        "nueva": "5.2.1"
+      },
+      {
+        "nombre": "multer",
+        "actual": "1.4.5-lts.2",
+        "nueva": "2.1.1"
+      }
+    ]
+  },
+  {
+    "ts": "2026-03-27T17:26:29.954Z",
+    "nivel": "INFO",
+    "msg": "Archivos modificados desde el último scan: server.js",
+    "modificados": [
+      {
+        "archivo": "server.js",
+        "hashAnterior": "0e39d8107e0e3b05",
+        "hashNuevo": "8f630b282a61654e"
+      }
+    ]
+  },
+  {
+    "ts": "2026-03-27T17:26:29.943Z",
+    "nivel": "WARN",
+    "msg": "Puertos inesperados detectados",
+    "ports": "State  Recv-Q Send-Q Local Address:Port Peer Address:PortProcess                                                                                                                                  \nLISTE"
+  },
+  {
+    "ts": "2026-03-27T17:26:29.794Z",
+    "nivel": "INFO",
+    "msg": "npm audit OK — 0 vulnerabilidades bajas"
+  },
+  {
+    "ts": "2026-03-27T17:26:27.963Z",
+    "nivel": "INFO",
+    "msg": "Certificados verificados — 1 alertas"
+  },
+  {
+    "ts": "2026-03-27T17:26:27.427Z",
+    "nivel": "INFO",
+    "msg": "SSL OK — vence en 86 días"
+  },
+  {
+    "ts": "2026-03-27T17:26:27.322Z",
+    "nivel": "INFO",
+    "msg": "Alerta CRITICAL — WhatsApp generado",
+    "url": "https://api.whatsapp.com/send?phone=5492213802016&text=%F0%9F%9A%A8%20*FirmaRED%20AutoGuard*%0A%0A*A"
+  },
+  {
+    "ts": "2026-03-27T17:26:27.320Z",
+    "nivel": "CRITICAL",
+    "msg": "Health check: 1 fallas",
+    "fallaron": [
+      {
+        "check": "motor_hash",
+        "ok": "",
+        "detail": "HTTP 0"
+      }
+    ]
+  },
+  {
+    "ts": "2026-03-27T17:26:27.119Z",
+    "nivel": "INFO",
+    "msg": "=== SCAN INICIADO ==="
+  },
+  {
+    "ts": "2026-03-27T11:26:30.464Z",
+    "nivel": "INFO",
+    "msg": "=== SCAN COMPLETO en 3.3s ==="
+  },
+  {
+    "ts": "2026-03-27T11:26:30.464Z",
+    "nivel": "INFO",
+    "msg": "Chile TSL OK — próxima actualización en NaN días"
+  },
+  {
+    "ts": "2026-03-27T11:26:30.432Z",
+    "nivel": "WARN",
+    "msg": "Paquetes críticos con actualización disponible: express, multer",
+    "paquetes": [
+      {
+        "nombre": "express",
+        "actual": "4.22.1",
+        "nueva": "5.2.1"
+      },
+      {
+        "nombre": "multer",
+        "actual": "1.4.5-lts.2",
+        "nueva": "2.1.1"
+      }
+    ]
+  },
+  {
+    "ts": "2026-03-27T11:26:29.634Z",
+    "nivel": "INFO",
+    "msg": "Integridad OK — ningún archivo modificado inesperadamente"
+  },
+  {
+    "ts": "2026-03-27T11:26:29.618Z",
+    "nivel": "WARN",
+    "msg": "Puertos inesperados detectados",
+    "ports": "State  Recv-Q Send-Q Local Address:Port Peer Address:PortProcess                                                 \nLISTEN 0      4096   127.0.0.53%lo:53        0.0.0.0:*    users:((\"systemd-resolve\",pi"
+  },
+  {
+    "ts": "2026-03-27T11:26:29.500Z",
+    "nivel": "INFO",
+    "msg": "npm audit OK — 0 vulnerabilidades bajas"
+  },
+  {
+    "ts": "2026-03-27T11:26:27.795Z",
+    "nivel": "INFO",
+    "msg": "Certificados verificados — 1 alertas"
+  },
+  {
+    "ts": "2026-03-27T11:26:27.329Z",
+    "nivel": "INFO",
+    "msg": "SSL OK — vence en 87 días"
+  },
+  {
+    "ts": "2026-03-27T11:26:27.273Z",
+    "nivel": "CRITICAL",
+    "msg": "Health check: 1 fallas",
+    "fallaron": [
+      {
+        "check": "motor_hash",
+        "ok": "",
+        "detail": "HTTP 0"
+      }
+    ]
+  },
+  {
+    "ts": "2026-03-27T11:26:27.118Z",
+    "nivel": "INFO",
+    "msg": "=== SCAN INICIADO ==="
+  },
+  {
+    "ts": "2026-03-27T05:26:30.590Z",
+    "nivel": "INFO",
+    "msg": "=== SCAN COMPLETO en 3.5s ==="
+  },
+  {
+    "ts": "2026-03-27T05:26:30.589Z",
+    "nivel": "INFO",
+    "msg": "Chile TSL OK — próxima actualización en NaN días"
+  },
+  {
+    "ts": "2026-03-27T05:26:30.569Z",
+    "nivel": "WARN",
+    "msg": "Paquetes críticos con actualización disponible: express, multer",
+    "paquetes": [
+      {
+        "nombre": "express",
+        "actual": "4.22.1",
+        "nueva": "5.2.1"
+      },
+      {
+        "nombre": "multer",
+        "actual": "1.4.5-lts.2",
+        "nueva": "2.1.1"
+      }
+    ]
+  },
+  {
+    "ts": "2026-03-27T05:26:29.924Z",
+    "nivel": "INFO",
+    "msg": "Archivos modificados desde el último scan: server.js, validator.js",
+    "modificados": [
+      {
+        "archivo": "server.js",
+        "hashAnterior": "b2235b3c66bed6c1",
+        "hashNuevo": "0e39d8107e0e3b05"
+      },
+      {
+        "archivo": "validator.js",
+        "hashAnterior": "453e46fc8fba28b5",
+        "hashNuevo": "3de301d4679afa2c"
+      }
+    ]
+  },
+  {
+    "ts": "2026-03-27T05:26:29.905Z",
+    "nivel": "WARN",
+    "msg": "Puertos inesperados detectados",
+    "ports": "State  Recv-Q Send-Q Local Address:Port Peer Address:PortProcess                                                 \nLISTEN 0      4096   127.0.0.53%lo:53        0.0.0.0:*    users:((\"systemd-resolve\",pi"
+  },
+  {
+    "ts": "2026-03-27T05:26:29.787Z",
+    "nivel": "INFO",
+    "msg": "npm audit OK — 0 vulnerabilidades bajas"
+  },
+  {
+    "ts": "2026-03-27T05:26:27.951Z",
+    "nivel": "INFO",
+    "msg": "Certificados verificados — 1 alertas"
+  },
+  {
+    "ts": "2026-03-27T05:26:27.468Z",
+    "nivel": "INFO",
+    "msg": "SSL OK — vence en 87 días"
+  },
+  {
+    "ts": "2026-03-27T05:26:27.356Z",
+    "nivel": "INFO",
+    "msg": "Alerta CRITICAL — WhatsApp generado",
+    "url": "https://api.whatsapp.com/send?phone=5492213802016&text=%F0%9F%9A%A8%20*FirmaRED%20AutoGuard*%0A%0A*A"
+  },
+  {
+    "ts": "2026-03-27T05:26:27.353Z",
+    "nivel": "CRITICAL",
+    "msg": "Health check: 1 fallas",
+    "fallaron": [
+      {
+        "check": "motor_hash",
+        "ok": "",
+        "detail": "HTTP 0"
+      }
+    ]
+  },
+  {
+    "ts": "2026-03-27T05:26:27.116Z",
+    "nivel": "INFO",
+    "msg": "=== SCAN INICIADO ==="
+  },
+  {
     "ts": "2026-03-26T23:26:29.101Z",
     "nivel": "INFO",
     "msg": "=== SCAN COMPLETO en 2.0s ==="

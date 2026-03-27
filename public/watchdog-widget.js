@@ -2,13 +2,13 @@
 // FirmaRED — WatchDog Widget (panel admin)
 (function() {
   'use strict';
-  let wdES = null;
+  window.wdES = null;
 
   window.wdConnect = function() {
-    if(wdES) wdES.close();
-    wdES = new EventSource('/api/watchdog/stream');
-    wdES.onmessage = e => { try{ wdRender(JSON.parse(e.data)); }catch(err){} };
-    wdES.onerror = () => {
+    if(window.wdES) window.wdES.close();
+    window.wdES = new EventSource('/api/watchdog/stream');
+    window.wdES.onmessage = e => { try{ wdRender(JSON.parse(e.data)); }catch(err){} };
+    window.wdES.onerror = () => {
       const d=document.getElementById('wdStatusDot'); if(d) d.style.background='#e53935';
       const t=document.getElementById('wdStatusText'); if(t) t.textContent='Reconectando...';
       setTimeout(window.wdConnect, 5000);

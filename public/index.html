@@ -1099,7 +1099,7 @@ async function buildAdmin(){
   renderAdminPend();
 }
 
-async function aTab(n){ if(n===6&&typeof wdConnect==="function"){ if(!wdES||wdES.readyState===2) wdConnect(); }
+async function aTab(n){ if(n===6&&typeof wdConnect==="function"){ if(!window.wdES||window.wdES.readyState===2) wdConnect(); }
   [1,2,3,4,5,6].forEach(i=>{
     const tab=document.getElementById('tab'+i);
     const btn=document.getElementById('t'+i);

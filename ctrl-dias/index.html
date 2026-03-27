@@ -1,0 +1,978 @@
+mkdir -p /var/www/firmared/viaticos && nano /var/www/firmared/viaticos/index.html
+mkdir -p /var/www/firmared/viaticos && nano /var/www/firmared/viaticos/index.html
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Control de Viáticos · Inspección del Trabajo</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ── RESET & BASE ─────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --ink:      #0b1420;
+  --ink2:     #111e30;
+  --ink3:     #172840;
+  --ink4:     #1d3252;
+  --rule:     #1f3550;
+  --rule2:    #28435e;
+  --fog:      #4d7090;
+  --mist:     #6d90b0;
+  --paper:    #c8daea;
+  --text:     #dde9f5;
+  --gold:     #e8a020;
+  --gold2:    #f5c050;
+  --jade:     #0fa878;
+  --jade2:    #15c990;
+  --crimson:  #d93030;
+  --amber:    #e06010;
+  --cobalt:   #2878e8;
+  --cobalt2:  #4898ff;
+  --violet:   #8860d8;
+  --font-ui:  'Syne', sans-serif;
+  --font-mono:'JetBrains Mono', monospace;
+}
+html { height: 100%; }
+body {
+  font-family: var(--font-ui);
+  background: var(--ink);
+  color: var(--text);
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+/* ── SCROLLBAR ────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--ink2); }
+::-webkit-scrollbar-thumb { background: var(--rule2); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--fog); }
+
+/* ── TOPBAR ───────────────────────────────────────────────────────────── */
+#topbar {
+  flex-shrink: 0;
+  height: 56px;
+  background: var(--ink2);
+  border-bottom: 1px solid var(--rule);
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  gap: 20px;
+  position: relative;
+  z-index: 100;
+}
+.logo-mark {
+  width: 32px; height: 32px;
+  border: 2px solid var(--gold);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 800; color: var(--gold);
+  letter-spacing: -1px; flex-shrink: 0;
+  font-family: var(--font-mono);
+}
+.app-title {
+  font-size: 13px; font-weight: 700;
+  letter-spacing: .06em; text-transform: uppercase;
+  color: var(--text);
+}
+.app-sub {
+  font-size: 11px; color: var(--fog);
+  font-family: var(--font-mono);
+  margin-top: 1px;
+}
+.topbar-sep { width: 1px; height: 28px; background: var(--rule); margin: 0 4px; }
+#topbar-stats { display: flex; gap: 2px; margin-left: 8px; }
+.tstat {
+  padding: 5px 14px;
+  background: var(--ink3);
+  border-radius: 4px;
+  text-align: center;
+}
+.tstat-n { font-family: var(--font-mono); font-size: 16px; font-weight: 600; line-height: 1; }
+.tstat-l { font-size: 9px; color: var(--fog); text-transform: uppercase; letter-spacing: .07em; margin-top: 2px; }
+#btn-load {
+  margin-left: auto;
+  padding: 7px 18px;
+  background: transparent;
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  border-radius: 5px;
+  cursor: pointer;
+  font-family: var(--font-ui);
+  font-size: 12px; font-weight: 600;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  transition: all .15s;
+  display: flex; align-items: center; gap: 7px;
+}
+#btn-load:hover { background: var(--gold); color: var(--ink); }
+#filename-chip {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--mist);
+  background: var(--ink3);
+  padding: 4px 10px;
+  border-radius: 20px;
+  display: none;
+}
+
+/* ── LAYOUT ───────────────────────────────────────────────────────────── */
+#app { flex: 1; display: flex; overflow: hidden; }
+
+/* ── SIDEBAR ──────────────────────────────────────────────────────────── */
+#sidebar {
+  width: 240px; flex-shrink: 0;
+  background: var(--ink2);
+  border-right: 1px solid var(--rule);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+.sidebar-section { padding: 16px 16px 8px; }
+.sidebar-label {
+  font-size: 9px; font-weight: 700;
+  color: var(--fog); letter-spacing: .12em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  font-family: var(--font-mono);
+}
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px; font-weight: 600;
+  color: var(--mist);
+  transition: all .15s;
+  margin-bottom: 2px;
+  letter-spacing: .02em;
+  position: relative;
+}
+.nav-item:hover { background: var(--ink3); color: var(--text); }
+.nav-item.active { background: var(--ink4); color: var(--text); }
+.nav-item.active::before {
+  content: '';
+  position: absolute; left: 0; top: 6px; bottom: 6px;
+  width: 3px; border-radius: 0 2px 2px 0;
+}
+.nav-ok.active::before { background: var(--jade); }
+.nav-ex.active::before { background: var(--amber); }
+.nav-icon { font-size: 14px; width: 20px; text-align: center; }
+.nav-count {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 10px; font-weight: 600;
+  padding: 1px 7px; border-radius: 20px;
+}
+.nav-ok .nav-count { background: rgba(15,168,120,.15); color: var(--jade2); }
+.nav-ex .nav-count { background: rgba(224,96,16,.15); color: #f07820; }
+
+/* Sidebar filters */
+.filter-group { padding: 0 16px 12px; }
+.filter-group label { display: block; font-size: 10px; color: var(--fog); margin-bottom: 5px; font-family: var(--font-mono); letter-spacing: .05em; }
+select {
+  width: 100%;
+  background: var(--ink3);
+  border: 1px solid var(--rule2);
+  color: var(--text);
+  padding: 7px 10px;
+  border-radius: 5px;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%234d7090' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 28px;
+  margin-bottom: 8px;
+}
+select:focus { border-color: var(--gold); }
+
+/* Sidebar actions */
+.sidebar-actions { padding: 0 16px 12px; display: flex; flex-direction: column; gap: 6px; }
+.btn-side {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-ui);
+  font-size: 11px; font-weight: 600;
+  letter-spacing: .04em; text-transform: uppercase;
+  transition: all .15s;
+  display: flex; align-items: center; gap: 8px; justify-content: center;
+}
+.btn-mark-all { background: var(--ink4); color: var(--mist); border: 1px solid var(--rule2); }
+.btn-mark-all:hover { border-color: var(--gold); color: var(--gold); }
+.btn-unmark { background: transparent; color: var(--fog); border: 1px solid transparent; font-size: 10px; }
+.btn-unmark:hover { color: var(--mist); }
+.btn-export-ok { background: var(--jade); color: var(--ink); }
+.btn-export-ok:hover { background: var(--jade2); }
+.btn-export-ex { background: var(--amber); color: #fff; }
+.btn-export-ex:hover { filter: brightness(1.1); }
+
+/* Sidebar bottom */
+.sidebar-legend {
+  margin-top: auto;
+  padding: 12px 16px 16px;
+  border-top: 1px solid var(--rule);
+}
+.leg-item {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 10px; color: var(--fog);
+  margin-bottom: 6px;
+  font-family: var(--font-mono);
+}
+.leg-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+
+/* ── MAIN CONTENT ─────────────────────────────────────────────────────── */
+#content { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+
+/* ── TABLE CONTAINER ──────────────────────────────────────────────────── */
+#table-wrap {
+  flex: 1;
+  overflow: auto;
+  padding: 0;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+thead th {
+  background: var(--ink2);
+  padding: 10px 14px;
+  text-align: left;
+  font-family: var(--font-mono);
+  font-size: 9px; font-weight: 500;
+  color: var(--fog);
+  letter-spacing: .1em; text-transform: uppercase;
+  border-bottom: 1px solid var(--rule);
+  white-space: nowrap;
+  position: sticky; top: 0; z-index: 20;
+}
+thead th:first-child { width: 44px; text-align: center; }
+thead th.th-sort { cursor: pointer; user-select: none; }
+thead th.th-sort:hover { color: var(--paper); }
+
+tbody tr {
+  border-bottom: 1px solid rgba(31,53,80,.6);
+  transition: background .1s;
+}
+tbody tr:hover { background: rgba(255,255,255,.025); }
+tbody tr.row-approved { background: rgba(15,168,120,.05); }
+tbody tr.row-approved:hover { background: rgba(15,168,120,.09); }
+tbody tr.row-exception { background: rgba(224,96,16,.05); }
+tbody tr.row-exception:hover { background: rgba(224,96,16,.09); }
+
+td {
+  padding: 11px 14px;
+  vertical-align: middle;
+}
+td:first-child { text-align: center; padding: 0 0 0 14px; }
+
+/* ── TABLE CELLS ──────────────────────────────────────────────────────── */
+.cell-inspector { font-weight: 700; font-size: 12px; white-space: nowrap; }
+.cell-deleg { font-size: 10px; color: var(--fog); margin-top: 2px; font-family: var(--font-mono); }
+.cell-date { font-family: var(--font-mono); font-size: 11px; white-space: nowrap; color: var(--paper); }
+.cell-dayname { font-size: 9px; color: var(--fog); margin-top: 1px; text-transform: uppercase; letter-spacing: .05em; }
+.cell-count {
+  font-family: var(--font-mono);
+  font-size: 18px; font-weight: 600;
+  color: var(--gold2);
+  line-height: 1;
+}
+.cell-time { font-family: var(--font-mono); font-size: 12px; color: var(--paper); }
+.cell-dur {
+  font-family: var(--font-mono);
+  font-size: 13px; font-weight: 600;
+  white-space: nowrap;
+}
+.cell-mun { font-size: 11px; color: var(--mist); max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cell-trab { font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: var(--cobalt2); }
+
+/* Duration progress */
+.dur-block { display: flex; align-items: center; gap: 6px; }
+.prog { width: 42px; height: 3px; background: var(--rule); border-radius: 2px; overflow: hidden; flex-shrink: 0; }
+.prog-fill { height: 100%; border-radius: 2px; transition: width .3s; }
+
+/* ── BADGES ───────────────────────────────────────────────────────────── */
+.badge {
+  display: inline-block; padding: 2px 7px;
+  border-radius: 3px; font-size: 9px; font-weight: 700;
+  letter-spacing: .05em; text-transform: uppercase;
+  margin: 1px 2px 1px 0; white-space: nowrap;
+  font-family: var(--font-mono);
+}
+.bV { background: rgba(40,120,232,.2); color: #60a5fa; }
+.bI { background: rgba(109,144,176,.1); color: var(--mist); }
+.bN { background: rgba(224,96,16,.2); color: #fb923c; }
+.bF { background: rgba(217,48,48,.2); color: #f87171; }
+.bS { background: rgba(136,96,216,.2); color: #c084fc; }
+.badge-ok { background: rgba(15,168,120,.15); color: #34d399; border: 1px solid rgba(15,168,120,.3); }
+.badge-nok { background: rgba(217,48,48,.12); color: #f87171; border: 1px solid rgba(217,48,48,.25); }
+.badge-reason { background: rgba(224,96,16,.12); color: #f97316; border: 1px solid rgba(224,96,16,.2); font-size: 9px; }
+
+/* ── CHECKBOX ─────────────────────────────────────────────────────────── */
+.cb-wrap {
+  width: 18px; height: 18px;
+  display: inline-flex; align-items: center; justify-content: center;
+  position: relative; cursor: pointer;
+}
+.cb-wrap input[type=checkbox] {
+  width: 18px; height: 18px;
+  border-radius: 4px;
+  border: 2px solid var(--rule2);
+  appearance: none; -webkit-appearance: none;
+  cursor: pointer; background: var(--ink3);
+  transition: all .15s;
+  position: relative;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+.cb-wrap input[type=checkbox]:checked {
+  background: var(--jade);
+  border-color: var(--jade);
+}
+.cb-wrap input[type=checkbox].ex-cb:checked {
+  background: var(--amber);
+  border-color: var(--amber);
+}
+.cb-wrap input[type=checkbox]:checked::after {
+  content: ''; position: absolute;
+  left: 4px; top: 1px;
+  width: 5px; height: 9px;
+  border: 2px solid #fff;
+  border-top: none; border-left: none;
+  transform: rotate(45deg);
+}
+.cb-wrap input[type=checkbox]:hover { border-color: var(--gold); }
+
+/* ── EXPAND ROW ───────────────────────────────────────────────────────── */
+.expand-row td { padding: 0; }
+.expand-inner {
+  background: #080f1a;
+  border-bottom: 2px solid var(--ink3);
+  padding: 12px 14px 16px 60px;
+}
+.inner-header {
+  font-family: var(--font-mono);
+  font-size: 9px; color: var(--fog);
+  letter-spacing: .1em; text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.actas-grid {
+  display: grid;
+  grid-template-columns: auto auto auto auto 1fr auto auto;
+  gap: 0;
+}
+.ag-head {
+  font-family: var(--font-mono);
+  font-size: 9px; color: var(--fog);
+  letter-spacing: .08em; text-transform: uppercase;
+  padding: 5px 10px;
+  border-bottom: 1px solid var(--rule);
+}
+.ag-cell {
+  font-family: var(--font-mono);
+  font-size: 10px; color: var(--mist);
+  padding: 6px 10px;
+  border-bottom: 1px solid rgba(31,53,80,.4);
+  display: flex; align-items: center;
+}
+.ag-cell.acta-id { color: var(--cobalt2); font-weight: 500; }
+.ag-cell.empresa { color: var(--paper); max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; }
+
+/* Obs field */
+.obs-wrap { padding: 4px 14px 2px 0; }
+.obs-field {
+  background: var(--ink3);
+  border: 1px solid var(--rule2);
+  color: var(--text);
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 11px; width: 280px;
+  font-family: var(--font-ui);
+  outline: none;
+  transition: border-color .15s;
+}
+.obs-field:focus { border-color: var(--amber); }
+.obs-field::placeholder { color: var(--fog); }
+
+/* Expand toggle */
+.btn-expand {
+  background: transparent; border: none;
+  color: var(--fog); cursor: pointer;
+  font-size: 10px; font-family: var(--font-mono);
+  padding: 4px 6px;
+  letter-spacing: .03em;
+  transition: color .15s;
+  white-space: nowrap;
+}
+.btn-expand:hover { color: var(--gold); }
+
+/* ── UPLOAD SCREEN ────────────────────────────────────────────────────── */
+#upload-screen {
+  flex: 1;
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column;
+  gap: 0;
+  background: var(--ink);
+  position: relative;
+  overflow: hidden;
+}
+.upload-bg {
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 60% 50% at 50% 40%, rgba(232,160,32,.04) 0%, transparent 70%);
+  pointer-events: none;
+}
+.upload-grid {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(31,53,80,.35) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(31,53,80,.35) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+}
+.upload-card {
+  position: relative; z-index: 1;
+  border: 1px solid var(--rule2);
+  border-radius: 12px;
+  padding: 56px 64px;
+  text-align: center;
+  cursor: pointer;
+  transition: all .2s;
+  background: rgba(17,30,48,.8);
+  backdrop-filter: blur(8px);
+  max-width: 480px;
+  width: 90%;
+}
+.upload-card:hover, .upload-card.drag { border-color: var(--gold); background: rgba(232,160,32,.04); }
+.upload-card:hover .upload-icon-wrap { transform: scale(1.05); }
+.upload-icon-wrap {
+  width: 72px; height: 72px;
+  border: 2px solid var(--rule2);
+  border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 24px;
+  font-size: 32px;
+  transition: transform .2s;
+  background: var(--ink3);
+}
+.upload-card:hover .upload-icon-wrap { border-color: var(--gold); }
+.upload-h {
+  font-size: 18px; font-weight: 800;
+  color: var(--text);
+  letter-spacing: .02em;
+  margin-bottom: 10px;
+}
+.upload-p {
+  font-size: 12px; color: var(--fog);
+  line-height: 1.7; font-family: var(--font-mono);
+}
+.upload-p strong { color: var(--gold); font-weight: 500; }
+.upload-hint {
+  margin-top: 28px;
+  display: flex; align-items: center; gap: 8px;
+  justify-content: center;
+  font-size: 10px; color: var(--fog); font-family: var(--font-mono);
+}
+.upload-hint::before, .upload-hint::after {
+  content: ''; flex: 1; height: 1px; background: var(--rule); max-width: 60px;
+}
+
+/* ── EMPTY STATE ──────────────────────────────────────────────────────── */
+.empty-state {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 80px 20px; color: var(--fog);
+  font-family: var(--font-mono); font-size: 12px; gap: 8px;
+}
+.empty-state .icon { font-size: 32px; margin-bottom: 8px; }
+
+/* ── SELECTION BAR ────────────────────────────────────────────────────── */
+#sel-bar {
+  flex-shrink: 0;
+  height: 0; overflow: hidden;
+  background: var(--ink3);
+  border-top: 1px solid var(--rule);
+  display: flex; align-items: center; padding: 0 20px; gap: 12px;
+  transition: height .2s;
+  font-size: 12px;
+}
+#sel-bar.visible { height: 44px; }
+.sel-count-text { font-family: var(--font-mono); color: var(--mist); font-size: 11px; }
+.sel-count-text strong { color: var(--gold2); }
+
+/* ── TOOLTIP ──────────────────────────────────────────────────────────── */
+[title] { cursor: default; }
+
+/* ── ANIM ─────────────────────────────────────────────────────────────── */
+@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+.fade-in { animation: fadeIn .2s ease both; }
+
+/* ── RESPONSIVE ───────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  #sidebar { width: 200px; }
+  .topbar-sep, #topbar-stats { display: none; }
+}
+@media (max-width: 640px) {
+  #sidebar { display: none; }
+  #app { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div id="topbar">
+  <div class="logo-mark">VI</div>
+  <div>
+    <div class="app-title">Control de Viáticos</div>
+    <div class="app-sub">Subsecretaría de Inspección del Trabajo · PBA</div>
+  </div>
+  <div class="topbar-sep"></div>
+  <div id="topbar-stats" style="display:none">
+    <div class="tstat"><div class="tstat-n" id="ts-total" style="color:var(--gold2)">—</div><div class="tstat-l">Total días</div></div>
+    <div class="tstat"><div class="tstat-n" id="ts-cumple" style="color:var(--jade2)">—</div><div class="tstat-l">Cumplen</div></div>
+    <div class="tstat"><div class="tstat-n" id="ts-nok" style="color:var(--crimson)">—</div><div class="tstat-l">Excepciones</div></div>
+    <div class="tstat"><div class="tstat-n" id="ts-aprobados" style="color:#34d399">—</div><div class="tstat-l">Aprobados</div></div>
+  </div>
+  <span id="filename-chip"></span>
+  <button id="btn-load" onclick="document.getElementById('file-in').click()">
+    <span>📂</span> Cargar planilla
+  </button>
+</div>
+
+<!-- APP -->
+<div id="app">
+
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Vista</div>
+      <div class="nav-item nav-ok active" id="nav-ok" onclick="switchTab('ok')">
+        <span class="nav-icon">✔</span> Aprobación
+        <span class="nav-count" id="nc-ok">0</span>
+      </div>
+      <div class="nav-item nav-ex" id="nav-ex" onclick="switchTab('ex')">
+        <span class="nav-icon">⚠</span> Excepciones
+        <span class="nav-count" id="nc-ex">0</span>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Filtros</div>
+    </div>
+    <div class="filter-group">
+      <label>Inspector</label>
+      <select id="f-inspector"><option value="">Todos los inspectores</option></select>
+      <label>Estado</label>
+      <select id="f-estado">
+        <option value="todos">Todos</option>
+        <option value="marcados">☑  Marcados</option>
+        <option value="pendientes">☐  Sin marcar</option>
+      </select>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Acciones</div>
+    </div>
+    <div class="sidebar-actions">
+      <button class="btn-side btn-mark-all" onclick="markAllVisible()">☑ Marcar todos visibles</button>
+      <button class="btn-side btn-unmark" onclick="unmarkAllVisible()">☐ Desmarcar todos</button>
+      <div style="height:4px"></div>
+      <button class="btn-side btn-export-ok" id="btn-exp-ok" style="display:none" onclick="exportar('ok')">↓ Exportar aprobados</button>
+      <button class="btn-side btn-export-ex" id="btn-exp-ex" style="display:none" onclick="exportar('ex')">↓ Exportar excepciones</button>
+    </div>
+
+    <div class="sidebar-legend">
+      <div class="sidebar-label" style="margin-bottom:10px">Referencias</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--jade)"></div>Cumple ≥3hs y ≥3 actas</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--gold)"></div>Cumple tiempo, falta acta</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--crimson)"></div>No cumple ningún criterio</div>
+      <div style="height:8px"></div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--cobalt)"></div>Verificación</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--amber)"></div>Intimación</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--crimson)"></div>Infracción</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--violet)"></div>Suspensión</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--fog)"></div>Informe</div>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div id="content">
+    <div id="table-wrap"></div>
+    <div id="sel-bar">
+      <span class="sel-count-text" id="sel-text"></span>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="file-in" accept=".xlsx,.xls" style="display:none" onchange="handleFile(event)">
+
+<script>
+/* ── STATE ────────────────────────────────────────────────────────────── */
+let allRows = [], checkedOk = new Set(), checkedEx = new Set();
+let observations = {}, expanded = new Set(), currentTab = 'ok';
+
+/* ── COLUMN RESOLVER ──────────────────────────────────────────────────── */
+function resolveColumns(keys) {
+  const n = s => (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
+  const f = (cs) => keys.find(k => cs.some(c => n(k).includes(n(c))));
+  return {
+    colInicio:    f(['fecha y hora inicio','fecha - hora inicio','hora inicio']),
+    colFin:       f(['fecha y hora finaliz','fecha - hora finaliz','finalizacion','finalización']),
+    colInspector: f(['inspector']),
+    colActa:      f(['acta']),
+    colTipo:      f(['tipo']),
+    colRazon:     f(['razon','razón']),
+    colDeleg:     f(['delegac']),
+    colMunicipio: f(['municipio']),
+    colDirecc:    f(['direcc']),
+    colTrabRel:   f(['cantidad trabajadores','trabajadores relevados']),
+    colTrabTot:   f(['total trab']),
+  };
+}
+
+/* ── HELPERS ──────────────────────────────────────────────────────────── */
+const TIPOS = ['Verificación','Informe','Intimación','Infracción','Suspensión'];
+const TIPO_CLS = { 'Verificación':'bV','Informe':'bI','Intimación':'bN','Infracción':'bF','Suspensión':'bS' };
+const DAYS = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+const MONTHS = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+
+function parseTipos(s){ return TIPOS.filter(t => (s||'').includes(t)); }
+function tipoBadge(t){ return `<span class="badge ${TIPO_CLS[t]||'bI'}">${t.substring(0,3)}</span>`; }
+function tipoBadgeFull(t){ return `<span class="badge ${TIPO_CLS[t]||'bI'}">${t}</span>`; }
+
+function fmtDate(s) {
+  const d = new Date(s + 'T12:00:00');
+  return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+}
+function fmtDayName(s) {
+  const d = new Date(s + 'T12:00:00');
+  return DAYS[d.getDay()];
+}
+function fmtT(dt) {
+  if (!dt || isNaN(dt)) return '—';
+  const d = new Date(dt);
+  return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
+function fmtDur(m) {
+  if (!m || m <= 0) return '—';
+  const h = Math.floor(m/60), r = m%60;
+  return h === 0 ? `${r}m` : r === 0 ? `${h}h` : `${h}h ${r}m`;
+}
+function cleanName(s){ return (s||'').replace(/\s*-\s*$/, '').trim(); }
+function toDate(v) {
+  if (!v) return null;
+  if (v instanceof Date) return isNaN(v) ? null : v;
+  if (typeof v === 'number') { const d = new Date(Math.round((v-25569)*86400000)); return isNaN(d)?null:d; }
+  const d = new Date(v); return isNaN(d) ? null : d;
+}
+function durColor(m) { return m >= 180 ? 'var(--jade)' : m >= 120 ? 'var(--gold)' : 'var(--crimson)'; }
+function durClass(m) { return m >= 180 ? 'jade' : m >= 120 ? 'gold' : 'crimson'; }
+function escK(k){ return k.replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
+function escA(s){ return (s||'').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+function nocumpleReasons(r) {
+  const rs = [];
+  if (r.cantActas < 3) rs.push(`${r.cantActas} acta${r.cantActas===1?'':'s'}`);
+  if (r.durMin < 180) rs.push(fmtDur(r.durMin));
+  return rs;
+}
+
+/* ── PROCESS DATA ─────────────────────────────────────────────────────── */
+function processData(raw) {
+  if (!raw || !raw.length) return [];
+  const cols = resolveColumns(Object.keys(raw[0]));
+  const groups = {};
+  raw.forEach(row => {
+    const inspector = cleanName(row[cols.colInspector] || '');
+    if (!inspector) return;
+    const inicio = toDate(cols.colInicio ? row[cols.colInicio] : null);
+    if (!inicio || isNaN(inicio)) return;
+    const dateKey = inicio.toISOString().slice(0, 10);
+    const key = `${inspector}||${dateKey}`;
+    if (!groups[key]) groups[key] = {
+      key, inspector, dateKey,
+      delegacion: (cols.colDeleg ? row[cols.colDeleg]||'' : '').replace('DELEG.REG.','').trim(),
+      actas: []
+    };
+    const fin = toDate(cols.colFin ? row[cols.colFin] : null);
+    const tRel = cols.colTrabRel ? parseInt(row[cols.colTrabRel])||0 : 0;
+    const tTot = cols.colTrabTot ? parseInt(row[cols.colTrabTot])||0 : 0;
+    groups[key].actas.push({
+      acta: cols.colActa ? row[cols.colActa]||'' : '',
+      inicio, fin,
+      tipo: cols.colTipo ? row[cols.colTipo]||'' : '',
+      razonSocial: cols.colRazon ? row[cols.colRazon]||'' : '',
+      municipio: cols.colMunicipio ? row[cols.colMunicipio]||'' : '',
+      trabajadores: tRel || tTot || null,
+    });
+  });
+
+  return Object.values(groups).map(g => {
+    const ini = g.actas.map(a => a.inicio).filter(Boolean);
+    const fins = g.actas.map(a => a.fin).filter(Boolean);
+    const pa = ini.length ? new Date(Math.min(...ini.map(d=>d.getTime()))) : null;
+    const uc = fins.length ? new Date(Math.max(...fins.map(d=>d.getTime()))) : null;
+    const durMin = (pa && uc) ? Math.round((uc - pa) / 60000) : 0;
+    const cantActas = g.actas.length;
+    const cumple = durMin >= 180 && cantActas >= 3;
+    const tipos = [...new Set(g.actas.flatMap(a => parseTipos(a.tipo)))];
+    const municipios = [...new Set(g.actas.map(a => a.municipio).filter(Boolean))];
+    const totalTrab = g.actas.reduce((s,a) => s + (a.trabajadores||0), 0);
+    return { ...g, pa, uc, durMin, cantActas, cumple, tipos, municipios, totalTrab };
+  }).sort((a,b) => a.inspector < b.inspector ? -1 : a.inspector > b.inspector ? 1 : a.dateKey.localeCompare(b.dateKey));
+}
+
+/* ── FILTER ───────────────────────────────────────────────────────────── */
+function getRows() {
+  const iF = document.getElementById('f-inspector')?.value || '';
+  const eF = document.getElementById('f-estado')?.value || 'todos';
+  const set = currentTab === 'ok' ? checkedOk : checkedEx;
+  return allRows.filter(r => {
+    if (currentTab === 'ok' && !r.cumple) return false;
+    if (currentTab === 'ex' && r.cumple) return false;
+    if (iF && r.inspector !== iF) return false;
+    if (eF === 'marcados' && !set.has(r.key)) return false;
+    if (eF === 'pendientes' && set.has(r.key)) return false;
+    return true;
+  });
+}
+
+/* ── RENDER ───────────────────────────────────────────────────────────── */
+function renderTable() {
+  const rows = getRows();
+  const tab = currentTab;
+  const set = tab === 'ok' ? checkedOk : checkedEx;
+  const wrap = document.getElementById('table-wrap');
+
+  if (!rows.length) {
+    wrap.innerHTML = `<div class="empty-state fade-in">
+      <div class="icon">🔍</div>
+      <div>No hay registros para los filtros seleccionados</div>
+    </div>`;
+    updateSelBar();
+    return;
+  }
+
+  const hasTrab = allRows.some(r => r.totalTrab > 0);
+
+  let html = `<table class="fade-in"><thead><tr>
+    <th></th>
+    <th>Inspector</th>
+    <th>Fecha</th>
+    <th title="Cantidad de actas del día">Actas</th>
+    <th>Apertura</th>
+    <th>Cierre</th>
+    <th>Duración</th>
+    ${tab === 'ex' ? '<th>Motivo</th>' : ''}
+    <th>Tipos</th>
+    ${hasTrab ? '<th title="Total trabajadores relevados">Trab.</th>' : ''}
+    <th>Municipio/s</th>
+    ${tab === 'ex' ? '<th>Observación</th>' : ''}
+    <th></th>
+  </tr></thead><tbody>`;
+
+  rows.forEach(r => {
+    const ck = set.has(r.key);
+    const exp = expanded.has(r.key);
+    const pct = Math.min(100, (r.durMin / 180) * 100);
+    const dc = durColor(r.durMin);
+    const reasons = nocumpleReasons(r);
+    const obs = observations[r.key] || '';
+    const rowClass = ck ? (tab === 'ok' ? 'row-approved' : 'row-exception') : '';
+
+    html += `<tr class="${rowClass}">
+      <td>
+        <div class="cb-wrap">
+          <input type="checkbox" ${tab==='ex'?'class="ex-cb"':''} ${ck?'checked':''} onchange="toggleCheck('${escK(r.key)}')">
+        </div>
+      </td>
+      <td>
+        <div class="cell-inspector">${r.inspector}</div>
+        <div class="cell-deleg">${r.delegacion}</div>
+      </td>
+      <td>
+        <div class="cell-date">${fmtDate(r.dateKey)}</div>
+        <div class="cell-dayname">${fmtDayName(r.dateKey)}</div>
+      </td>
+      <td><span class="cell-count">${r.cantActas}</span></td>
+      <td class="cell-time">${fmtT(r.pa)}</td>
+      <td class="cell-time">${fmtT(r.uc)}</td>
+      <td>
+        <div class="dur-block">
+          <span class="cell-dur" style="color:${dc}">${fmtDur(r.durMin)}</span>
+          <div class="prog"><div class="prog-fill" style="width:${pct}%;background:${dc}"></div></div>
+        </div>
+      </td>
+      ${tab === 'ex' ? `<td>${reasons.map(x => `<span class="badge badge-reason">${x}</span>`).join('')}</td>` : ''}
+      <td>${rk:checkedEx; getRows().forEach(r=>s.delete(r.key)); updateStats(); renderTable(); }
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.getElementById('nav-ok').classList.toggle('active', tab === 'ok');
+  document.getElementById('nav-ex').classList.toggle('active', tab === 'ex');
+  document.getElementById('btn-exp-ok').style.display = tab === 'ok' ? '' : 'none';
+  document.getElementById('btn-exp-ex').style.display = tab === 'ex' ? '' : 'none';
+  document.getElementById('f-estado').value = 'todos';
+  renderTable();
+}
+
+/* ── STATS ────────────────────────────────────────────────────────────── */
+function updateStats() {
+  const ok = allRows.filter(r => r.cumple).length;
+  const nok = allRows.filter(r => !r.cumple).length;
+  document.getElementById('ts-total').textContent = allRows.length;
+  document.getElementById('ts-cumple').textContent = ok;
+  document.getElementById('ts-nok').textContent = nok;
+  document.getElementById('ts-aprobados').textContent = checkedOk.size;
+  document.getElementById('nc-ok').textContent = ok;
+  document.getElementById('nc-ex').textContent = nok;
+  document.getElementById('topbar-stats').style.display = 'flex';
+}
+
+function updateSelBar() {
+  const s = currentTab === 'ok' ? checkedOk : checkedEx;
+  const bar = document.getElementById('sel-bar');
+  const txt = document.getElementById('sel-text');
+  if (s.size > 0) {
+    bar.classList.add('visible');
+    const label = currentTab === 'ok' ? 'días para aprobar' : 'excepciones';
+    txt.innerHTML = `<strong>${s.size}</strong> ${label} seleccionados`;
+  } else {
+    bar.classList.remove('visible');
+  }
+}
+
+/* ── EXPORT ───────────────────────────────────────────────────────────── */
+function exportar(tab) {
+  const set = tab === 'ok' ? checkedOk : checkedEx;
+  const rows = allRows.filter(r => (tab === 'ok' ? r.cumple : !r.cumple) && set.has(r.key));
+  if (!rows.length) { alert('No hay registros seleccionados para exportar.'); return; }
+  const data = rows.map(r => ({
+    'Inspector': r.inspector,
+    'Delegación': r.delegacion,
+    'Fecha': r.dateKey,
+    'Día': fmtDayName(r.dateKey),
+    'Municipios': r.municipios.join(', '),
+    'Cant. Actas': r.cantActas,
+    'Primer Apertura': fmtT(r.pa),
+    'Último Cierre': fmtT(r.uc),
+    'Duración (min)': r.durMin,
+    'Duración': fmtDur(r.durMin),
+    'Cumple ≥3hs': r.durMin >= 180 ? 'SÍ' : 'NO',
+    'Cumple ≥3 actas': r.cantActas >= 3 ? 'SÍ' : 'NO',
+    'Total Trabajadores': r.totalTrab || 0,
+    'Tipos de Acta': r.tipos.join(', '),
+    'Estado': tab === 'ok' ? 'APROBADO' : 'EXCEPCIÓN',
+    ...(tab === 'ex' ? { 'Observación': observations[r.key] || '' } : {}),
+  }));
+  const ws = XLSX.utils.json_to_sheet(data);
+  // Column widths
+  ws['!cols'] = [20,20,12,8,24,10,14,14,14,12,12,14,14,24,12,30].map(w => ({ wch: w }));
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, tab === 'ok' ? 'Aprobados' : 'Excepciones');
+  const fecha = new Date().toISOString().slice(0,10);
+  XLSX.writeFile(wb, `viaticos_${tab === 'ok' ? 'aprobados' : 'excepciones'}_${fecha}.xlsx`);
+}
+
+/* ── LOAD DATA ────────────────────────────────────────────────────────── */
+function loadData(raw, filename) {
+  allRows = processData(raw);
+  if (!allRows.length) {
+    document.getElementById('table-wrap').innerHTML = `<div class="empty-state fade-in">
+      <div class="icon">⚠️</div>
+      <div>No se pudieron procesar datos.</div>
+      <div style="margin-top:4px;font-size:10px">Verificá que el archivo tenga las columnas correctas.</div>
+    </div>`;
+    return;
+  }
+  checkedOk = new Set(); checkedEx = new Set();
+  observations = {}; expanded = new Set();
+
+  // Filename chip
+  if (filename) {
+    const chip = document.getElementById('filename-chip');
+    chip.textContent = filename;
+    chip.style.display = '';
+  }
+
+  // Populate inspector filter
+  const sel = document.getElementById('f-inspector');
+  sel.innerHTML = '<option value="">Todos los inspectores</option>';
+  [...new Set(allRows.map(r => r.inspector))].sort().forEach(i => {
+    const o = document.createElement('option');
+    o.value = i; o.textContent = i; sel.appendChild(o);
+  });
+  sel.onchange = () => renderTable();
+  document.getElementById('f-estado').onchange = () => renderTable();
+
+  document.getElementById('btn-exp-ok').style.display = '';
+  document.getElementById('btn-exp-ex').style.display = 'none';
+
+  currentTab = 'ok';
+  document.getElementById('nav-ok').classList.add('active');
+  document.getElementById('nav-ex').classList.remove('active');
+
+  updateStats();
+  renderTable();
+}
+
+/* ── FILE IO ──────────────────────────────────────────────────────────── */
+function handleFile(e) { readFile(e.target.files[0]); }
+function readFile(file) {
+  if (!file) return;
+  const r = new FileReader();
+  r.onload = e => {
+    try {
+      const wb = XLSX.read(e.target.result, { type: 'array', cellDates: true });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const raw = XLSX.utils.sheet_to_json(ws, { raw: true, cellDates: true });
+      loadData(raw, file.name);
+    } catch(err) {
+      document.getElementById('table-wrap').innerHTML = `<div class="empty-state fade-in">
+        <div class="icon">⚠️</div><div>Error al leer el archivo: ${err.message}</div>
+      </div>`;
+    }
+  };
+  r.readAsArrayBuffer(file);
+}
+function handleDrop(e) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag');
+  readFile(e.dataTransfer.files[0]);
+}
+
+/* ── INITIAL UPLOAD SCREEN ────────────────────────────────────────────── */
+document.getElementById('table-wrap').innerHTML = `
+<div id="upload-screen">
+  <div class="upload-bg"></div>
+  <div class="upload-grid"></div>
+  <div class="upload-card"
+    onclick="document.getElementById('file-in').click()"
+    ondragover="event.preventDefault();this.classList.add('drag')"
+    ondragleave="this.classList.remove('drag')"
+    ondrop="handleDrop(event)">
+    <div class="upload-icon-wrap">📋</div>
+    <div class="upload-h">Cargar planilla de actas</div>
+    <div class="upload-p">
+      Arrastrá el archivo <strong>.xlsx</strong> aquí<br>
+      o hacé clic para seleccionarlo desde tu equipo.<br><br>
+      Compatible con cualquier versión de la planilla.<br>
+      Detecta columnas automáticamente.
+    </div>
+    <div class="upload-hint">Formato aceptado: .xlsx · .xls</div>
+  </div>
+</div>`;
+</script>
+</body>
+</html>
+

@@ -2979,11 +2979,12 @@ if (certExists) {
     console.log('╚═══════════════════════════════════════════════════╝\n');
   });
   // Redirect HTTP → HTTPS
-  const http = require('http');
-  http.createServer((req, res) => {
-    res.writeHead(301, { Location: 'https://' + req.headers.host + req.url });
-    res.end();
-  }).listen(80, () => console.log('  HTTP→HTTPS redirect activo en puerto 80'));
+  // HTTP redirect desactivado - Nginx maneja puerto 80
+  // const http = require('http');
+  // http.createServer((req, res) => {
+  //   res.writeHead(301, { Location: 'https://' + req.headers.host + req.url });
+  //   res.end();
+  // }).listen(80, () => console.log('  HTTP→HTTPS redirect activo en puerto 80'));
 } else {
   // Fallback HTTP (desarrollo local)
   app.listen(PORT, () => {
