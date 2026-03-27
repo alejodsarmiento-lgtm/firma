@@ -2420,8 +2420,10 @@ const TRUST_STORE_LATAM = (() => {
     { file: 'ar_ac_onti_2020.crt',    pais: 'AR', nombre: 'AC ONTI 2020',            fmt: 'PEM' },
     { file: 'ar_ac_modernizacion.crt',pais: 'AR', nombre: 'AC Modernizacion PFDR',   fmt: 'AUTO' },
     { file: 'uy_acrn.cer',            pais: 'UY', nombre: 'ACRN Uruguay',            fmt: 'PEM' },
-    { file: 'br_icpbrasil_acraiz.crt',       pais: 'BR', nombre: 'ICP-Brasil AC Raiz',           fmt: 'DER' },
-    { file: 'br_icpbrasil_v10.crt',           pais: 'BR', nombre: 'ICP-Brasil v10',               fmt: 'DER' },
+    { file: 'br_icpbrasil_v10.crt', pais: 'BR', nombre: 'ICP-Brasil AC Raiz V10', fmt: 'DER' },
+    { file: 'br_icpbrasil_v7.crt', pais: 'BR', nombre: 'ICP-Brasil AC Raiz V7', fmt: 'DER' },
+    { file: 'br_icpbrasil_v6.crt', pais: 'BR', nombre: 'ICP-Brasil AC Raiz V6', fmt: 'DER' },
+    { file: 'br_icpbrasil_v5.crt', pais: 'BR', nombre: 'ICP-Brasil AC Raiz V5', fmt: 'DER' },
     { file: 'docusign_digicert_root.crt',      pais: 'US', nombre: 'DigiCert Root (DocuSign)',     fmt: 'DER' },
     { file: 'adobe_globalsign_root.crt',       pais: 'US', nombre: 'GlobalSign Root R3 (Adobe)',   fmt: 'DER' },
     { file: 'f5_zapsign_globalsign.crt', pais: 'US', nombre: 'GlobalSign R3 (ZapSign/Adobe)', fmt: 'DER' },
@@ -2434,14 +2436,24 @@ const TRUST_STORE_LATAM = (() => {
     if (!fs.existsSync(ruta)) { console.log('[TS] Skip:', file); continue; }
     try {
       let pem;
-      if (fmt === 'DER') {
-        pem = execSync('openssl x509 -inform DER -in "' + ruta + '" -out -', { encoding: 'utf8' });
-      } else if (fmt === 'PEM') {
-        pem = fs.readFileSync(ruta, 'utf8');
-      } else {
-        // AUTO: intentar PEM primero, luego DER
-        try { pem = fs.readFileSync(ruta, 'utf8'); execSync('openssl x509 -noout', { input: pem }); }
-        catch { pem = execSync('openssl x509 -inform DER -in "' + ruta + '" -out -', { encoding: 'utf8' }); }
+      try {
+        if (fmt === 'PEM') {
+          pem = fs.readFileSync(ruta, 'utf8');
+        } else {
+          // DER o AUTO: intentar DER primero, luego PEM
+          const r = execSync('openssl x509 -inform DER -in "' + ruta + '" -out -', { encoding: 'utf8' });
+          if (r && r.includes('BEGIN CERTIFICATE')) { pem = r; }
+          else { pem = fs.readFileSync(ruta, 'utf8'); }
+        }
+      } catch(eFmt) {
+        // Fallback: intentar el formato opuesto
+        try {
+          if (fmt === 'PEM') {
+            pem = execSync('openssl x509 -inform DER -in "' + ruta + '" -out -', { encoding: 'utf8' });
+          } else {
+            pem = fs.readFileSync(ruta, 'utf8');
+          }
+        } catch(e2) { console.error('[TrustStore] No se pudo leer', ruta, e2.message); continue; }
       }
       const subject = execSync('openssl x509 -noout -subject', { input: pem, encoding: 'utf8' }).trim();
       const dates   = execSync('openssl x509 -noout -dates',   { input: pem, encoding: 'utf8' }).trim();
