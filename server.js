@@ -2306,6 +2306,15 @@ app.post('/api/motor/hash', rateLimit(60, 60000), async (req, res) => {
   })();
   resultados.push(woleetCapa);
 
+  // ── Registrar verificación en Document Transparency Log ──
+  try {
+    const tl = require('./transparency/log');
+    tl.appendEntry('verificacion', raw, {
+      capas: resultados.filter(r=>r.valido).map(r=>r.capa),
+      ip: req.ip?.replace('::ffff:',''),
+    });
+  } catch(e) {}
+
   // Capa OriginStamp
   const originResult = await verificarOriginStamp(raw);
   resultados.push({
@@ -2687,6 +2696,37 @@ app.post('/api/autoguard/scan', requireAuth, async (req, res) => {
     if (r.s===200) return res.json(JSON.parse(r.b));
     res.status(503).json({ok:false});
   } catch(e) { res.status(503).json({ok:false,error:e.message}); }
+});
+
+
+
+// ── Document Transparency Log — endpoints públicos ───────────
+app.get('/api/transparency/status', (req, res) => {
+  try {
+    const tl = require('./transparency/log');
+    const integrity = tl.verifyLog();
+    const log = tl.loadLog();
+    res.json({
+      ok: integrity.ok,
+      size: log.size || 0,
+      root: log.root,
+      lastUpdated: log.lastUpdated,
+      integrity,
+      recent: (log.entries || []).slice(0,5).map(e => ({
+        index: e.index, timestamp: e.timestamp,
+        tipo: e.tipo, hash: e.hash?.substring(0,16)+'...',
+        entryHash: e.entryHash?.substring(0,16)+'...',
+      }))
+    });
+  } catch(e) { res.status(500).json({error:e.message}); }
+});
+
+app.get('/api/transparency/proof/:hash', (req, res) => {
+  try {
+    const tl = require('./transparency/log');
+    const proof = tl.proofOfInclusion(req.params.hash);
+    res.json(proof);
+  } catch(e) { res.status(500).json({error:e.message}); }
 });
 
 

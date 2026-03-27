@@ -1,0 +1,59 @@
+{
+  "entries": [
+    {
+      "index": 3,
+      "timestamp": "2026-03-27T00:12:43.237Z",
+      "tipo": "verificacion",
+      "hash": "59a171c8dea31daf27c22220f96a7116aad83b49eb21b158ed3839a71f3a97a3",
+      "metadata": {
+        "capas": [],
+        "ip": "181.23.113.245"
+      },
+      "prevRoot": "de4e35434442da33288ced5713ed99820b6665b118cdfe31feeea768f9b9466e",
+      "entryHash": "4286b05ce229a1dbc9f3bec64e90d21be0a01a2551d5679c06091794fb2cd237",
+      "merkleRoot": "25111592323d97bd9c8001edaf7e283624060b852fab1196539c91681b2c1728"
+    },
+    {
+      "index": 2,
+      "timestamp": "2026-03-27T00:12:41.499Z",
+      "tipo": "verificacion",
+      "hash": "79e6b686314aafa52b77c65bda2318f8bf5768da0ab69a89d3fc68f205f1586a",
+      "metadata": {
+        "capas": [],
+        "ip": "181.23.113.245"
+      },
+      "prevRoot": "6c73cecbbb4828338d10fb12f785eb0fe3491a25793a19fb5b2b465c0bf7fcaa",
+      "entryHash": "5710555a965a00fe8cea54fadef3ba014128fdb97544b9b596d66e24067639b5",
+      "merkleRoot": "de4e35434442da33288ced5713ed99820b6665b118cdfe31feeea768f9b9466e"
+    },
+    {
+      "index": 1,
+      "timestamp": "2026-03-27T00:12:10.292Z",
+      "tipo": "verificacion",
+      "hash": "59a171c8dea31daf27c22220f96a7116aad83b49eb21b158ed3839a71f3a97a3",
+      "metadata": {
+        "capas": [],
+        "ip": "147.93.69.57"
+      },
+      "prevRoot": "d2d2f51280e2b78192cc392994388c93c9b987cd2c1ba000eb314e9e81ded8c4",
+      "entryHash": "03ae3600d8f5eee84a0b29b6ea4af3527a3fc4c3fdf49895c0553c7ab10ff626",
+      "merkleRoot": "6c73cecbbb4828338d10fb12f785eb0fe3491a25793a19fb5b2b465c0bf7fcaa"
+    },
+    {
+      "index": 0,
+      "timestamp": "2026-03-27T00:12:08.478Z",
+      "tipo": "verificacion",
+      "hash": "79e6b686314aafa52b77c65bda2318f8bf5768da0ab69a89d3fc68f205f1586a",
+      "metadata": {
+        "capas": [],
+        "ip": "147.93.69.57"
+      },
+      "prevRoot": "aeebad4a796fcc2e15dc4c6061b45ed9b373f26adfc798ca7d2d8cc58182718e",
+      "entryHash": "d2d2f51280e2b78192cc392994388c93c9b987cd2c1ba000eb314e9e81ded8c4",
+      "merkleRoot": "d2d2f51280e2b78192cc392994388c93c9b987cd2c1ba000eb314e9e81ded8c4"
+    }
+  ],
+  "root": "25111592323d97bd9c8001edaf7e283624060b852fab1196539c91681b2c1728",
+  "size": 4,
+  "lastUpdated": "2026-03-27T00:12:43.237Z"
+}
