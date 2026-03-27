@@ -181,16 +181,7 @@ canvas.sp{display:block;width:100%;touch-action:none;cursor:crosshair}
   </div>
 
 
-<script>
-document.addEventListener('DOMContentLoaded', function(){
-  const wrap = document.querySelector('#vAdmin .wrap');
-  [4,5,6].forEach(function(n){
-    const tab = document.getElementById('tab'+n);
-      wrap.appendChild(tab);
-    }
-  });
-});
-</script>
+
 <script src="/inspector-panel.js"></script>
 <script src="/watchdog-widget.js"></script>
 </body>
@@ -246,6 +237,9 @@ document.addEventListener('DOMContentLoaded', function(){
 </div>
 
 <!-- ═══ INSPECTOR ════════════════════════════════ -->
+
+
+
 <div id="vInsp" style="display:none">
 <div class="hdr">
   <div class="hico">✍️</div>
@@ -627,6 +621,169 @@ document.addEventListener('DOMContentLoaded', function(){
 
   </div>
 </div>
+  <div id="tab4" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:14px">
+      <div style="font-size:13px;color:#888">Denuncias recibidas del formulario público</div>
+      <a href="/obras" target="_blank" style="background:#E8381A;color:#fff;padding:8px 14px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none">+ Ver formulario público</a>
+    </div>
+
+    <!-- Filtros -->
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+      <button class="bdg" id="ofTodos"    onclick="filtrarObras('todos')"       style="background:#003366;color:#fff">Todas</button>
+      <button class="bdg" id="ofPend"     onclick="filtrarObras('pendiente')"   >Pendientes</button>
+      <button class="bdg" id="ofProceso"  onclick="filtrarObras('en_proceso')"  >En proceso</button>
+      <button class="bdg" id="ofInsp"     onclick="filtrarObras('inspeccionada')">Inspeccionadas</button>
+      <button class="bdg" id="ofCerrada"  onclick="filtrarObras('cerrada')"     >Cerradas</button>
+    </div>
+
+    <div id="obrasList"><div class="spin-dark"></div></div>
+  </div>
+
+  <div id="tab5" style="display:none">
+    <!-- Resumen + Backup + Credenciales -->
+    <div class="card">
+      <div class="ctit">📊 Resumen del mes</div>
+      <div id="estadoFirmas" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div class="spin-dark"></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+        <a href="/api/admin/credenciales" download class="bs bsv" style="flex:1;padding:10px;font-size:12px;text-align:center;text-decoration:none;border-radius:8px">
+          📋 Descargar credenciales (CSV)
+        </a>
+        <button class="bs" style="flex:1;padding:10px;font-size:12px;background:#EBF4FB;color:#003366;border-radius:8px" onclick="backupFirmas()">
+          💾 Backup de firmas
+        </button>
+        <label class="bs" style="flex:1;padding:10px;font-size:12px;background:#EDF7F0;color:#1A7A3C;border-radius:8px;cursor:pointer;text-align:center">
+          📥 Restaurar backup<input type="file" accept=".json" style="display:none" onchange="restoreFirmas(event)">
+        </label>
+      </div>
+      <div class="st" id="stBackup"></div>
+    </div>
+    <!-- Lista con filtros -->
+    <!-- Botón agregar + modal -->
+    <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
+      <button onclick="abrirNuevoInsp()" style="background:#1A7A3C;color:#fff;border:none;border-radius:9px;padding:10px 16px;font-size:13px;font-weight:700;cursor:pointer">➕ Agregar inspector</button>
+    </div>
+    <div class="card">
+      <div class="ctit">👥 Inspectores habilitados (<span id="cInsp">207</span>)</div>
+      <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">
+        <button class="tab on" id="fTodos"   onclick="setFiltro('todos')"    style="flex:1;border-radius:8px;font-size:11px">Todos</button>
+        <button class="tab"    id="fFirmaron" onclick="setFiltro('firmaron')" style="flex:1;border-radius:8px;font-size:11px">✅ Firmaron este mes</button>
+        <button class="tab"    id="fFaltan"   onclick="setFiltro('faltan')"   style="flex:1;border-radius:8px;font-size:11px">⏳ Faltan firmar</button>
+        <button class="tab"    id="fSinFirma" onclick="setFiltro('sinFirma')" style="flex:1;border-radius:8px;font-size:11px">🖊️ Sin firma registrada</button>
+      </div>
+      <div class="fg" style="margin-bottom:10px">
+        <input type="text" id="busq" placeholder="Buscar por nombre, legajo o DNI…" oninput="filtrarInsp()" style="font-size:14px">
+      </div>
+      <div id="listInsp" style="max-height:520px;overflow-y:auto"><div class="spin-dark"></div></div>
+    </div>
+  </div>
+
+  <div id="tab6" style="display:none">
+<div id="watchdog-widget" class="card" style="margin-bottom:14px;border-left:4px solid #003366">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div class="ctit" style="margin:0">🛡️ Monitoreo en tiempo real</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div id="wdStatusDot" style="width:8px;height:8px;border-radius:50%;background:#aaa"></div>
+        <span id="wdStatusText" style="font-size:11px;color:#888;font-family:monospace">Conectando...</span>
+        <button id="wdScanBtn" onclick="wdForceScan()" style="font-size:10px;padding:3px 8px;border-radius:6px;border:1px solid #D0DCE8;background:#f5f7fa;cursor:pointer;color:#003366">⚡ Scan</button>
+      </div>
+    </div>
+    <div id="wdGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px;margin-bottom:10px">
+      <div style="grid-column:1/-1;text-align:center;padding:16px;color:#aaa;font-size:12px">Conectando...</div>
+    </div>
+    <div style="border-top:1px solid #f0f0f0;padding-top:10px">
+      <div style="font-size:9px;color:#aaa;font-family:monospace;text-transform:uppercase;margin-bottom:6px">Alertas recientes</div>
+      <div id="wdAlerts"><div style="font-size:11px;color:#aaa">Sin alertas</div></div>
+    </div>
+    <div id="wdLastScan" style="margin-top:8px;font-size:10px;color:#ccc;font-family:monospace">—</div>
+  </div>
+
+
+
+    <!-- Filtro de fechas -->
+    <div class="card">
+      <div class="ctit">📊 Control de Calidad — Analytics de Sesiones</div>
+      <div class="frow" style="margin-bottom:10px">
+        <div class="fg" style="margin:0">
+          <label>Desde</label>
+          <input type="date" id="aDesde" style="font-size:13px" onchange="cargarAnalytics()">
+        </div>
+        <div class="fg" style="margin:0">
+          <label>Hasta</label>
+          <input type="date" id="aHasta" style="font-size:13px" onchange="cargarAnalytics()">
+        </div>
+      </div>
+      <button class="bs bsv" style="padding:9px 16px;font-size:12px" onclick="cargarAnalytics()">🔄 Actualizar</button>
+    </div>
+
+    <!-- KPIs principales -->
+    <div id="aKpis" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px"></div>
+
+    <!-- Gráficos fila 1 -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+      <div id="chartDispositivos" class="card"></div>
+      <div id="chartBrowsers" class="card"></div>
+    </div>
+
+    <!-- Sesiones por día -->
+    <div id="chartDias" class="card" style="margin-bottom:14px"></div>
+
+    <!-- Horas pico -->
+    <div id="chartHoras" class="card" style="margin-bottom:14px"></div>
+
+    <!-- Top inspectores -->
+    <div class="card" style="margin-bottom:14px">
+      <div class="ctit">🏆 Inspectores más activos</div>
+      <div id="aTopInsp"></div>
+    </div>
+
+    <!-- Últimas sesiones -->
+    <div class="card">
+      <div class="ctit" style="flex-wrap:wrap;gap:8px">
+        <span>🕐 Historial de sesiones</span>
+        <div style="display:flex;gap:6px;margin-left:auto;flex-wrap:wrap">
+          <select id="aSelRol" onchange="filtrarSesiones()" style="font-size:11px;padding:3px 7px;border:1px solid #ddd;border-radius:6px">
+            <option value="">Todos los roles</option>
+            <option value="inspector">Inspectores</option>
+            <option value="admin">Admins</option>
+          </select>
+          <select id="aSelLim" onchange="filtrarSesiones()" style="font-size:11px;padding:3px 7px;border:1px solid #ddd;border-radius:6px">
+            <option value="20">Últimas 20</option>
+            <option value="50">Últimas 50</option>
+            <option value="100">Últimas 100</option>
+            <option value="9999">Todas</option>
+          </select>
+        </div>
+      </div>
+      <div id="aUltimas" style="overflow-x:auto"></div>
+    </div>
+
+    <!-- Auditoría Biométrica -->
+    <div class="card" style="margin-top:12px">
+      <div class="ctit" onclick="toggleBioAudit()" style="cursor:pointer;user-select:none">
+        👆 Auditoría de firma biométrica
+        <span id="bioAuditArrow" style="margin-left:auto;font-size:12px">▼</span>
+      </div>
+      <div id="bioAuditPanel" style="display:none;margin-top:10px">
+        <div id="bioAuditData"><div class="spin-dark"></div></div>
+      </div>
+    </div>
+
+    <!-- Analytics Viáticos -->
+    <div class="card" style="margin-top:12px">
+      <div class="ctit">📋 Solicitudes de viáticos por delegación</div>
+      <div id="aViatStats"><div class="spin-dark"></div></div>
+    </div>
+
+    <!-- Blockchain Bitcoin -->
+    <div class="card" style="margin-top:12px">
+      <div class="ctit">⛓ Registro en blockchain Bitcoin</div>
+      <div id="aBlockchain"><div class="spin-dark"></div></div>
+    </div>
+
+  </div>
+
 </div>
 
 <script>
@@ -2640,167 +2797,7 @@ window.addEventListener('load',()=>{
   </div>
 </div>
   <!-- TAB 4: OBRAS IRREGULARES -->
-  <div id="tab4" style="display:none">
-    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:14px">
-      <div style="font-size:13px;color:#888">Denuncias recibidas del formulario público</div>
-      <a href="/obras" target="_blank" style="background:#E8381A;color:#fff;padding:8px 14px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none">+ Ver formulario público</a>
-    </div>
-
-    <!-- Filtros -->
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
-      <button class="bdg" id="ofTodos"    onclick="filtrarObras('todos')"       style="background:#003366;color:#fff">Todas</button>
-      <button class="bdg" id="ofPend"     onclick="filtrarObras('pendiente')"   >Pendientes</button>
-      <button class="bdg" id="ofProceso"  onclick="filtrarObras('en_proceso')"  >En proceso</button>
-      <button class="bdg" id="ofInsp"     onclick="filtrarObras('inspeccionada')">Inspeccionadas</button>
-      <button class="bdg" id="ofCerrada"  onclick="filtrarObras('cerrada')"     >Cerradas</button>
-    </div>
-
-    <div id="obrasList"><div class="spin-dark"></div></div>
-  </div>
 
   <!-- TAB 5: INSPECTORES -->
-  <div id="tab5" style="display:none">
-    <!-- Resumen + Backup + Credenciales -->
-    <div class="card">
-      <div class="ctit">📊 Resumen del mes</div>
-      <div id="estadoFirmas" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-        <div class="spin-dark"></div>
-      </div>
-      <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
-        <a href="/api/admin/credenciales" download class="bs bsv" style="flex:1;padding:10px;font-size:12px;text-align:center;text-decoration:none;border-radius:8px">
-          📋 Descargar credenciales (CSV)
-        </a>
-        <button class="bs" style="flex:1;padding:10px;font-size:12px;background:#EBF4FB;color:#003366;border-radius:8px" onclick="backupFirmas()">
-          💾 Backup de firmas
-        </button>
-        <label class="bs" style="flex:1;padding:10px;font-size:12px;background:#EDF7F0;color:#1A7A3C;border-radius:8px;cursor:pointer;text-align:center">
-          📥 Restaurar backup<input type="file" accept=".json" style="display:none" onchange="restoreFirmas(event)">
-        </label>
-      </div>
-      <div class="st" id="stBackup"></div>
-    </div>
-    <!-- Lista con filtros -->
-    <!-- Botón agregar + modal -->
-    <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
-      <button onclick="abrirNuevoInsp()" style="background:#1A7A3C;color:#fff;border:none;border-radius:9px;padding:10px 16px;font-size:13px;font-weight:700;cursor:pointer">➕ Agregar inspector</button>
-    </div>
-    <div class="card">
-      <div class="ctit">👥 Inspectores habilitados (<span id="cInsp">207</span>)</div>
-      <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">
-        <button class="tab on" id="fTodos"   onclick="setFiltro('todos')"    style="flex:1;border-radius:8px;font-size:11px">Todos</button>
-        <button class="tab"    id="fFirmaron" onclick="setFiltro('firmaron')" style="flex:1;border-radius:8px;font-size:11px">✅ Firmaron este mes</button>
-        <button class="tab"    id="fFaltan"   onclick="setFiltro('faltan')"   style="flex:1;border-radius:8px;font-size:11px">⏳ Faltan firmar</button>
-        <button class="tab"    id="fSinFirma" onclick="setFiltro('sinFirma')" style="flex:1;border-radius:8px;font-size:11px">🖊️ Sin firma registrada</button>
-      </div>
-      <div class="fg" style="margin-bottom:10px">
-        <input type="text" id="busq" placeholder="Buscar por nombre, legajo o DNI…" oninput="filtrarInsp()" style="font-size:14px">
-      </div>
-      <div id="listInsp" style="max-height:520px;overflow-y:auto"><div class="spin-dark"></div></div>
-    </div>
-  </div>
 
   <!-- TAB 6: ANALYTICS -->
-  <div id="tab6" style="display:none">
-<div id="watchdog-widget" class="card" style="margin-bottom:14px;border-left:4px solid #003366">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-      <div class="ctit" style="margin:0">🛡️ Monitoreo en tiempo real</div>
-      <div style="display:flex;align-items:center;gap:8px">
-        <div id="wdStatusDot" style="width:8px;height:8px;border-radius:50%;background:#aaa"></div>
-        <span id="wdStatusText" style="font-size:11px;color:#888;font-family:monospace">Conectando...</span>
-        <button id="wdScanBtn" onclick="wdForceScan()" style="font-size:10px;padding:3px 8px;border-radius:6px;border:1px solid #D0DCE8;background:#f5f7fa;cursor:pointer;color:#003366">⚡ Scan</button>
-      </div>
-    </div>
-    <div id="wdGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px;margin-bottom:10px">
-      <div style="grid-column:1/-1;text-align:center;padding:16px;color:#aaa;font-size:12px">Conectando...</div>
-    </div>
-    <div style="border-top:1px solid #f0f0f0;padding-top:10px">
-      <div style="font-size:9px;color:#aaa;font-family:monospace;text-transform:uppercase;margin-bottom:6px">Alertas recientes</div>
-      <div id="wdAlerts"><div style="font-size:11px;color:#aaa">Sin alertas</div></div>
-    </div>
-    <div id="wdLastScan" style="margin-top:8px;font-size:10px;color:#ccc;font-family:monospace">—</div>
-  </div>
-
-
-
-    <!-- Filtro de fechas -->
-    <div class="card">
-      <div class="ctit">📊 Control de Calidad — Analytics de Sesiones</div>
-      <div class="frow" style="margin-bottom:10px">
-        <div class="fg" style="margin:0">
-          <label>Desde</label>
-          <input type="date" id="aDesde" style="font-size:13px" onchange="cargarAnalytics()">
-        </div>
-        <div class="fg" style="margin:0">
-          <label>Hasta</label>
-          <input type="date" id="aHasta" style="font-size:13px" onchange="cargarAnalytics()">
-        </div>
-      </div>
-      <button class="bs bsv" style="padding:9px 16px;font-size:12px" onclick="cargarAnalytics()">🔄 Actualizar</button>
-    </div>
-
-    <!-- KPIs principales -->
-    <div id="aKpis" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px"></div>
-
-    <!-- Gráficos fila 1 -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
-      <div id="chartDispositivos" class="card"></div>
-      <div id="chartBrowsers" class="card"></div>
-    </div>
-
-    <!-- Sesiones por día -->
-    <div id="chartDias" class="card" style="margin-bottom:14px"></div>
-
-    <!-- Horas pico -->
-    <div id="chartHoras" class="card" style="margin-bottom:14px"></div>
-
-    <!-- Top inspectores -->
-    <div class="card" style="margin-bottom:14px">
-      <div class="ctit">🏆 Inspectores más activos</div>
-      <div id="aTopInsp"></div>
-    </div>
-
-    <!-- Últimas sesiones -->
-    <div class="card">
-      <div class="ctit" style="flex-wrap:wrap;gap:8px">
-        <span>🕐 Historial de sesiones</span>
-        <div style="display:flex;gap:6px;margin-left:auto;flex-wrap:wrap">
-          <select id="aSelRol" onchange="filtrarSesiones()" style="font-size:11px;padding:3px 7px;border:1px solid #ddd;border-radius:6px">
-            <option value="">Todos los roles</option>
-            <option value="inspector">Inspectores</option>
-            <option value="admin">Admins</option>
-          </select>
-          <select id="aSelLim" onchange="filtrarSesiones()" style="font-size:11px;padding:3px 7px;border:1px solid #ddd;border-radius:6px">
-            <option value="20">Últimas 20</option>
-            <option value="50">Últimas 50</option>
-            <option value="100">Últimas 100</option>
-            <option value="9999">Todas</option>
-          </select>
-        </div>
-      </div>
-      <div id="aUltimas" style="overflow-x:auto"></div>
-    </div>
-
-    <!-- Auditoría Biométrica -->
-    <div class="card" style="margin-top:12px">
-      <div class="ctit" onclick="toggleBioAudit()" style="cursor:pointer;user-select:none">
-        👆 Auditoría de firma biométrica
-        <span id="bioAuditArrow" style="margin-left:auto;font-size:12px">▼</span>
-      </div>
-      <div id="bioAuditPanel" style="display:none;margin-top:10px">
-        <div id="bioAuditData"><div class="spin-dark"></div></div>
-      </div>
-    </div>
-
-    <!-- Analytics Viáticos -->
-    <div class="card" style="margin-top:12px">
-      <div class="ctit">📋 Solicitudes de viáticos por delegación</div>
-      <div id="aViatStats"><div class="spin-dark"></div></div>
-    </div>
-
-    <!-- Blockchain Bitcoin -->
-    <div class="card" style="margin-top:12px">
-      <div class="ctit">⛓ Registro en blockchain Bitcoin</div>
-      <div id="aBlockchain"><div class="spin-dark"></div></div>
-    </div>
-
-  </div>
