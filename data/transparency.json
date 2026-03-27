@@ -1,6 +1,19 @@
 {
   "entries": [
     {
+      "index": 4,
+      "timestamp": "2026-03-27T02:00:55.227Z",
+      "tipo": "verificacion",
+      "hash": "79e6b686314aafa52b77c65bda2318f8bf5768da0ab69a89d3fc68f205f1586a",
+      "metadata": {
+        "capas": [],
+        "ip": "181.23.113.245"
+      },
+      "prevRoot": "25111592323d97bd9c8001edaf7e283624060b852fab1196539c91681b2c1728",
+      "entryHash": "c22f5839f7e1186d9bb6af7d724cf2bf5570f3818e954a803c74817735dcdfbd",
+      "merkleRoot": "dc85788ed1429e9b188d93dc72a65d69d0b05b400c047a2fa527718a54b2939e"
+    },
+    {
       "index": 3,
       "timestamp": "2026-03-27T00:12:43.237Z",
       "tipo": "verificacion",
@@ -53,7 +66,7 @@
       "merkleRoot": "d2d2f51280e2b78192cc392994388c93c9b987cd2c1ba000eb314e9e81ded8c4"
     }
   ],
-  "root": "25111592323d97bd9c8001edaf7e283624060b852fab1196539c91681b2c1728",
-  "size": 4,
-  "lastUpdated": "2026-03-27T00:12:43.237Z"
+  "root": "dc85788ed1429e9b188d93dc72a65d69d0b05b400c047a2fa527718a54b2939e",
+  "size": 5,
+  "lastUpdated": "2026-03-27T02:00:55.227Z"
 }

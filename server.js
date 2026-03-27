@@ -2862,6 +2862,98 @@ app.get('/api/push/stats', requireAuth, (req, res) => {
 });
 
 
+
+// ══════════════════════════════════════════════════════════════
+// FIRMARED WATCHDOG v2 — Monitoreo en tiempo real
+// ══════════════════════════════════════════════════════════════
+const WATCHDOG_MS   = 15000;
+const wdClients     = new Set();
+const wdState       = { services:{}, alerts:[], status:'init', lastScan:null, scanMs:0 };
+
+const wdHttp = (hostname, path, port) => new Promise(resolve => {
+  const mod = port ? require('http') : require('https');
+  const opts = port
+    ? { hostname:'127.0.0.1', port, path, method:'GET', timeout:4000 }
+    : { hostname, path, method:'GET', headers:{'User-Agent':'FirmaRED-WD/2'}, timeout:6000 };
+  const req = mod.request(opts, r => { let d=''; r.on('data',c=>d+=c); r.on('end',()=>resolve({s:r.statusCode,b:d})); });
+  req.on('error',()=>resolve({s:0,b:''}));
+  req.on('timeout',()=>{req.destroy();resolve({s:0,b:''});});
+  req.end();
+});
+
+const wdChecks = [
+  { id:'firmared_https',    nombre:'firmared.com · HTTPS',        tipo:'externo',  check: async()=>{ const r=await wdHttp('firmared.com','/api/stats'); return {ok:r.s===200,detail:`HTTP ${r.s}`}; }},
+  { id:'woleet',            nombre:'Woleet · Blockchain',          tipo:'externo',  check: async()=>{ const r=await wdHttp('api.woleet.io','/v1/info'); return {ok:r.s>0&&r.s<500,detail:`HTTP ${r.s}`}; }},
+  { id:'ots_alice',         nombre:'OpenTimestamps · Alice',       tipo:'externo',  check: async()=>{ const r=await wdHttp('alice.btc.calendar.opentimestamps.org','/'); return {ok:r.s>0&&r.s<500,detail:`HTTP ${r.s}`}; }},
+  { id:'ots_bob',           nombre:'OpenTimestamps · Bob',         tipo:'externo',  check: async()=>{ const r=await wdHttp('bob.btc.calendar.opentimestamps.org','/'); return {ok:r.s>0&&r.s<500,detail:`HTTP ${r.s}`}; }},
+  { id:'etherscan',         nombre:'Etherscan · Ethereum',         tipo:'externo',  check: async()=>{ const r=await wdHttp('api.etherscan.io','/api?module=stats&action=ethprice'); return {ok:r.s===200,detail:`HTTP ${r.s}`}; }},
+  { id:'acraiz_argentina',  nombre:'AC Raíz Argentina',            tipo:'externo',  check: async()=>{ const r=await wdHttp('acraiz.gov.ar','/'); return {ok:r.s>0&&r.s<500,detail:r.s>0?'OK':'Sin resp'}; }},
+  { id:'dss_validator',     nombre:'DSS Validator · PKI',          tipo:'interno',  check: async()=>{ const r=await wdHttp(null,'/health',8081); if(!r.s)return{ok:false,detail:'Offline'}; const d=JSON.parse(r.b||'{}'); return {ok:r.s===200,detail:`${d.trustCerts||0} certs`}; }},
+  { id:'autoguard',         nombre:'AutoGuard · Monitor',          tipo:'interno',  check: async()=>{ const r=await wdHttp(null,'/health',8082); return {ok:r.s===200,detail:r.s===200?'Online':'Offline'}; }},
+  { id:'transparency',      nombre:'Transparency Log · Merkle',    tipo:'interno',  check: async()=>{ try{ const tl=require('./transparency/log'); const i=tl.verifyLog(); const l=tl.loadLog(); return {ok:i.ok,detail:`${l.size||0} entradas`}; }catch(e){return{ok:false,detail:e.message};} }},
+  { id:'trust_store',       nombre:'Trust Store LATAM',            tipo:'interno',  check: async()=>{ const n=TRUST_STORE_LATAM?.length||0; return {ok:n>=9,detail:`${n} certs raíz`}; }},
+  { id:'disk',              nombre:'Disco · VPS',                  tipo:'interno',  check: async()=>{ try{ const {execSync}=require('child_process'); const p=parseInt(execSync("df / --output=pcent|tail -1",{encoding:'utf8'}).trim()); return {ok:p<85,detail:`${p}% usado`,valor:p}; }catch(e){return{ok:true,detail:'N/A'};} }},
+  { id:'ram',               nombre:'RAM · Servidor',               tipo:'interno',  check: async()=>{ try{ const {execSync}=require('child_process'); const p=Math.round(parseFloat(execSync("free|awk '/Mem:/{print $3/$2*100}'",{encoding:'utf8'}).trim())); return {ok:p<85,detail:`${p}% usada`,valor:p}; }catch(e){return{ok:true,detail:'N/A'};} }},
+  { id:'backup',            nombre:'Backup cifrado · AES-256',     tipo:'interno',  check: async()=>{ try{ const {execSync}=require('child_process'); const f=execSync('ls -t /var/backups/firmared/*.enc 2>/dev/null|head -1',{encoding:'utf8'}).trim(); if(!f)return{ok:false,detail:'Sin backups'}; const st=require('fs').statSync(f); const h=Math.floor((Date.now()-st.mtimeMs)/3600000); return {ok:h<26,detail:`Último hace ${h}h`}; }catch(e){return{ok:false,detail:'Sin directorio'};} }},
+];
+
+const wdAddAlert = (id,nivel,msg,detail) => {
+  const a={ts:new Date().toISOString(),id,nivel,msg,detail};
+  wdState.alerts.unshift(a);
+  wdState.alerts=wdState.alerts.slice(0,100);
+  if(nivel==='CRITICAL') console.error('[WD][CRITICAL]',msg,detail);
+};
+
+const wdBroadcast = () => {
+  const payload = `data: ${JSON.stringify({type:'wd',services:wdState.services,alerts:wdState.alerts.slice(0,10),status:wdState.status,lastScan:wdState.lastScan,scanMs:wdState.scanMs})}\n\n`;
+  for(const c of wdClients){ try{c.write(payload);}catch{wdClients.delete(c);} }
+};
+
+const wdRun = async () => {
+  const t0=Date.now(); const res={};
+  await Promise.all(wdChecks.map(async chk => {
+    try{
+      const r=await chk.check(); const prev=wdState.services[chk.id];
+      if(prev&&prev.ok!==r.ok) wdAddAlert(chk.id,r.ok?'RECOVERY':chk.tipo==='interno'?'CRITICAL':'WARN',r.ok?`✅ ${chk.nombre} recuperado`:`⚠️ ${chk.nombre} con problemas`,r.detail);
+      res[chk.id]={...chk,ok:r.ok,detail:r.detail,latency:Date.now()-t0,ts:new Date().toISOString()};
+    }catch(e){
+      if(!wdState.services[chk.id]||wdState.services[chk.id].ok) wdAddAlert(chk.id,'CRITICAL',`💥 ${chk.nombre} error`,e.message);
+      res[chk.id]={...chk,ok:false,detail:e.message,latency:Date.now()-t0,ts:new Date().toISOString()};
+    }
+  }));
+  wdState.services=res; wdState.lastScan=new Date().toISOString(); wdState.scanMs=Date.now()-t0;
+  wdState.status=Object.values(res).every(r=>r.ok)?'ok':Object.values(res).some(r=>!r.ok&&r.tipo==='interno')?'critical':'warn';
+  wdBroadcast();
+  console.log(`[WD] ${wdState.status} — ${Object.values(res).filter(r=>r.ok).length}/${Object.keys(res).length} OK — ${wdState.scanMs}ms`);
+};
+
+console.log('[WatchDog] Iniciando...');
+wdRun();
+setInterval(wdRun, WATCHDOG_MS);
+
+// ── Endpoints WatchDog ─────────────────────────────────────
+app.get('/api/watchdog/stream', requireAuth, (req,res) => {
+  res.setHeader('Content-Type','text/event-stream');
+  res.setHeader('Cache-Control','no-cache');
+  res.setHeader('Connection','keep-alive');
+  res.setHeader('X-Accel-Buffering','no');
+  res.flushHeaders();
+  res.write(`data: ${JSON.stringify({type:'wd',services:wdState.services,alerts:wdState.alerts.slice(0,10),status:wdState.status,lastScan:wdState.lastScan,scanMs:wdState.scanMs})}\n\n`);
+  const ka=setInterval(()=>{try{res.write(': ka\n\n');}catch{clearInterval(ka);wdClients.delete(res);}},25000);
+  wdClients.add(res);
+  req.on('close',()=>{clearInterval(ka);wdClients.delete(res);});
+});
+
+app.get('/api/watchdog/status', requireAuth, (req,res) => {
+  res.json({status:wdState.status,lastScan:wdState.lastScan,scanMs:wdState.scanMs,services:wdState.services,alerts:wdState.alerts.slice(0,20),clientes:wdClients.size});
+});
+
+app.post('/api/watchdog/scan', requireAuth, async (req,res) => {
+  await wdRun();
+  res.json({ok:true,status:wdState.status,scanMs:wdState.scanMs});
+});
+
+
 // ── SPA fallback ───────────────────────────────────────────────
 app.get('*', (req, res) => {
   res.sendFile(path.join(PUBLIC_DIR, 'index.html'));

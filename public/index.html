@@ -142,50 +142,6 @@ canvas.sp{display:block;width:100%;touch-action:none;cursor:crosshair}
 @media(max-width:420px){.frow,.mg{grid-template-columns:1fr}.tab{font-size:11px;padding:8px 2px}}
 </style>
 <style>#tab4,#tab5,#tab6{max-width:680px;margin:0 auto;padding:16px 14px 60px;width:100%;box-sizing:border-box;display:none;}</style>
-
-<style>
-/* ── Tabs inspector ───────────────────────────── */
-#inspTabs{display:flex;background:#fff;border-radius:12px;padding:4px;margin:0 0 14px;border:1px solid #D0DCE8;box-shadow:0 2px 10px rgba(0,51,102,.08);overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
-#inspTabs::-webkit-scrollbar{display:none}
-.itab{flex:1;padding:9px 6px;border:none;background:none;border-radius:9px;font-size:12px;font-weight:600;cursor:pointer;color:#999;white-space:nowrap;transition:all .15s}
-.itab.on{background:#003366;color:#fff}
-.itab .badge{display:inline-block;background:#e53935;color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:8px;margin-left:4px;vertical-align:middle}
-
-/* ── Card historial inspector ──────────────────── */
-.ihist-item{background:#fff;border-radius:12px;border:1px solid #D0DCE8;padding:14px 16px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,51,102,.06)}
-.ihist-mes{font-weight:700;font-size:14px;color:#003366;margin-bottom:4px}
-.ihist-meta{font-size:11px;color:#888;margin-bottom:10px;line-height:1.5}
-.ihist-hash{font-family:monospace;font-size:10px;color:#aaa;background:#f5f7fa;padding:4px 8px;border-radius:6px;margin-bottom:10px;word-break:break-all}
-.ihist-badges{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
-.ibadge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;letter-spacing:.02em}
-.ibadge.ok{background:#E8F5E9;color:#2E7D32}
-.ibadge.warn{background:#FFF8E1;color:#F57F17}
-.ibadge.err{background:#FFEBEE;color:#C62828}
-.ibadge.neu{background:#F0F4F8;color:#546E7A}
-.ihist-btns{display:flex;gap:8px;flex-wrap:wrap}
-.ihist-btn{flex:1;min-width:80px;padding:9px 8px;border-radius:9px;border:none;font-size:12px;font-weight:700;cursor:pointer;text-align:center;text-decoration:none;display:inline-block}
-.ihist-btn.dl{background:#003366;color:#fff}
-.ihist-btn.ver{background:#E8F0F7;color:#003366}
-.ihist-btn.cert{background:#E8F5E9;color:#1B5E20}
-
-/* ── Panel RGPD ────────────────────────────────── */
-.rgpd-card{background:#fff;border-radius:12px;border:1px solid #D0DCE8;padding:16px;margin-bottom:12px}
-.rgpd-tit{font-weight:700;font-size:14px;color:#003366;margin-bottom:8px;display:flex;align-items:center;gap:6px}
-.rgpd-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f0f0f0;font-size:13px}
-.rgpd-row:last-child{border-bottom:none}
-.rgpd-val{font-weight:600;color:#003366}
-.rgpd-btn{padding:10px 14px;border-radius:9px;border:none;font-size:12px;font-weight:700;cursor:pointer;width:100%;margin-top:8px}
-.rgpd-btn.primary{background:#003366;color:#fff}
-.rgpd-btn.sec{background:#f0f4f8;color:#003366}
-.rgpd-btn.danger{background:#FFEBEE;color:#C62828}
-
-/* ── Empty state ───────────────────────────────── */
-.iempty{text-align:center;padding:40px 20px;color:#aaa}
-.iempty .ico{font-size:40px;margin-bottom:12px}
-.iempty h3{font-size:15px;font-weight:700;color:#555;margin-bottom:6px}
-.iempty p{font-size:13px;line-height:1.5}
-</style>
-
 </head>
 <body>
 
@@ -235,6 +191,8 @@ document.addEventListener('DOMContentLoaded', function(){
   });
 });
 </script>
+<script src="/inspector-panel.js"></script>
+<script src="/watchdog-widget.js"></script>
 </body>
 </html></div>
 </div>
@@ -297,12 +255,13 @@ document.addEventListener('DOMContentLoaded', function(){
   <button class="hout" onclick="doLogout()">Salir</button>
 </div>
 <div class="wrap">
-  <div id="inspTabs">
-    <button class="itab on" onclick="iTab(1)" id="it1">✍️ Firmar</button>
-    <button class="itab"    onclick="iTab(2)" id="it2">📋 Mi Historial <span id="badgeHist" style="display:none;background:#e53935;color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:8px;margin-left:4px;vertical-align:middle"></span></button>
-    <button class="itab"    onclick="iTab(3)" id="it3">🛡️ Mis Datos</button>
+  <div id="inspTabs" style="display:flex;background:#fff;border-radius:12px;padding:4px;margin:0 0 14px;border:1px solid #D0DCE8;box-shadow:0 2px 10px rgba(0,51,102,.08);overflow-x:auto">
+    <button class="itab on" onclick="iTab(1)" id="it1" style="flex:1;padding:9px 6px;border:none;background:none;border-radius:9px;font-size:12px;font-weight:600;cursor:pointer;color:#999;white-space:nowrap">✍️ Firmar</button>
+    <button class="itab"    onclick="iTab(2)" id="it2" style="flex:1;padding:9px 6px;border:none;background:none;border-radius:9px;font-size:12px;font-weight:600;cursor:pointer;color:#999;white-space:nowrap">📋 Mi Historial <span id="badgeHist" style="display:none;background:#e53935;color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:8px;margin-left:4px"></span></button>
+    <button class="itab"    onclick="iTab(3)" id="it3" style="flex:1;padding:9px 6px;border:none;background:none;border-radius:9px;font-size:12px;font-weight:600;cursor:pointer;color:#999;white-space:nowrap">🛡️ Mis Datos</button>
   </div>
   <div id="itab1">
+
 
   <div class="card">
     <div class="perfil">
@@ -455,50 +414,44 @@ document.addEventListener('DOMContentLoaded', function(){
 
   </div><!-- /itab1 -->
 
-  <!-- TAB 2: MI HISTORIAL COMPLETO -->
+  <!-- TAB 2: MI HISTORIAL -->
   <div id="itab2" style="display:none">
-    <div class="rgpd-card">
-      <div class="rgpd-tit">📋 Todas mis planillas firmadas</div>
-      <div id="iHistCompleto"><div style="text-align:center;padding:30px;color:#aaa">Cargando…</div></div>
+    <div class="card">
+      <div class="ctit">📋 Mis planillas firmadas</div>
+      <div id="iHistCompleto"><div style="text-align:center;padding:20px;color:#aaa">Cargando...</div></div>
     </div>
-    <div class="rgpd-card">
-      <div class="rgpd-tit">🔗 Document Transparency Log</div>
-      <p style="font-size:12px;color:#888;margin-bottom:10px;line-height:1.5">Todas tus firmas quedan registradas en el log público de FirmaRED, auditable independientemente.</p>
-      <div id="iTlogInfo"><div style="font-size:12px;color:#aaa">Cargando…</div></div>
+    <div class="card" style="margin-top:6px">
+      <div class="ctit">🔗 Transparency Log</div>
+      <div id="iTlogInfo"><div style="font-size:12px;color:#aaa">Cargando...</div></div>
     </div>
-  </div><!-- /itab2 -->
+  </div>
 
-  <!-- TAB 3: MIS DATOS RGPD -->
+  <!-- TAB 3: MIS DATOS -->
   <div id="itab3" style="display:none">
-    <div class="rgpd-card">
-      <div class="rgpd-tit">👤 Mi perfil</div>
-      <div id="iRgpdPerfil"><div style="font-size:12px;color:#aaa">Cargando…</div></div>
+    <div class="card">
+      <div class="ctit">👤 Mi perfil</div>
+      <div id="iRgpdPerfil"><div style="font-size:12px;color:#aaa">Cargando...</div></div>
     </div>
-    <div class="rgpd-card">
-      <div class="rgpd-tit">🔐 Biometría</div>
-      <div id="iRgpdBio"><div style="font-size:12px;color:#aaa">Cargando…</div></div>
-      <button class="rgpd-btn sec" style="margin-top:10px" onclick="irAFirmar()">✍️ Actualizar biometría</button>
+    <div class="card" style="margin-top:6px">
+      <div class="ctit">🔐 Biometría</div>
+      <div id="iRgpdBio"></div>
+      <button onclick="irAFirmar()" style="width:100%;margin-top:8px;padding:10px;background:#f0f4f8;color:#003366;border:none;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer">✍️ Actualizar biometría</button>
     </div>
-    <div class="rgpd-card">
-      <div class="rgpd-tit">🔔 Notificaciones</div>
-      <p style="font-size:12px;color:#888;margin-bottom:12px;line-height:1.5">Recibí una alerta en tu dispositivo cuando tenés una planilla pendiente de firma — aunque tengas el browser cerrado.</p>
-      <div id="pushStatus" style="font-size:12px;margin-bottom:10px;color:#888">Verificando…</div>
-      <button class="rgpd-btn primary" id="pushBtn" onclick="togglePush()" style="display:none">🔔 Activar notificaciones</button>
+    <div class="card" style="margin-top:6px">
+      <div class="ctit">🔔 Notificaciones</div>
+      <div id="pushStatus" style="font-size:12px;color:#888;margin-bottom:8px">Verificando...</div>
+      <button id="pushBtn" onclick="togglePush()" style="display:none;width:100%;padding:10px;background:#003366;color:#fff;border:none;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer">🔔 Activar notificaciones</button>
     </div>
-    <div class="rgpd-card">
-      <div class="rgpd-tit">📦 Mis datos (RGPD Art. 15)</div>
-      <p style="font-size:12px;color:#888;margin-bottom:12px;line-height:1.5">Tenés derecho a ver todos los datos personales que FirmaRED almacena sobre vos, y a solicitar su rectificación o supresión.</p>
-      <button class="rgpd-btn primary" onclick="descargarMisDatos()">⬇️ Descargar mis datos</button>
-      <button class="rgpd-btn sec" style="margin-top:8px" onclick="window.open('/privacidad','_blank')">📄 Ver Política de Privacidad</button>
-      <button class="rgpd-btn danger" style="margin-top:8px" onclick="solicitarSupresion()">🗑️ Solicitar supresión de datos</button>
+    <div class="card" style="margin-top:6px">
+      <div class="ctit">📦 Mis datos (RGPD Art. 15)</div>
+      <p style="font-size:12px;color:#888;margin-bottom:10px;line-height:1.5">Derecho a ver, descargar y solicitar eliminacion de tus datos.</p>
+      <button onclick="descargarMisDatos()" style="width:100%;padding:10px;background:#003366;color:#fff;border:none;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;margin-bottom:6px">⬇️ Descargar mis datos</button>
+      <button onclick="window.open('/privacidad','_blank')" style="width:100%;padding:10px;background:#f0f4f8;color:#003366;border:none;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;margin-bottom:6px">📄 Politica de privacidad</button>
+      <button onclick="solicitarSupresion()" style="width:100%;padding:10px;background:#FFEBEE;color:#C62828;border:none;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer">🗑️ Solicitar supresion</button>
     </div>
-    <div class="rgpd-card">
-      <div class="rgpd-tit">🔑 Cambiar contraseña</div>
-      <div id="iRgpdPwd"></div>
-    </div>
-  </div><!-- /itab3 -->
+  </div>
 
-  <!-- CAMBIAR CONTRASEÑA (colapsable, máx 2 veces) -->
+  <!-- CAMBIAR CONTRASEÑA , máx 2 veces) -->
   <div class="card" style="margin-top:6px" id="cardPwd">
     <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="togglePwd()">
       <div class="ctit" style="margin:0">🔑 Cambiar contraseña</div>
@@ -985,7 +938,7 @@ async function buildAdmin(){
   renderAdminPend();
 }
 
-async function aTab(n){
+async function aTab(n){ if(n===6&&typeof wdConnect==="function"){ if(!wdES||wdES.readyState===2) wdConnect(); }
   [1,2,3,4,5,6].forEach(i=>{
     const tab=document.getElementById('tab'+i);
     const btn=document.getElementById('t'+i);
@@ -2562,513 +2515,6 @@ window.addEventListener('load',()=>{
     document.querySelector('.lbox').appendChild(hint);
   }
 });
-
-// ══════════════════════════════════════════════════════════════
-// PANEL INSPECTOR — Tabs y funciones
-// ══════════════════════════════════════════════════════════════
-
-function iTab(n) {
-  [1,2,3].forEach(i => {
-    const tab = document.getElementById('itab'+i);
-    const btn = document.getElementById('it'+i);
-    if (tab) tab.style.display = i===n ? 'block' : 'none';
-    if (btn) btn.className = 'itab' + (i===n ? ' on' : '');
-  });
-  if (n===2) cargarHistorialCompleto();
-  if (n===3) cargarDatosRGPD();
-}
-
-function irAFirmar() { iTab(1); }
-
-// ── Tab 2: Historial completo del inspector ──────────────────
-async function cargarHistorialCompleto() {
-  const el = document.getElementById('iHistCompleto');
-  const tl = document.getElementById('iTlogInfo');
-  if (!el) return;
-  el.innerHTML = '<div style="text-align:center;padding:20px;color:#aaa">Cargando…</div>';
-
-  try {
-    const r = await api('GET', '/api/inspector/mis-firmas');
-    const firmas = r.firmas || [];
-
-    // Badge en tab
-    const badge = document.getElementById('badgeHist');
-    if (badge && firmas.length > 0) { badge.textContent = firmas.length; badge.style.display='inline'; }
-
-    if (!firmas.length) {
-      el.innerHTML = '<div class="iempty"><div class="ico">📭</div><h3>Sin firmas registradas</h3><p>Cuando firmes una planilla aparecerá aquí.</p></div>';
-      return;
-    }
-
-    el.innerHTML = firmas.map(f => {
-      const fecha = f.fecha || '—';
-      const otsOk = f.ots;
-      const metodo = f.metodo === 'biometrica' ? '👆 Biométrica' : '✍️ Manuscrita';
-      const hash16 = (f.hash||'').substring(0,16)+'...';
-      return `
-        <div class="ihist-item">
-          <div class="ihist-mes">📋 Viáticos ${f.periodo}</div>
-          <div class="ihist-meta">${fecha} · ${metodo}</div>
-          <div class="ihist-hash">${hash16}</div>
-          <div class="ihist-badges">
-            <span class="ibadge ok">✅ Firmada</span>
-            ${otsOk ? '<span class="ibadge ok">⛓ Bitcoin OTS</span>' : '<span class="ibadge warn">⏳ OTS pendiente</span>'}
-            <span class="ibadge neu">🔍 Verificable</span>
-          </div>
-          <div class="ihist-btns">
-            <button class="ihist-btn dl" onclick="descargarFirmaHist('${f.hash}')">⬇️ Descargar</button>
-            <button class="ihist-btn ver" onclick="verificarEnMotor('${f.hash}')">🔍 Verificar</button>
-            <button class="ihist-btn cert" onclick="verCertificado('${f.hash}')">📜 Certificado</button>
-          </div>
-        </div>`;
-    }).join('');
-
-    // Transparency log info
-    if (tl && firmas.length > 0) {
-      try {
-        const proof = await api('GET', '/api/transparency/proof/'+firmas[0].hash);
-        tl.innerHTML = proof.incluido
-          ? `<div style="font-size:12px;line-height:1.7;color:#555">
-              <div>✅ <strong>Incluido en el log</strong> — índice #${proof.index}</div>
-              <div>📅 Registrado: ${proof.timestamp?.substring(0,19).replace('T',' ')}</div>
-              <div style="font-family:monospace;font-size:10px;color:#aaa;margin-top:4px">Raíz Merkle: ${proof.merkleRoot?.substring(0,24)}…</div>
-              <a href="/api/transparency/status" target="_blank" style="font-size:11px;color:#003366;margin-top:8px;display:inline-block">Ver log público →</a>
-             </div>`
-          : '<div style="font-size:12px;color:#aaa">Esta firma aún no aparece en el log de transparencia.</div>';
-      } catch(e) {}
-    }
-
-  } catch(e) {
-    el.innerHTML = '<div style="color:#e53935;font-size:13px;padding:12px">Error cargando historial: '+e.message+'</div>';
-  }
-}
-
-async function descargarFirmaHist(hash) {
-  try {
-    const hist = await api('GET', '/api/inspector/mis-firmas');
-    const firma = (hist.firmas||[]).find(f=>f.hash===hash);
-    if (!firma) return alert('No se encontró la firma');
-    // Abrir el PDF firmado
-    window.open('/firmadas/'+firma.hash, '_blank');
-  } catch(e) { alert('Error: '+e.message); }
-}
-
-async function verificarEnMotor(hash) {
-  // Navegar a la landing con el hash
-  window.open('/?h='+hash, '_blank');
-}
-
-async function verCertificado(hash) {
-  try {
-    const proof = await api('GET', '/api/transparency/proof/'+hash);
-    const texto = proof.incluido
-      ? `CERTIFICADO DE REGISTRO — FirmaRED\n\nDocumento: ${hash}\nÍndice en log: #${proof.index}\nTimestamp: ${proof.timestamp}\nEntryHash: ${proof.entryHash}\nRaíz Merkle: ${proof.merkleRoot}\nRaíz anterior: ${proof.prevRoot}\n\nVerificable públicamente en: https://firmared.com/api/transparency/status`
-      : 'Este documento aún no figura en el Document Transparency Log.';
-    alert(texto);
-  } catch(e) { alert('Error: '+e.message); }
-}
-
-// ── Tab 3: Datos RGPD ────────────────────────────────────────
-async function cargarDatosRGPD() {
-  const elPerfil = document.getElementById('iRgpdPerfil');
-  const elBio    = document.getElementById('iRgpdBio');
-  const elPwd    = document.getElementById('iRgpdPwd');
-  if (!elPerfil) return;
-
-  try {
-    const mis = await api('GET', '/api/inspector/mis-firmas');
-    const p   = mis.titular || {};
-    elPerfil.innerHTML = `
-      <div class="rgpd-row"><span>Nombre</span><span class="rgpd-val">${p.nombre||'—'}</span></div>
-      <div class="rgpd-row"><span>Legajo</span><span class="rgpd-val">${p.legajo||'—'}</span></div>
-      <div class="rgpd-row"><span>Total firmas</span><span class="rgpd-val">${mis.total||0}</span></div>
-      <div class="rgpd-row"><span>Datos almacenados</span><span class="rgpd-val">Nombre · Legajo · Firma · Hash · IP · Timestamp</span></div>
-      <div class="rgpd-row"><span>Base legal</span><span class="rgpd-val">Ley 25.506 · Función pública</span></div>
-      <div class="rgpd-row"><span>Retención</span><span class="rgpd-val">10 años (LCT Art. 143)</span></div>
-    `;
-  } catch(e) { elPerfil.innerHTML = '<div style="font-size:12px;color:#aaa">Error cargando perfil</div>'; }
-  initPush();
-
-  // Biometría
-  if (elBio) {
-    const tieneBio = perfilInsp?.tieneBiometrico || false;
-    elBio.innerHTML = tieneBio
-      ? '<div class="rgpd-row"><span>Estado</span><span class="rgpd-val" style="color:#2E7D32">✅ Biometría registrada</span></div><div class="rgpd-row"><span>Tipo</span><span class="rgpd-val">WebAuthn (FIDO2)</span></div><p style="font-size:11px;color:#888;margin-top:6px">Tu biometría está almacenada de forma cifrada en tu dispositivo, nunca en el servidor.</p>'
-      : '<div class="rgpd-row"><span>Estado</span><span class="rgpd-val" style="color:#F57F17">⚠️ Sin biometría</span></div><p style="font-size:11px;color:#888;margin-top:6px">Podés registrar huella o Face ID desde la tab Firmar.</p>';
-  }
-
-  // Mover el form de cambio de contraseña al tab 3
-  if (elPwd) {
-    const cardPwd = document.getElementById('cardPwd');
-    if (cardPwd) {
-      const form = cardPwd.querySelector('#pwdForm')?.innerHTML || '';
-      elPwd.innerHTML = `
-        <div style="background:#EBF4FB;border-radius:9px;padding:10px 13px;font-size:12px;color:#1F5FA6;margin-bottom:12px">
-          Podés cambiar tu contraseña hasta <strong>2 veces</strong>. Cambios usados: <strong id="pwdCambios2">—</strong>/2
-        </div>` + (cardPwd.querySelector('#pwdForm')?.outerHTML || '');
-      // Ocultar el card original
-      cardPwd.style.display = 'none';
-    }
-  }
-}
-
-async function descargarMisDatos() {
-  try {
-    const r = await api('GET', '/api/inspector/mis-firmas');
-    const blob = new Blob([JSON.stringify(r, null, 2)], {type:'application/json'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = 'mis-datos-firmared.json'; a.click();
-    URL.revokeObjectURL(url);
-  } catch(e) { alert('Error: '+e.message); }
-}
-
-async function solicitarSupresion() {
-  const c = confirm('¿Querés solicitar la supresión de tus datos personales?\n\nEsto enviará una solicitud al responsable de FirmaRED. Los datos sujetos a obligación legal de retención (10 años) no pueden eliminarse hasta su vencimiento.');
-  if (c) {
-    window.open('mailto:firmared@subsecretaria.gob.ar?subject=Solicitud%20de%20supresión%20de%20datos%20-%20Ley%2025.326&body=Solicito%20la%20supresión%20de%20mis%20datos%20personales%20almacenados%20en%20FirmaRED%20conforme%20al%20Art.%2016%20de%20la%20Ley%2025.326.%0A%0ANombre:%20'+encodeURIComponent(perfilInsp?.nombre||'')+'%0ALegajo:%20'+encodeURIComponent(perfilInsp?.legajo||''));
-  }
-}
-
-// ── Web Push Notifications ───────────────────────────────────
-let pushRegistration = null;
-
-async function initPush() {
-  const statusEl = document.getElementById('pushStatus');
-  const btnEl    = document.getElementById('pushBtn');
-  if (!statusEl) return;
-
-  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-    statusEl.textContent = '⚠️ Tu navegador no soporta notificaciones push';
-    return;
-  }
-
-  try {
-    // Obtener VAPID key
-    const vr = await fetch('/api/push/vapid-key').then(r=>r.json());
-    const vapidKey = vr.publicKey;
-
-    // Registrar Service Worker
-    const reg = await navigator.serviceWorker.register('/sw.js');
-    pushRegistration = reg;
-
-    // Ver si ya tiene suscripción
-    const existing = await reg.pushManager.getSubscription();
-    if (existing) {
-      statusEl.innerHTML = '✅ <strong>Notificaciones activas</strong> — te avisamos cuando tenés una planilla pendiente';
-      statusEl.style.color = '#2E7D32';
-      if (btnEl) { btnEl.textContent = '🔕 Desactivar notificaciones'; btnEl.style.display='block'; btnEl.style.background='#FFEBEE'; btnEl.style.color='#C62828'; }
-    } else {
-      statusEl.textContent = 'Sin notificaciones — activá para recibir alertas';
-      if (btnEl) { btnEl.textContent = '🔔 Activar notificaciones'; btnEl.style.display='block'; btnEl.style.background='#003366'; btnEl.style.color='#fff'; }
-    }
-  } catch(e) {
-    statusEl.textContent = 'No disponible en este dispositivo';
-  }
-}
-
-async function togglePush() {
-  const btn = document.getElementById('pushBtn');
-  const statusEl = document.getElementById('pushStatus');
-  if (!pushRegistration) return;
-
-  const existing = await pushRegistration.pushManager.getSubscription();
-  
-  if (existing) {
-    // Desactivar
-    await existing.unsubscribe();
-    await fetch('/api/push/unsubscribe', {method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({endpoint: existing.endpoint})});
-    statusEl.textContent = 'Notificaciones desactivadas';
-    statusEl.style.color = '#888';
-    btn.textContent = '🔔 Activar notificaciones';
-    btn.style.background = '#003366'; btn.style.color = '#fff';
-  } else {
-    // Activar
-    const perm = await Notification.requestPermission();
-    if (perm !== 'granted') {
-      statusEl.textContent = '⚠️ Permiso denegado — habilitá notificaciones en la configuración del browser';
-      return;
-    }
-    const vr = await fetch('/api/push/vapid-key').then(r=>r.json());
-    const sub = await pushRegistration.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(vr.publicKey)
-    });
-    await api('POST', '/api/push/subscribe', { subscription: sub.toJSON() });
-    statusEl.innerHTML = '✅ <strong>Notificaciones activas</strong>';
-    statusEl.style.color = '#2E7D32';
-    btn.textContent = '🔕 Desactivar'; btn.style.background = '#FFEBEE'; btn.style.color='#C62828';
-  }
-}
-
-function urlBase64ToUint8Array(base64String) {
-  const padding = '='.repeat((4 - base64String.length % 4) % 4);
-  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
-  const rawData = window.atob(base64);
-  return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)));
-}
-
-// Inicializar push cuando el inspector abre tab 3
-const _origCargarDatosRGPD = typeof cargarDatosRGPD === 'function' ? cargarDatosRGPD : null;
-// initPush se llama desde cargarDatosRGPD — se agrega al final de esa función
-
-// ── FIN PANEL INSPECTOR ──────────────────────────────────────
-
-
-// ══════════════════════════════════════════════════════════════
-// PANEL INSPECTOR — Tabs y funciones
-// ══════════════════════════════════════════════════════════════
-
-function iTab(n) {
-  [1,2,3].forEach(i => {
-    const tab = document.getElementById('itab'+i);
-    const btn = document.getElementById('it'+i);
-    if (tab) tab.style.display = i===n ? 'block' : 'none';
-    if (btn) btn.className = 'itab' + (i===n ? ' on' : '');
-  });
-  if (n===2) cargarHistorialCompleto();
-  if (n===3) cargarDatosRGPD();
-}
-
-function irAFirmar() { iTab(1); }
-
-// ── Tab 2: Historial completo del inspector ──────────────────
-async function cargarHistorialCompleto() {
-  const el = document.getElementById('iHistCompleto');
-  const tl = document.getElementById('iTlogInfo');
-  if (!el) return;
-  el.innerHTML = '<div style="text-align:center;padding:20px;color:#aaa">Cargando…</div>';
-
-  try {
-    const r = await api('GET', '/api/inspector/mis-firmas');
-    const firmas = r.firmas || [];
-
-    // Badge en tab
-    const badge = document.getElementById('badgeHist');
-    if (badge && firmas.length > 0) { badge.textContent = firmas.length; badge.style.display='inline'; }
-
-    if (!firmas.length) {
-      el.innerHTML = '<div class="iempty"><div class="ico">📭</div><h3>Sin firmas registradas</h3><p>Cuando firmes una planilla aparecerá aquí.</p></div>';
-      return;
-    }
-
-    el.innerHTML = firmas.map(f => {
-      const fecha = f.fecha || '—';
-      const otsOk = f.ots;
-      const metodo = f.metodo === 'biometrica' ? '👆 Biométrica' : '✍️ Manuscrita';
-      const hash16 = (f.hash||'').substring(0,16)+'...';
-      return `
-        <div class="ihist-item">
-          <div class="ihist-mes">📋 Viáticos ${f.periodo}</div>
-          <div class="ihist-meta">${fecha} · ${metodo}</div>
-          <div class="ihist-hash">${hash16}</div>
-          <div class="ihist-badges">
-            <span class="ibadge ok">✅ Firmada</span>
-            ${otsOk ? '<span class="ibadge ok">⛓ Bitcoin OTS</span>' : '<span class="ibadge warn">⏳ OTS pendiente</span>'}
-            <span class="ibadge neu">🔍 Verificable</span>
-          </div>
-          <div class="ihist-btns">
-            <button class="ihist-btn dl" onclick="descargarFirmaHist('${f.hash}')">⬇️ Descargar</button>
-            <button class="ihist-btn ver" onclick="verificarEnMotor('${f.hash}')">🔍 Verificar</button>
-            <button class="ihist-btn cert" onclick="verCertificado('${f.hash}')">📜 Certificado</button>
-          </div>
-        </div>`;
-    }).join('');
-
-    // Transparency log info
-    if (tl && firmas.length > 0) {
-      try {
-        const proof = await api('GET', '/api/transparency/proof/'+firmas[0].hash);
-        tl.innerHTML = proof.incluido
-          ? `<div style="font-size:12px;line-height:1.7;color:#555">
-              <div>✅ <strong>Incluido en el log</strong> — índice #${proof.index}</div>
-              <div>📅 Registrado: ${proof.timestamp?.substring(0,19).replace('T',' ')}</div>
-              <div style="font-family:monospace;font-size:10px;color:#aaa;margin-top:4px">Raíz Merkle: ${proof.merkleRoot?.substring(0,24)}…</div>
-              <a href="/api/transparency/status" target="_blank" style="font-size:11px;color:#003366;margin-top:8px;display:inline-block">Ver log público →</a>
-             </div>`
-          : '<div style="font-size:12px;color:#aaa">Esta firma aún no aparece en el log de transparencia.</div>';
-      } catch(e) {}
-    }
-
-  } catch(e) {
-    el.innerHTML = '<div style="color:#e53935;font-size:13px;padding:12px">Error cargando historial: '+e.message+'</div>';
-  }
-}
-
-async function descargarFirmaHist(hash) {
-  try {
-    const hist = await api('GET', '/api/inspector/mis-firmas');
-    const firma = (hist.firmas||[]).find(f=>f.hash===hash);
-    if (!firma) return alert('No se encontró la firma');
-    // Abrir el PDF firmado
-    window.open('/firmadas/'+firma.hash, '_blank');
-  } catch(e) { alert('Error: '+e.message); }
-}
-
-async function verificarEnMotor(hash) {
-  // Navegar a la landing con el hash
-  window.open('/?h='+hash, '_blank');
-}
-
-async function verCertificado(hash) {
-  try {
-    const proof = await api('GET', '/api/transparency/proof/'+hash);
-    const texto = proof.incluido
-      ? `CERTIFICADO DE REGISTRO — FirmaRED\n\nDocumento: ${hash}\nÍndice en log: #${proof.index}\nTimestamp: ${proof.timestamp}\nEntryHash: ${proof.entryHash}\nRaíz Merkle: ${proof.merkleRoot}\nRaíz anterior: ${proof.prevRoot}\n\nVerificable públicamente en: https://firmared.com/api/transparency/status`
-      : 'Este documento aún no figura en el Document Transparency Log.';
-    alert(texto);
-  } catch(e) { alert('Error: '+e.message); }
-}
-
-// ── Tab 3: Datos RGPD ────────────────────────────────────────
-async function cargarDatosRGPD() {
-  const elPerfil = document.getElementById('iRgpdPerfil');
-  const elBio    = document.getElementById('iRgpdBio');
-  const elPwd    = document.getElementById('iRgpdPwd');
-  if (!elPerfil) return;
-
-  try {
-    const mis = await api('GET', '/api/inspector/mis-firmas');
-    const p   = mis.titular || {};
-    elPerfil.innerHTML = `
-      <div class="rgpd-row"><span>Nombre</span><span class="rgpd-val">${p.nombre||'—'}</span></div>
-      <div class="rgpd-row"><span>Legajo</span><span class="rgpd-val">${p.legajo||'—'}</span></div>
-      <div class="rgpd-row"><span>Total firmas</span><span class="rgpd-val">${mis.total||0}</span></div>
-      <div class="rgpd-row"><span>Datos almacenados</span><span class="rgpd-val">Nombre · Legajo · Firma · Hash · IP · Timestamp</span></div>
-      <div class="rgpd-row"><span>Base legal</span><span class="rgpd-val">Ley 25.506 · Función pública</span></div>
-      <div class="rgpd-row"><span>Retención</span><span class="rgpd-val">10 años (LCT Art. 143)</span></div>
-    `;
-  } catch(e) { elPerfil.innerHTML = '<div style="font-size:12px;color:#aaa">Error cargando perfil</div>'; }
-
-  // Biometría
-  if (elBio) {
-    const tieneBio = perfilInsp?.tieneBiometrico || false;
-    elBio.innerHTML = tieneBio
-      ? '<div class="rgpd-row"><span>Estado</span><span class="rgpd-val" style="color:#2E7D32">✅ Biometría registrada</span></div><div class="rgpd-row"><span>Tipo</span><span class="rgpd-val">WebAuthn (FIDO2)</span></div><p style="font-size:11px;color:#888;margin-top:6px">Tu biometría está almacenada de forma cifrada en tu dispositivo, nunca en el servidor.</p>'
-      : '<div class="rgpd-row"><span>Estado</span><span class="rgpd-val" style="color:#F57F17">⚠️ Sin biometría</span></div><p style="font-size:11px;color:#888;margin-top:6px">Podés registrar huella o Face ID desde la tab Firmar.</p>';
-  }
-
-  // Mover el form de cambio de contraseña al tab 3
-  if (elPwd) {
-    const cardPwd = document.getElementById('cardPwd');
-    if (cardPwd) {
-      const form = cardPwd.querySelector('#pwdForm')?.innerHTML || '';
-      elPwd.innerHTML = `
-        <div style="background:#EBF4FB;border-radius:9px;padding:10px 13px;font-size:12px;color:#1F5FA6;margin-bottom:12px">
-          Podés cambiar tu contraseña hasta <strong>2 veces</strong>. Cambios usados: <strong id="pwdCambios2">—</strong>/2
-        </div>` + (cardPwd.querySelector('#pwdForm')?.outerHTML || '');
-      // Ocultar el card original
-      cardPwd.style.display = 'none';
-    }
-  }
-}
-
-async function descargarMisDatos() {
-  try {
-    const r = await api('GET', '/api/inspector/mis-firmas');
-    const blob = new Blob([JSON.stringify(r, null, 2)], {type:'application/json'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = 'mis-datos-firmared.json'; a.click();
-    URL.revokeObjectURL(url);
-  } catch(e) { alert('Error: '+e.message); }
-}
-
-async function solicitarSupresion() {
-  const c = confirm('¿Querés solicitar la supresión de tus datos personales?\n\nEsto enviará una solicitud al responsable de FirmaRED. Los datos sujetos a obligación legal de retención (10 años) no pueden eliminarse hasta su vencimiento.');
-  if (c) {
-    window.open('mailto:firmared@subsecretaria.gob.ar?subject=Solicitud%20de%20supresión%20de%20datos%20-%20Ley%2025.326&body=Solicito%20la%20supresión%20de%20mis%20datos%20personales%20almacenados%20en%20FirmaRED%20conforme%20al%20Art.%2016%20de%20la%20Ley%2025.326.%0A%0ANombre:%20'+encodeURIComponent(perfilInsp?.nombre||'')+'%0ALegajo:%20'+encodeURIComponent(perfilInsp?.legajo||''));
-  }
-}
-
-// ── Web Push Notifications ───────────────────────────────────
-let pushRegistration = null;
-
-async function initPush() {
-  const statusEl = document.getElementById('pushStatus');
-  const btnEl    = document.getElementById('pushBtn');
-  if (!statusEl) return;
-
-  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-    statusEl.textContent = '⚠️ Tu navegador no soporta notificaciones push';
-    return;
-  }
-
-  try {
-    // Obtener VAPID key
-    const vr = await fetch('/api/push/vapid-key').then(r=>r.json());
-    const vapidKey = vr.publicKey;
-
-    // Registrar Service Worker
-    const reg = await navigator.serviceWorker.register('/sw.js');
-    pushRegistration = reg;
-
-    // Ver si ya tiene suscripción
-    const existing = await reg.pushManager.getSubscription();
-    if (existing) {
-      statusEl.innerHTML = '✅ <strong>Notificaciones activas</strong> — te avisamos cuando tenés una planilla pendiente';
-      statusEl.style.color = '#2E7D32';
-      if (btnEl) { btnEl.textContent = '🔕 Desactivar notificaciones'; btnEl.style.display='block'; btnEl.style.background='#FFEBEE'; btnEl.style.color='#C62828'; }
-    } else {
-      statusEl.textContent = 'Sin notificaciones — activá para recibir alertas';
-      if (btnEl) { btnEl.textContent = '🔔 Activar notificaciones'; btnEl.style.display='block'; btnEl.style.background='#003366'; btnEl.style.color='#fff'; }
-    }
-  } catch(e) {
-    statusEl.textContent = 'No disponible en este dispositivo';
-  }
-}
-
-async function togglePush() {
-  const btn = document.getElementById('pushBtn');
-  const statusEl = document.getElementById('pushStatus');
-  if (!pushRegistration) return;
-
-  const existing = await pushRegistration.pushManager.getSubscription();
-  
-  if (existing) {
-    // Desactivar
-    await existing.unsubscribe();
-    await fetch('/api/push/unsubscribe', {method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({endpoint: existing.endpoint})});
-    statusEl.textContent = 'Notificaciones desactivadas';
-    statusEl.style.color = '#888';
-    btn.textContent = '🔔 Activar notificaciones';
-    btn.style.background = '#003366'; btn.style.color = '#fff';
-  } else {
-    // Activar
-    const perm = await Notification.requestPermission();
-    if (perm !== 'granted') {
-      statusEl.textContent = '⚠️ Permiso denegado — habilitá notificaciones en la configuración del browser';
-      return;
-    }
-    const vr = await fetch('/api/push/vapid-key').then(r=>r.json());
-    const sub = await pushRegistration.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(vr.publicKey)
-    });
-    await api('POST', '/api/push/subscribe', { subscription: sub.toJSON() });
-    statusEl.innerHTML = '✅ <strong>Notificaciones activas</strong>';
-    statusEl.style.color = '#2E7D32';
-    btn.textContent = '🔕 Desactivar'; btn.style.background = '#FFEBEE'; btn.style.color='#C62828';
-  }
-}
-
-function urlBase64ToUint8Array(base64String) {
-  const padding = '='.repeat((4 - base64String.length % 4) % 4);
-  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
-  const rawData = window.atob(base64);
-  return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)));
-}
-
-// Inicializar push cuando el inspector abre tab 3
-const _origCargarDatosRGPD = typeof cargarDatosRGPD === 'function' ? cargarDatosRGPD : null;
-// initPush se llama desde cargarDatosRGPD — se agrega al final de esa función
-
-// ── FIN PANEL INSPECTOR ──────────────────────────────────────
-
 </script>
 
 <!-- WhatsApp soporte flotante -->
@@ -3255,6 +2701,26 @@ const _origCargarDatosRGPD = typeof cargarDatosRGPD === 'function' ? cargarDatos
 
   <!-- TAB 6: ANALYTICS -->
   <div id="tab6" style="display:none">
+<div id="watchdog-widget" class="card" style="margin-bottom:14px;border-left:4px solid #003366">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div class="ctit" style="margin:0">🛡️ Monitoreo en tiempo real</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div id="wdStatusDot" style="width:8px;height:8px;border-radius:50%;background:#aaa"></div>
+        <span id="wdStatusText" style="font-size:11px;color:#888;font-family:monospace">Conectando...</span>
+        <button id="wdScanBtn" onclick="wdForceScan()" style="font-size:10px;padding:3px 8px;border-radius:6px;border:1px solid #D0DCE8;background:#f5f7fa;cursor:pointer;color:#003366">⚡ Scan</button>
+      </div>
+    </div>
+    <div id="wdGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px;margin-bottom:10px">
+      <div style="grid-column:1/-1;text-align:center;padding:16px;color:#aaa;font-size:12px">Conectando...</div>
+    </div>
+    <div style="border-top:1px solid #f0f0f0;padding-top:10px">
+      <div style="font-size:9px;color:#aaa;font-family:monospace;text-transform:uppercase;margin-bottom:6px">Alertas recientes</div>
+      <div id="wdAlerts"><div style="font-size:11px;color:#aaa">Sin alertas</div></div>
+    </div>
+    <div id="wdLastScan" style="margin-top:8px;font-size:10px;color:#ccc;font-family:monospace">—</div>
+  </div>
+
+
 
     <!-- Filtro de fechas -->
     <div class="card">
