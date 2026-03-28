@@ -1355,17 +1355,25 @@ function setFiltro(f){
 }
 async function renderAdminInsp(){
   const el=document.getElementById('listInsp');
-  const q=(document.getElementById('busq').value||'').toLowerCase();
-  let list=allInspAdm;
+  if(!el) return;
+  const q=(document.getElementById('busq')?.value||'').toLowerCase();
+  // Cargar inspectores si no están cargados
+  if(!window.allInspAdm || !window.allInspAdm.length){
+    el.innerHTML='<div class="spin"></div>';
+    window.allInspAdm = await api('GET','/api/admin/inspectores').catch(()=>[]);
+  }
+  let list=(window.allInspAdm||[]).slice();
+  if(!list.length){ el.innerHTML='<div class="empty">Sin inspectores.</div>'; return; }
   // Aplicar filtro de estado
-  if(filtroActual==='firmaron')
+  const filtro = window.filtroActual||'todos';
+  if(filtro==='firmaron')
     list=list.filter(i=>window._firmaronEsteMesIds&&window._firmaronEsteMesIds.has(i.id));
-  else if(filtroActual==='faltan')
+  else if(filtro==='faltan')
     list=list.filter(i=>!window._firmaronEsteMesIds||!window._firmaronEsteMesIds.has(i.id));
-  else if(filtroActual==='sinFirma')
+  else if(filtro==='sinFirma')
     list=list.filter(i=>!i.tieneFirma);
   // Aplicar búsqueda de texto
-  if(q) list=list.filter(i=>i.nombre.toLowerCase().includes(q)||i.legajo.includes(q)||i.dni.includes(q));
+  if(q) list=list.filter(i=>(i.nombre||'').toLowerCase().includes(q)||(i.legajo||'').includes(q)||(i.dni||'').includes(q));
   document.getElementById('cInsp').textContent=list.length;
   if(!list.length){el.innerHTML='<div class="empty">Sin resultados.</div>';return;}
   el.innerHTML=list.map(i=>`
