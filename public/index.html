@@ -810,6 +810,7 @@ let planillaInfo = null; // planilla pendiente
 let firmaDataURL = null;
 let aPDFFile = null;
 let drawing=false, lx=0, ly=0;
+let _obrasFiltro = 'todos';
 let allInspAdm = [];     // cache inspectores para admin
 
 // ══════════════════════════════════════════
@@ -2264,7 +2265,7 @@ async function cargarObras(){
     if(badge){ if(pend>0){badge.textContent=pend;badge.style.display='inline';}else badge.style.display='none'; }
     renderObras();
   }catch(e){
-    document.getElementById('obrasList').innerHTML='<div style="color:#888;padding:20px;text-align:center">Error al cargar denuncias</div>';
+    document.getElementById('obrasList').innerHTML='<div style="color:#888;padding:20px;text-align:center">Error al cargar obras</div>';
   }
 }
 
