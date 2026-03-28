@@ -302,5 +302,24 @@
     "otsEstado": "pendiente",
     "otsTs": "2026-03-28T16:15:14.310Z",
     "otsFile": "1cf3f6180e871f8511afbf4fef13cf76fb3f983cf50d539f3ecdfb426da25e50.ots"
+  },
+  {
+    "id": "h1774719736874",
+    "inspId": "222222",
+    "inspNombre": "Sarmiento, Alejo",
+    "inspDni": "37802906",
+    "inspLegajo": "222222",
+    "mes": 2,
+    "mesNombre": "Marzo",
+    "year": "2026",
+    "firmadoTs": "2026-03-28T17:42:16.718Z",
+    "signedFile": "firmado_222222_2026_03_1774719736718.pdf",
+    "hash": "468208309781658e36385f6a579c091139f1e3e2f3bf6e1771355e1ef2e613a9",
+    "verifyUrl": "https://firmared.com/verificar/468208309781658e36385f6a579c091139f1e3e2f3bf6e1771355e1ef2e613a9",
+    "firmaMetodo": "biometrico",
+    "firmaIp": "::ffff:181.23.113.245",
+    "otsEstado": "pendiente",
+    "otsTs": "2026-03-28T17:42:18.305Z",
+    "otsFile": "468208309781658e36385f6a579c091139f1e3e2f3bf6e1771355e1ef2e613a9.ots"
   }
 ]

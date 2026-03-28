@@ -1,5 +1,87 @@
 [
   {
+    "ts": "2026-03-28T17:26:29.930Z",
+    "nivel": "INFO",
+    "msg": "=== SCAN COMPLETO en 2.8s ==="
+  },
+  {
+    "ts": "2026-03-28T17:26:29.929Z",
+    "nivel": "INFO",
+    "msg": "Chile TSL OK — próxima actualización en NaN días"
+  },
+  {
+    "ts": "2026-03-28T17:26:29.926Z",
+    "nivel": "WARN",
+    "msg": "Paquetes críticos con actualización disponible: express, multer",
+    "paquetes": [
+      {
+        "nombre": "express",
+        "actual": "4.22.1",
+        "nueva": "5.2.1"
+      },
+      {
+        "nombre": "multer",
+        "actual": "1.4.5-lts.2",
+        "nueva": "2.1.1"
+      }
+    ]
+  },
+  {
+    "ts": "2026-03-28T17:26:29.294Z",
+    "nivel": "INFO",
+    "msg": "Integridad OK — ningún archivo modificado inesperadamente"
+  },
+  {
+    "ts": "2026-03-28T17:26:29.290Z",
+    "nivel": "WARN",
+    "msg": "Puertos inesperados detectados",
+    "ports": "State  Recv-Q Send-Q Local Address:Port Peer Address:PortProcess                                                                                                                                  \nLISTE"
+  },
+  {
+    "ts": "2026-03-28T17:26:29.208Z",
+    "nivel": "WARN",
+    "msg": "npm audit: 1 vulnerabilidades altas",
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 1,
+    "critical": 0,
+    "total": 1
+  },
+  {
+    "ts": "2026-03-28T17:26:27.888Z",
+    "nivel": "INFO",
+    "msg": "Certificados verificados — 1 alertas"
+  },
+  {
+    "ts": "2026-03-28T17:26:27.395Z",
+    "nivel": "INFO",
+    "msg": "SSL OK — vence en 85 días"
+  },
+  {
+    "ts": "2026-03-28T17:26:27.270Z",
+    "nivel": "INFO",
+    "msg": "Alerta CRITICAL — WhatsApp generado",
+    "url": "https://api.whatsapp.com/send?phone=5492213802016&text=%F0%9F%9A%A8%20*FirmaRED%20AutoGuard*%0A%0A*A"
+  },
+  {
+    "ts": "2026-03-28T17:26:27.269Z",
+    "nivel": "CRITICAL",
+    "msg": "Health check: 1 fallas",
+    "fallaron": [
+      {
+        "check": "motor_hash",
+        "ok": "",
+        "detail": "HTTP 0"
+      }
+    ]
+  },
+  {
+    "ts": "2026-03-28T17:26:27.121Z",
+    "nivel": "INFO",
+    "msg": "=== SCAN INICIADO ==="
+  },
+  {
     "ts": "2026-03-28T11:26:30.338Z",
     "nivel": "INFO",
     "msg": "=== SCAN COMPLETO en 3.2s ==="

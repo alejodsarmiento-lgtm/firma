@@ -1,4 +1,3 @@
-
 // FirmaRED — Panel Inspector (tabs + historial + RGPD)
 (function() {
   'use strict';
@@ -25,30 +24,57 @@
       const firmas=await api('GET','/api/inspector/historial').catch(()=>[]);
       const badge=document.getElementById('badgeHist');
       if(badge&&firmas.length){badge.textContent=firmas.length;badge.style.display='inline';}
-      if(!firmas.length){el.innerHTML='<div style="text-align:center;padding:30px;color:#aaa"><div style="font-size:32px">📭</div><p>Sin firmas registradas</p></div>';return;}
-      el.innerHTML=firmas.map(f=>`
+      if(!firmas.length){
+        el.innerHTML='<div style="text-align:center;padding:30px;color:#aaa"><div style="font-size:32px">📭</div><p>Sin firmas registradas</p></div>';
+        return;
+      }
+      el.innerHTML=firmas.map(f=>{
+        // Mapeo correcto de campos del historial
+        const periodo = `${f.mesNombre||''} ${f.year||''}`.trim() || '—';
+        const fecha = f.firmadoTs ? new Date(f.firmadoTs).toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—';
+        const esBio = f.firmaMetodo === 'biometrico';
+        const tieneOts = f.otsEstado && f.otsEstado !== 'pendiente';
+        return `
         <div style="background:#fff;border:1px solid #D0DCE8;border-radius:12px;padding:14px 16px;margin-bottom:10px">
-          <div style="font-weight:700;font-size:14px;color:#003366">📋 Viáticos ${f.periodo}</div>
-          <div style="font-size:11px;color:#888;margin:4px 0 8px">${f.fecha||'—'} · ${f.metodo==='biometrica'?'👆 Biométrica':'✍️ Manuscrita'}</div>
+          <div style="font-weight:700;font-size:14px;color:#003366">📋 Viáticos ${periodo}</div>
+          <div style="font-size:11px;color:#888;margin:4px 0 8px">${fecha} · ${esBio?'👆 Biométrica':'✍️ Manuscrita'}</div>
           <div style="font-family:monospace;font-size:10px;color:#aaa;background:#f5f7fa;padding:4px 8px;border-radius:6px;margin-bottom:8px">${(f.hash||'').substring(0,32)}...</div>
           <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
             <span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;background:#E8F5E9;color:#2E7D32">✅ Firmada</span>
-            <span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;background:${f.ots?'#E8F5E9':'#FFF8E1'};color:${f.ots?'#2E7D32':'#F57F17'}">${f.ots?'⛓ Bitcoin OTS':'⏳ OTS pendiente'}</span>
+            <span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;background:${tieneOts?'#E8F5E9':'#FFF8E1'};color:${tieneOts?'#2E7D32':'#F57F17'}">${tieneOts?'⛓ Bitcoin OTS':'⏳ OTS pendiente'}</span>
           </div>
           <div style="display:flex;gap:8px">
             <button onclick="window.open('/?h=${f.hash}','_blank')" style="flex:1;padding:9px;background:#E8F0F7;color:#003366;border:none;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer">🔍 Verificar</button>
             <button onclick="copiarHash('${f.hash}')" style="flex:1;padding:9px;background:#f0f4f8;color:#555;border:none;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer">📋 Copiar hash</button>
           </div>
-        </div>`).join('');
-      if(tl&&firmas[0]){
-        try{
-          const proof=await api('GET','/api/transparency/proof/'+firmas[0].hash);
-          tl.innerHTML=proof.incluido
-            ?`<div style="font-size:12px;line-height:1.7;color:#555">✅ <strong>En el log público</strong> — índice #${proof.index}<br>📅 ${(proof.timestamp||'').substring(0,19).replace('T',' ')}<br><span style="font-family:monospace;font-size:10px;color:#aaa">Merkle: ${(proof.merkleRoot||'').substring(0,24)}...</span><br><a href="/api/transparency/status" target="_blank" style="font-size:11px;color:#003366">Ver log público →</a></div>`
-            :'<div style="font-size:12px;color:#aaa">Sin registro en el log de transparencia aún.</div>';
-        }catch(e){}
+        </div>`;
+      }).join('');
+      // Transparency Log — usar la primera firma
+      if(tl && firmas[0] && firmas[0].hash) {
+        try {
+          const proof = await api('GET','/api/transparency/proof/'+firmas[0].hash).catch(()=>null);
+          if(proof && proof.incluido) {
+            tl.innerHTML=`<div style="font-size:12px;line-height:1.7;color:#555">
+              ✅ <strong>En el log público</strong> — índice #${proof.index}<br>
+              📅 ${(proof.timestamp||'').substring(0,19).replace('T',' ')}<br>
+              <span style="font-family:monospace;font-size:10px;color:#aaa">Merkle: ${(proof.merkleRoot||'').substring(0,24)}...</span><br>
+              <a href="/api/transparency/status" target="_blank" style="font-size:11px;color:#003366">Ver log público →</a>
+            </div>`;
+          } else {
+            tl.innerHTML=`<div style="font-size:12px;color:#555">
+              ⏳ <strong>OTS pendiente de anclaje en Bitcoin</strong><br>
+              <span style="font-size:11px;color:#aaa">El hash de tu firma será anclado en la blockchain de Bitcoin en las próximas horas.</span>
+            </div>`;
+          }
+        } catch(e) {
+          tl.innerHTML='<div style="font-size:12px;color:#aaa">Log de transparencia no disponible.</div>';
+        }
+      } else if(tl) {
+        tl.innerHTML='<div style="font-size:12px;color:#aaa">Sin registros en el log aún.</div>';
       }
-    }catch(e){el.innerHTML='<div style="color:#e53935;font-size:13px">Error: '+e.message+'</div>';}
+    } catch(e) {
+      el.innerHTML='<div style="color:#e53935;font-size:13px">Error: '+e.message+'</div>';
+    }
   };
 
   window.copiarHash = function(hash) {
@@ -60,25 +86,48 @@
     const elB=document.getElementById('iRgpdBio');
     if(!elP) return;
     try {
-      const r=await api('GET','/api/inspector/mis-firmas');
-      const p=r.titular||{};
+      // Usar perfil para datos del inspector (tiene legajo y total firmas)
+      const perfil = await api('GET','/api/inspector/perfil').catch(()=>({}));
+      const hist = await api('GET','/api/inspector/historial').catch(()=>[]);
       elP.innerHTML=`
-        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f0f0;font-size:13px"><span>Nombre</span><strong style="color:#003366">${p.nombre||'—'}</strong></div>
-        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f0f0;font-size:13px"><span>Legajo</span><strong style="color:#003366">${p.legajo||'—'}</strong></div>
-        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f0f0;font-size:13px"><span>Total firmas</span><strong style="color:#003366">${r.total||0}</strong></div>
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f0f0;font-size:13px"><span>Nombre</span><strong style="color:#003366">${perfil.nombre||me?.nombre||'—'}</strong></div>
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f0f0;font-size:13px"><span>Legajo</span><strong style="color:#003366">${perfil.legajo||me?.legajo||'—'}</strong></div>
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f0f0;font-size:13px"><span>Total firmas</span><strong style="color:#003366">${hist.length||0}</strong></div>
         <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f0f0;font-size:13px"><span>Base legal</span><strong style="color:#003366">Ley 25.506</strong></div>
         <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px"><span>Retención</span><strong style="color:#003366">10 años</strong></div>`;
-    }catch(e){if(elP)elP.innerHTML='<div style="font-size:12px;color:#aaa">Error cargando perfil</div>';}
-    if(elB){const bio=window.perfilInsp?.tieneBiometrico;elB.innerHTML=bio?'<div style="font-size:13px;color:#2E7D32">✅ Biometría registrada (WebAuthn)</div>':'<div style="font-size:13px;color:#F57F17">⚠️ Sin biometría registrada</div>';}
+    } catch(e) {
+      if(elP) elP.innerHTML='<div style="font-size:12px;color:#aaa">Error cargando perfil</div>';
+    }
+    // Biometría — usar API webauthn/estado
+    if(elB) {
+      try {
+        const bio = await api('GET','/api/webauthn/estado').catch(()=>({tieneBiometrico:false}));
+        elB.innerHTML = bio.tieneBiometrico
+          ? '<div style="font-size:13px;color:#2E7D32">✅ Biometría registrada (WebAuthn/FIDO2)</div>'
+          : '<div style="font-size:13px;color:#F57F17">⚠️ Sin biometría registrada — podés registrarla al firmar con Face ID/huella</div>';
+      } catch(e) {
+        elB.innerHTML='<div style="font-size:13px;color:#aaa">—</div>';
+      }
+    }
     initPushUI();
   };
 
   window.descargarMisDatos = async function() {
-    try{const r=await api('GET','/api/inspector/mis-firmas');const b=new Blob([JSON.stringify(r,null,2)],{type:'application/json'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download='mis-datos-firmared.json';a.click();URL.revokeObjectURL(u);}catch(e){alert('Error: '+e.message);}
+    try {
+      const perfil = await api('GET','/api/inspector/perfil');
+      const hist = await api('GET','/api/inspector/historial');
+      const bio = await api('GET','/api/webauthn/estado');
+      const data = {titular: perfil, firmas: hist, biometrico: bio, derechos: 'Ley 25.326 — podés solicitar rectificación o supresión a firmared@subsecretaria.gob.ar'};
+      const b=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+      const u=URL.createObjectURL(b);
+      const a=document.createElement('a');
+      a.href=u; a.download='mis-datos-firmared.json'; a.click();
+      URL.revokeObjectURL(u);
+    } catch(e) { alert('Error: '+e.message); }
   };
 
   window.solicitarSupresion = function() {
-    if(confirm('Solicitar supresion de datos personales segun Ley 25.326?\nEsto enviara un email al responsable.'))
+    if(confirm('Solicitar supresión de datos personales según Ley 25.326?\nEsto enviará un email al responsable.'))
       window.open('mailto:firmared@subsecretaria.gob.ar?subject=Solicitud%20supresion%20datos&body=Solicito%20supresion%20de%20mis%20datos.');
   };
 
@@ -89,13 +138,13 @@
     const btn=document.getElementById('pushBtn');
     if(!st||!btn) return;
     if(!('serviceWorker' in navigator)||!('PushManager' in window)){st.textContent='Tu navegador no soporta notificaciones push';return;}
-    try{
+    try {
       const reg=await navigator.serviceWorker.register('/sw.js');
       pushReg=reg;
       const sub=await reg.pushManager.getSubscription();
       if(sub){st.textContent='✅ Notificaciones activas';st.style.color='#2E7D32';btn.textContent='🔕 Desactivar';btn.style.display='block';}
       else{st.textContent='Sin notificaciones activas';btn.textContent='🔔 Activar notificaciones';btn.style.display='block';}
-    }catch(e){st.textContent='No disponible';}
+    } catch(e){st.textContent='No disponible';}
   };
 
   window.togglePush = async function() {
@@ -122,4 +171,5 @@
       if(btn) btn.textContent='🔕 Desactivar';
     }
   };
+
 })();

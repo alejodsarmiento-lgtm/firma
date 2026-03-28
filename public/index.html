@@ -810,6 +810,7 @@ let planillaInfo = null; // planilla pendiente
 let firmaDataURL = null;
 let aPDFFile = null;
 let drawing=false, lx=0, ly=0;
+let _obrasFiltro = 'todos';
 let allInspAdm = [];     // cache inspectores para admin
 
 // ══════════════════════════════════════════
@@ -1392,41 +1393,35 @@ function filtrarInsp(){renderAdminInsp();}
 
 async function renderAdminHist(){
   const el=document.getElementById('listHist');
-  const mes   = document.getElementById('hFiltMes')?.value  ?? '';
-  const year  = document.getElementById('hFiltYear')?.value ?? '';
-  const q     = document.getElementById('hFiltQ')?.value    ?? '';
-  const params= new URLSearchParams();
-  if(mes!=='')   params.set('mes',mes);
-  if(year!=='')  params.set('year',year);
-  if(q.trim()!=='') params.set('q',q.trim());
-  const hist=await api('GET','/api/inspector/mis-firmas?'+params.toString());
-  if(hist.error){el.innerHTML='<div class="empty">'+hist.error+'</div>';return;}
-  document.getElementById('cHist').textContent=hist.length;
-  if(!hist.length){el.innerHTML='<div class="empty">No hay registros con esos filtros.</div>';return;}
-  el.innerHTML='<table class="ht"><thead><tr><th>Inspector</th><th>DNI · Legajo</th><th>Período</th><th>Firmado</th><th></th></tr></thead><tbody>'+
-    hist.map(h=>`<tr>
-      <td><b>${h.inspNombre}</b></td>
-      <td style="font-size:11px">${h.inspDni} · Leg. ${h.inspLegajo}</td>
-      <td><b>${h.mesNombre}</b> ${h.year}</td>
-      <td>${fmtDt(new Date(h.firmadoTs))} ${h.firmaMetodo==='biometrico'?'<span style="background:#E8F5E9;color:#1A5E2A;font-size:9px;padding:1px 5px;border-radius:8px;font-weight:700">👆</span>':''}</td>
-      <td><a href="/api/admin/descargar/${h.signedFile}" class="bdg" style="text-decoration:none" download>⬇️</a></td>
-    </tr>`).join('')+'</tbody></table>';
+  if(!el) return;
+  // Cargar datos si no están
+  if(!window.allHistAdm||!window.allHistAdm.length){
+    window.allHistAdm=await api('GET','/api/admin/historial').catch(()=>[]);
+  }
+  const year=document.getElementById('hFiltYear')?.value||'';
+  const mes=document.getElementById('hFiltMes')?.value||'';
+  const q=(document.getElementById('hFiltQ')?.value||'').toLowerCase().trim();
+  const filtro=window.filtroHistActual||'todos';
+  let list=(window.allHistAdm||[]).slice();
+  if(year) list=list.filter(h=>String(h.year)===String(year));
+  if(mes&&mes!=='') list=list.filter(h=>Number(h.mes)===Number(mes));
+  if(filtro&&filtro!=='todos') list=list.filter(h=>h.firmaMetodo===filtro);
+  if(q) list=list.filter(h=>(h.inspNombre||'').toLowerCase().includes(q)||(h.inspLegajo||'').includes(q)||(h.inspDni||'').includes(q));
+  document.getElementById('cHist')&&(document.getElementById('cHist').textContent=list.length);
+  if(!list.length){el.innerHTML='<div class="empty">No hay registros con esos filtros.</div>';return;}
+  el.innerHTML=list.map(h=>{
+    const esBio=h.firmaMetodo==='biometrico';
+    const fecha=h.firmadoTs?new Date(h.firmadoTs).toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—';
+    return `<div class="ar">
+      <div class="ar-info">
+        <div class="ar-name">${h.inspNombre||'—'}</div>
+        <div class="ar-meta">Leg. ${h.inspLegajo} · ${h.mesNombre} ${h.year} · ${fecha}</div>
+        <div class="ar-meta">${esBio?'👆 Biométrica':'✍️ Manuscrita'} · <span style="font-family:monospace;font-size:10px">${(h.hash||'').substring(0,16)}…</span></div>
+      </div>
+      <button onclick="window.open('/verificar/${h.hash}','_blank')" style="background:#003366;color:#fff;border:none;border-radius:7px;padding:5px 10px;font-size:11px;font-weight:600;cursor:pointer">🔍 QR</button>
+    </div>`;
+  }).join('');
 }
-
-// ══════════════════════════════════════════
-//  VISOR PDF INLINE
-// ══════════════════════════════════════════
-
-function b64toBlob(b64url) {
-  const base64 = b64url.split(',')[1];
-  const bytes  = atob(base64);
-  const arr    = new Uint8Array(bytes.length);
-  for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
-  return new Blob([arr], { type: 'application/pdf' });
-}
-
-// ── Visor PDF — PDF.js con fallback a <object> ──────────────────
-let _pdfBlobUrl = null;
 
 async function _cargarPdfJs() {
   if (window.pdfjsLib) return true;
@@ -2264,7 +2259,7 @@ async function cargarObras(){
     if(badge){ if(pend>0){badge.textContent=pend;badge.style.display='inline';}else badge.style.display='none'; }
     renderObras();
   }catch(e){
-    document.getElementById('obrasList').innerHTML='<div style="color:#888;padding:20px;text-align:center">Error al cargar denuncias</div>';
+    document.getElementById('obrasList').innerHTML='<div style="color:#888;padding:20px;text-align:center">Error al cargar obras</div>';
   }
 }
 

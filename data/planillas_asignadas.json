@@ -228,5 +228,16 @@
     "firmada": true,
     "firmadaTs": "2026-03-28T16:15:13.302Z",
     "signedFile": "firmado_222222_2026_03_1774714513302.pdf"
+  },
+  {
+    "id": "p1774719714659",
+    "inspId": "222222",
+    "mes": 2,
+    "year": "2026",
+    "filename": "planilla_222222_2026_03_1774719714658.pdf",
+    "subidaTs": "2026-03-28T17:41:54.659Z",
+    "firmada": true,
+    "firmadaTs": "2026-03-28T17:42:16.718Z",
+    "signedFile": "firmado_222222_2026_03_1774719736718.pdf"
   }
 ]
