@@ -22,8 +22,7 @@
     if(!el) return;
     el.innerHTML='<div style="text-align:center;padding:20px;color:#aaa">Cargando...</div>';
     try {
-      const r=await api('GET','/api/inspector/mis-firmas');
-      const firmas=r.firmas||[];
+      const firmas=await api('GET','/api/inspector/historial').catch(()=>[]);
       const badge=document.getElementById('badgeHist');
       if(badge&&firmas.length){badge.textContent=firmas.length;badge.style.display='inline';}
       if(!firmas.length){el.innerHTML='<div style="text-align:center;padding:30px;color:#aaa"><div style="font-size:32px">📭</div><p>Sin firmas registradas</p></div>';return;}

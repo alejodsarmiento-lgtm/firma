@@ -1399,7 +1399,7 @@ async function renderAdminHist(){
   if(mes!=='')   params.set('mes',mes);
   if(year!=='')  params.set('year',year);
   if(q.trim()!=='') params.set('q',q.trim());
-  const hist=await api('GET','/api/admin/historial?'+params.toString());
+  const hist=await api('GET','/api/inspector/mis-firmas?'+params.toString());
   if(hist.error){el.innerHTML='<div class="empty">'+hist.error+'</div>';return;}
   document.getElementById('cHist').textContent=hist.length;
   if(!hist.length){el.innerHTML='<div class="empty">No hay registros con esos filtros.</div>';return;}
