@@ -1,5 +1,170 @@
 [
   {
+    "ts": "2026-03-28T11:26:30.338Z",
+    "nivel": "INFO",
+    "msg": "=== SCAN COMPLETO en 3.2s ==="
+  },
+  {
+    "ts": "2026-03-28T11:26:30.336Z",
+    "nivel": "INFO",
+    "msg": "Chile TSL OK — próxima actualización en NaN días"
+  },
+  {
+    "ts": "2026-03-28T11:26:30.324Z",
+    "nivel": "WARN",
+    "msg": "Paquetes críticos con actualización disponible: express, multer",
+    "paquetes": [
+      {
+        "nombre": "express",
+        "actual": "4.22.1",
+        "nueva": "5.2.1"
+      },
+      {
+        "nombre": "multer",
+        "actual": "1.4.5-lts.2",
+        "nueva": "2.1.1"
+      }
+    ]
+  },
+  {
+    "ts": "2026-03-28T11:26:29.332Z",
+    "nivel": "INFO",
+    "msg": "Integridad OK — ningún archivo modificado inesperadamente"
+  },
+  {
+    "ts": "2026-03-28T11:26:29.318Z",
+    "nivel": "WARN",
+    "msg": "Puertos inesperados detectados",
+    "ports": "State  Recv-Q Send-Q Local Address:Port Peer Address:PortProcess                                                                                                                                  \nLISTE"
+  },
+  {
+    "ts": "2026-03-28T11:26:29.204Z",
+    "nivel": "WARN",
+    "msg": "npm audit: 1 vulnerabilidades altas",
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 1,
+    "critical": 0,
+    "total": 1
+  },
+  {
+    "ts": "2026-03-28T11:26:27.794Z",
+    "nivel": "INFO",
+    "msg": "Certificados verificados — 1 alertas"
+  },
+  {
+    "ts": "2026-03-28T11:26:27.325Z",
+    "nivel": "INFO",
+    "msg": "SSL OK — vence en 86 días"
+  },
+  {
+    "ts": "2026-03-28T11:26:27.268Z",
+    "nivel": "CRITICAL",
+    "msg": "Health check: 1 fallas",
+    "fallaron": [
+      {
+        "check": "motor_hash",
+        "ok": "",
+        "detail": "HTTP 0"
+      }
+    ]
+  },
+  {
+    "ts": "2026-03-28T11:26:27.119Z",
+    "nivel": "INFO",
+    "msg": "=== SCAN INICIADO ==="
+  },
+  {
+    "ts": "2026-03-28T05:26:29.963Z",
+    "nivel": "INFO",
+    "msg": "=== SCAN COMPLETO en 2.8s ==="
+  },
+  {
+    "ts": "2026-03-28T05:26:29.963Z",
+    "nivel": "INFO",
+    "msg": "Chile TSL OK — próxima actualización en NaN días"
+  },
+  {
+    "ts": "2026-03-28T05:26:29.947Z",
+    "nivel": "WARN",
+    "msg": "Paquetes críticos con actualización disponible: express, multer",
+    "paquetes": [
+      {
+        "nombre": "express",
+        "actual": "4.22.1",
+        "nueva": "5.2.1"
+      },
+      {
+        "nombre": "multer",
+        "actual": "1.4.5-lts.2",
+        "nueva": "2.1.1"
+      }
+    ]
+  },
+  {
+    "ts": "2026-03-28T05:26:29.300Z",
+    "nivel": "INFO",
+    "msg": "Archivos modificados desde el último scan: server.js",
+    "modificados": [
+      {
+        "archivo": "server.js",
+        "hashAnterior": "c9d604d85f2aefd8",
+        "hashNuevo": "37408efea8ed9758"
+      }
+    ]
+  },
+  {
+    "ts": "2026-03-28T05:26:29.287Z",
+    "nivel": "WARN",
+    "msg": "Puertos inesperados detectados",
+    "ports": "State  Recv-Q Send-Q Local Address:Port Peer Address:PortProcess                                                                                                                                  \nLISTE"
+  },
+  {
+    "ts": "2026-03-28T05:26:29.179Z",
+    "nivel": "WARN",
+    "msg": "npm audit: 1 vulnerabilidades altas",
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 1,
+    "critical": 0,
+    "total": 1
+  },
+  {
+    "ts": "2026-03-28T05:26:27.750Z",
+    "nivel": "INFO",
+    "msg": "Certificados verificados — 1 alertas"
+  },
+  {
+    "ts": "2026-03-28T05:26:27.332Z",
+    "nivel": "INFO",
+    "msg": "SSL OK — vence en 86 días"
+  },
+  {
+    "ts": "2026-03-28T05:26:27.273Z",
+    "nivel": "INFO",
+    "msg": "Alerta CRITICAL — WhatsApp generado",
+    "url": "https://api.whatsapp.com/send?phone=5492213802016&text=%F0%9F%9A%A8%20*FirmaRED%20AutoGuard*%0A%0A*A"
+  },
+  {
+    "ts": "2026-03-28T05:26:27.269Z",
+    "nivel": "CRITICAL",
+    "msg": "Health check: 1 fallas",
+    "fallaron": [
+      {
+        "check": "motor_hash",
+        "ok": "",
+        "detail": "HTTP 0"
+      }
+    ]
+  },
+  {
+    "ts": "2026-03-28T05:26:27.120Z",
+    "nivel": "INFO",
+    "msg": "=== SCAN INICIADO ==="
+  },
+  {
     "ts": "2026-03-27T23:26:29.761Z",
     "nivel": "INFO",
     "msg": "=== SCAN COMPLETO en 2.6s ==="

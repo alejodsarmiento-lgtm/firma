@@ -60,5 +60,32 @@
     },
     "observaciones": "",
     "timestamp": "2026-03-26T12:42:57.382Z"
+  },
+  {
+    "id": "sol_1774695361743",
+    "delegacion": "AVELLANEDA",
+    "solicitante": "COUSIRAT RICARDO GUSTAVO",
+    "inspectores": [
+      {
+        "username": "castillom",
+        "nombre": "CASTILLO, GLADYS MARCELA"
+      },
+      {
+        "username": "castellaj",
+        "nombre": "CASTELLA, JUAN IGNACIO"
+      }
+    ],
+    "fecha": {
+      "dia": "7",
+      "mes": "6",
+      "mesNombre": "Junio"
+    },
+    "destino": "Hola",
+    "objetivos": "Testeo",
+    "estado": "pendiente",
+    "estadoTs": null,
+    "estadoAdmin": null,
+    "observaciones": "",
+    "timestamp": "2026-03-28T10:56:01.743Z"
   }
 ]

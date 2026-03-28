@@ -1,5 +1,33 @@
 [
   {
+    "id": "OBR-1774695383458",
+    "lat": -34.90219757595609,
+    "lng": -57.95000731945038,
+    "direccion": "Calle 42 236, Barrio Hipódromo, La Plata, Buenos Aires",
+    "descripcion": "",
+    "telefono": "",
+    "fotos": [],
+    "estado": "pendiente",
+    "ip": "::ffff:181.23.113.245",
+    "ts": "2026-03-28T10:56:23.308Z",
+    "inspectorAsignado": null,
+    "notas": ""
+  },
+  {
+    "id": "OBR-1774666892631",
+    "lat": -34.93450125380786,
+    "lng": -58.051168109636734,
+    "direccion": "Melchor Romero, Buenos Aires",
+    "descripcion": "",
+    "telefono": "",
+    "fotos": [],
+    "estado": "pendiente",
+    "ip": "::ffff:181.23.113.245",
+    "ts": "2026-03-28T03:01:33.892Z",
+    "inspectorAsignado": null,
+    "notas": ""
+  },
+  {
     "id": "OBR-1774495536254",
     "lat": -34.901311801195554,
     "lng": -57.95144498348236,
