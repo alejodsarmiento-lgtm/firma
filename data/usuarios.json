@@ -7,8 +7,9 @@
       "legajo": "602455",
       "dni": "30133176",
       "username": "abalosch",
-      "password": "abalosch",
-      "firma": null
+      "password": "602455",
+      "firma": "data:image/png;base64,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",
+      "primerLogin": false
     },
     {
       "id": "601641",
@@ -17,8 +18,9 @@
       "legajo": "601641",
       "dni": "22671057",
       "username": "abban",
-      "password": "abban",
-      "firma": null
+      "password": "601641",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "601659",
@@ -27,8 +29,9 @@
       "legajo": "601659",
       "dni": "28460554",
       "username": "aguerriberrym",
-      "password": "aguerriberrym",
-      "firma": null
+      "password": "601659",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "800097",
@@ -37,8 +40,10 @@
       "legajo": "800097",
       "dni": "16790913",
       "username": "aguilarg",
-      "password": "aguilarg",
-      "firma": null
+      "password": "800097",
+      "firma": null,
+      "primerLogin": false,
+      "passwordCambios": 0
     },
     {
       "id": "601111",
@@ -47,8 +52,10 @@
       "legajo": "601111",
       "dni": "21956085",
       "username": "agustinej",
-      "password": "agustinej",
-      "firma": null
+      "password": "601111",
+      "firma": "data:image/png;base64,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",
+      "primerLogin": false,
+      "passwordCambios": 0
     },
     {
       "id": "ahlefeldto",
@@ -57,7 +64,7 @@
       "legajo": "ahlefeldto",
       "username": "ahlefeldto",
       "password": "ahlefeldto",
-      "primerLogin": true,
+      "primerLogin": false,
       "firma": null
     },
     {
@@ -67,8 +74,10 @@
       "legajo": "602683",
       "dni": "35609930",
       "username": "alegrel",
-      "password": "alegrel",
-      "firma": null
+      "password": "602683",
+      "firma": null,
+      "primerLogin": false,
+      "passwordCambios": 0
     },
     {
       "id": "601132",
@@ -77,8 +86,9 @@
       "legajo": "601132",
       "dni": "37549348",
       "username": "alvarezb",
-      "password": "alvarezb",
-      "firma": null
+      "password": "601132",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "260996",
@@ -87,8 +97,9 @@
       "legajo": "260996",
       "dni": "13908679",
       "username": "amatof",
-      "password": "amatof",
-      "firma": null
+      "password": "260996",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "602057",
@@ -97,8 +108,9 @@
       "legajo": "602057",
       "dni": "39486184",
       "username": "andradac",
-      "password": "andradac",
-      "firma": null
+      "password": "602057",
+      "firma": "data:image/png;base64,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",
+      "primerLogin": false
     },
     {
       "id": "601806",
@@ -107,8 +119,9 @@
       "legajo": "601806",
       "dni": "31743827",
       "username": "anguloestraday",
-      "password": "anguloestraday",
-      "firma": null
+      "password": "601806",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "601115",
@@ -117,8 +130,9 @@
       "legajo": "601115",
       "dni": "23688617",
       "username": "arrayagog",
-      "password": "arrayagog",
-      "firma": null
+      "password": "601115",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "602347",
@@ -127,8 +141,9 @@
       "legajo": "602347",
       "dni": "27776998",
       "username": "arzuagaj",
-      "password": "arzuagaj",
-      "firma": null
+      "password": "602347",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "316136",
@@ -137,8 +152,9 @@
       "legajo": "316136",
       "dni": "18360176",
       "username": "asconigam",
-      "password": "asconigam",
-      "firma": null
+      "password": "316136",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "601117",
@@ -147,8 +163,9 @@
       "legajo": "601117",
       "dni": "35414451",
       "username": "atelaa",
-      "password": "atelaa",
-      "firma": null
+      "password": "601117",
+      "firma": "data:image/png;base64,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",
+      "primerLogin": false
     },
     {
       "id": "602121",
@@ -157,8 +174,9 @@
       "legajo": "602121",
       "dni": "39485929",
       "username": "auzae",
-      "password": "auzae",
-      "firma": null
+      "password": "602121",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "601697",
@@ -167,8 +185,9 @@
       "legajo": "601697",
       "dni": "30621691",
       "username": "avilak",
-      "password": "avilak",
-      "firma": null
+      "password": "601697",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "602672",
@@ -177,8 +196,9 @@
       "legajo": "602672",
       "dni": "30616277",
       "username": "ayalac",
-      "password": "ayalac",
-      "firma": null
+      "password": "602672",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "601118",
@@ -187,8 +207,9 @@
       "legajo": "601118",
       "dni": "32324527",
       "username": "baezd",
-      "password": "baezd",
-      "firma": null
+      "password": "601118",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "311774",
@@ -197,8 +218,9 @@
       "legajo": "311774",
       "dni": "12278108",
       "username": "baldao",
-      "password": "baldao",
-      "firma": null
+      "password": "311774",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "601062",
@@ -207,8 +229,9 @@
       "legajo": "601062",
       "dni": "27290318",
       "username": "bardonew",
-      "password": "bardonew",
-      "firma": null
+      "password": "601062",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "601119",
@@ -217,8 +240,9 @@
       "legajo": "601119",
       "dni": "34488145",
       "username": "barnechem",
-      "password": "barnechem",
-      "firma": null
+      "password": "601119",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "298677",
@@ -227,8 +251,9 @@
       "legajo": "298677",
       "dni": "23766778",
       "username": "barrazad",
-      "password": "barrazad",
-      "firma": null
+      "password": "298677",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "338968",
@@ -237,8 +262,9 @@
       "legajo": "338968",
       "dni": "24481361",
       "username": "barretog",
-      "password": "barretog",
-      "firma": null
+      "password": "338968",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "600047",
@@ -247,8 +273,9 @@
       "legajo": "600047",
       "dni": "92629202",
       "username": "batyid",
-      "password": "batyid",
-      "firma": null
+      "password": "600047",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "601547",
@@ -257,8 +284,9 @@
       "legajo": "601547",
       "dni": "21724560",
       "username": "benitezlb",
-      "password": "benitezlb",
-      "firma": null
+      "password": "601547",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "601121",
@@ -267,8 +295,9 @@
       "legajo": "601121",
       "dni": "29638596",
       "username": "bessonem",
-      "password": "bessonem",
-      "firma": null
+      "password": "601121",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "bocoss",
@@ -277,7 +306,7 @@
       "legajo": "bocoss",
       "username": "bocoss",
       "password": "bocoss",
-      "primerLogin": true,
+      "primerLogin": false,
       "firma": null
     },
     {
@@ -287,8 +316,9 @@
       "legajo": "338969",
       "dni": "17875724",
       "username": "boggiab",
-      "password": "boggiab",
-      "firma": null
+      "password": "338969",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "340159",
@@ -297,8 +327,9 @@
       "legajo": "340159",
       "dni": "17649198",
       "username": "bothinj",
-      "password": "bothinj",
-      "firma": null
+      "password": "340159",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "602269",
@@ -307,8 +338,9 @@
       "legajo": "602269",
       "dni": "35775401",
       "username": "bretzm",
-      "password": "bretzm",
-      "firma": null
+      "password": "602269",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "443552",
@@ -317,8 +349,9 @@
       "legajo": "443552",
       "dni": "23219152",
       "username": "britosd",
-      "password": "britosd",
-      "firma": null
+      "password": "443552",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "443546",
@@ -327,8 +360,9 @@
       "legajo": "443546",
       "dni": "23711966",
       "username": "cabezalij",
-      "password": "cabezalij",
-      "firma": null
+      "password": "443546",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "601531",
@@ -337,8 +371,9 @@
       "legajo": "601531",
       "dni": "25190776",
       "username": "caffec",
-      "password": "caffec",
-      "firma": null
+      "password": "601531",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "602165",
@@ -347,8 +382,9 @@
       "legajo": "602165",
       "dni": "38124255",
       "username": "campbellr",
-      "password": "campbellr",
-      "firma": null
+      "password": "602165",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "carnevaleg",
@@ -357,7 +393,7 @@
       "legajo": "carnevaleg",
       "username": "carnevaleg",
       "password": "carnevaleg",
-      "primerLogin": true,
+      "primerLogin": false,
       "firma": null
     },
     {
@@ -367,8 +403,9 @@
       "legajo": "601157",
       "dni": "14638776",
       "username": "carrizoc",
-      "password": "carrizoc",
-      "firma": null
+      "password": "601157",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "311779",
@@ -377,8 +414,9 @@
       "legajo": "311779",
       "dni": "25824492",
       "username": "cascalesc",
-      "password": "cascalesc",
-      "firma": null
+      "password": "311779",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "602358",
@@ -387,8 +425,9 @@
       "legajo": "602358",
       "dni": "28728001",
       "username": "castellaj",
-      "password": "castellaj",
-      "firma": null
+      "password": "602358",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "602113",
@@ -397,8 +436,9 @@
       "legajo": "602113",
       "dni": "21982281",
       "username": "castilloe",
-      "password": "castilloe",
-      "firma": null
+      "password": "602113",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "297043",
@@ -407,8 +447,9 @@
       "legajo": "297043",
       "dni": "18621494",
       "username": "castillom",
-      "password": "castillom",
-      "firma": null
+      "password": "297043",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "261019",
@@ -417,8 +458,9 @@
       "legajo": "261019",
       "dni": "17666452",
       "username": "castilloa",
-      "password": "castilloa",
-      "firma": null
+      "password": "261019",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "261476",
@@ -427,8 +469,9 @@
       "legajo": "261476",
       "dni": "16147599",
       "username": "cattonim",
-      "password": "cattonim",
-      "firma": null
+      "password": "261476",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "340075",
@@ -437,8 +480,9 @@
       "legajo": "340075",
       "dni": "21567161",
       "username": "celayae",
-      "password": "celayae",
-      "firma": null
+      "password": "340075",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "602480",
@@ -447,8 +491,9 @@
       "legajo": "602480",
       "dni": "35399982",
       "username": "cerdag",
-      "password": "cerdag",
-      "firma": null
+      "password": "602480",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "338971",
@@ -457,8 +502,9 @@
       "legajo": "338971",
       "dni": "23166496",
       "username": "cerrudod",
-      "password": "cerrudod",
-      "firma": null
+      "password": "338971",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "601023",
@@ -467,8 +513,9 @@
       "legajo": "601023",
       "dni": "32538684",
       "username": "cipollonem",
-      "password": "cipollonem",
-      "firma": null
+      "password": "601023",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "601676",
@@ -477,8 +524,9 @@
       "legajo": "601676",
       "dni": "14913482",
       "username": "clemenceaug",
-      "password": "clemenceaug",
-      "firma": null
+      "password": "601676",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "602188",
@@ -487,8 +535,9 @@
       "legajo": "602188",
       "dni": "37056148",
       "username": "conomillag",
-      "password": "conomillag",
-      "firma": null
+      "password": "602188",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "600305",
@@ -497,8 +546,9 @@
       "legajo": "600305",
       "dni": "26106287",
       "username": "corvalanc",
-      "password": "corvalanc",
-      "firma": null
+      "password": "600305",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "601127",
@@ -507,8 +557,9 @@
       "legajo": "601127",
       "dni": "20642689",
       "username": "cotejai",
-      "password": "cotejai",
-      "firma": null
+      "password": "601127",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "601128",
@@ -517,8 +568,9 @@
       "legajo": "601128",
       "dni": "36858403",
       "username": "cuccin",
-      "password": "cuccin",
-      "firma": null
+      "password": "601128",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "601007",
@@ -527,8 +579,9 @@
       "legajo": "601007",
       "dni": "20233823",
       "username": "deliaj",
-      "password": "deliaj",
-      "firma": null
+      "password": "601007",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "316145",
@@ -537,8 +590,9 @@
       "legajo": "316145",
       "dni": "22355733",
       "username": "deblasir",
-      "password": "deblasir",
-      "firma": null
+      "password": "316145",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "602234",
@@ -547,8 +601,9 @@
       "legajo": "602234",
       "dni": "40183675",
       "username": "deleone",
-      "password": "deleone",
-      "firma": null
+      "password": "602234",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "340076",
@@ -557,8 +612,9 @@
       "legajo": "340076",
       "dni": "18474318",
       "username": "delsordod",
-      "password": "delsordod",
-      "firma": null
+      "password": "340076",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "601161",
@@ -567,8 +623,9 @@
       "legajo": "601161",
       "dni": "34090334",
       "username": "deleoc",
-      "password": "deleoc",
-      "firma": null
+      "password": "601161",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "601129",
@@ -577,8 +634,9 @@
       "legajo": "601129",
       "dni": "36374152",
       "username": "dipardoj",
-      "password": "dipardoj",
-      "firma": null
+      "password": "601129",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "601031",
@@ -587,8 +645,9 @@
       "legajo": "601031",
       "dni": "27677321",
       "username": "diacintim",
-      "password": "diacintim",
-      "firma": null
+      "password": "601031",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "316141",
@@ -597,8 +656,9 @@
       "legajo": "316141",
       "dni": "17188668",
       "username": "dicunzoloa",
-      "password": "dicunzoloa",
-      "firma": null
+      "password": "316141",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "295893",
@@ -607,8 +667,9 @@
       "legajo": "295893",
       "dni": "21676106",
       "username": "dipardogm",
-      "password": "dipardogm",
-      "firma": null
+      "password": "295893",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "601141",
@@ -617,8 +678,9 @@
       "legajo": "601141",
       "dni": "31114563",
       "username": "dipardom",
-      "password": "dipardom",
-      "firma": null
+      "password": "601141",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "260772",
@@ -627,8 +689,9 @@
       "legajo": "260772",
       "dni": "11596057",
       "username": "dorregoo",
-      "password": "dorregoo",
-      "firma": null
+      "password": "260772",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "602474",
@@ -637,8 +700,9 @@
       "legajo": "602474",
       "dni": "38866454",
       "username": "dosreispereirap",
-      "password": "dosreispereirap",
-      "firma": null
+      "password": "602474",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "289564",
@@ -647,8 +711,9 @@
       "legajo": "289564",
       "dni": "10534952",
       "username": "dramajoc",
-      "password": "dramajoc",
-      "firma": null
+      "password": "289564",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "340077",
@@ -657,8 +722,9 @@
       "legajo": "340077",
       "dni": "29261935",
       "username": "espondam",
-      "password": "espondam",
-      "firma": null
+      "password": "340077",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "expositof",
@@ -667,7 +733,7 @@
       "legajo": "expositof",
       "username": "expositof",
       "password": "expositof",
-      "primerLogin": true,
+      "primerLogin": false,
       "firma": null
     },
     {
@@ -677,8 +743,9 @@
       "legajo": "304433",
       "dni": "22185101",
       "username": "fadonj",
-      "password": "fadonj",
-      "firma": null
+      "password": "304433",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "312040",
@@ -687,8 +754,9 @@
       "legajo": "312040",
       "dni": "23705698",
       "username": "fagundezs",
-      "password": "fagundezs",
-      "firma": null
+      "password": "312040",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "600029",
@@ -697,8 +765,9 @@
       "legajo": "600029",
       "dni": "25980326",
       "username": "fernandeze",
-      "password": "fernandeze",
-      "firma": null
+      "password": "600029",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "340078",
@@ -707,8 +776,9 @@
       "legajo": "340078",
       "dni": "30528237",
       "username": "ferraris",
-      "password": "ferraris",
-      "firma": null
+      "password": "340078",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "600316",
@@ -717,8 +787,9 @@
       "legajo": "600316",
       "dni": "17684812",
       "username": "figuerolac",
-      "password": "figuerolac",
-      "firma": null
+      "password": "600316",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "602681",
@@ -727,8 +798,9 @@
       "legajo": "602681",
       "dni": "41784908",
       "username": "floresra",
-      "password": "floresra",
-      "firma": null
+      "password": "602681",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "602638",
@@ -737,8 +809,9 @@
       "legajo": "602638",
       "dni": "40705773",
       "username": "floresb",
-      "password": "floresb",
-      "firma": null
+      "password": "602638",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "601133",
@@ -747,8 +820,9 @@
       "legajo": "601133",
       "dni": "34928749",
       "username": "floresr",
-      "password": "floresr",
-      "firma": null
+      "password": "601133",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "443526",
@@ -757,8 +831,9 @@
       "legajo": "443526",
       "dni": "35043120",
       "username": "forigom",
-      "password": "forigom",
-      "firma": null
+      "password": "443526",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "602236",
@@ -767,8 +842,9 @@
       "legajo": "602236",
       "dni": "26289621",
       "username": "francom",
-      "password": "francom",
-      "firma": null
+      "password": "602236",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "602072",
@@ -777,8 +853,9 @@
       "legajo": "602072",
       "dni": "32696922",
       "username": "fuentesl",
-      "password": "fuentesl",
-      "firma": null
+      "password": "602072",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "601134",
@@ -787,8 +864,9 @@
       "legajo": "601134",
       "dni": "32999244",
       "username": "furlang",
-      "password": "furlang",
-      "firma": null
+      "password": "601134",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "801373",
@@ -797,8 +875,9 @@
       "legajo": "801373",
       "dni": "28811948",
       "username": "galeanom",
-      "password": "galeanom",
-      "firma": null
+      "password": "801373",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "600409",
@@ -807,8 +886,9 @@
       "legajo": "600409",
       "dni": "25720429",
       "username": "gallie",
-      "password": "gallie",
-      "firma": null
+      "password": "600409",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "443536",
@@ -817,8 +897,9 @@
       "legajo": "443536",
       "dni": "28484077",
       "username": "garayc",
-      "password": "garayc",
-      "firma": null
+      "password": "443536",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "260377",
@@ -827,8 +908,9 @@
       "legajo": "260377",
       "dni": "13948905",
       "username": "garaym",
-      "password": "garaym",
-      "firma": null
+      "password": "260377",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "602104",
@@ -837,8 +919,9 @@
       "legajo": "602104",
       "dni": "36036452",
       "username": "garciamastantuonof",
-      "password": "garciamastantuonof",
-      "firma": null
+      "password": "602104",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "601651",
@@ -847,8 +930,9 @@
       "legajo": "601651",
       "dni": "18481429",
       "username": "garciang",
-      "password": "garciang",
-      "firma": null
+      "password": "601651",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "601135",
@@ -857,8 +941,9 @@
       "legajo": "601135",
       "dni": "33990528",
       "username": "garciavidelass",
-      "password": "garciavidelass",
-      "firma": null
+      "password": "601135",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "601143",
@@ -867,8 +952,9 @@
       "legajo": "601143",
       "dni": "17082819",
       "username": "gerbaldoe",
-      "password": "gerbaldoe",
-      "firma": null
+      "password": "601143",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "600253",
@@ -877,8 +963,9 @@
       "legajo": "600253",
       "dni": "24402015",
       "username": "gigenam",
-      "password": "gigenam",
-      "firma": null
+      "password": "600253",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "602134",
@@ -887,8 +974,9 @@
       "legajo": "602134",
       "dni": "34751508",
       "username": "giovannettim",
-      "password": "giovannettim",
-      "firma": null
+      "password": "602134",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "601156",
@@ -897,8 +985,9 @@
       "legajo": "601156",
       "dni": "35076228",
       "username": "gonzalezj",
-      "password": "gonzalezj",
-      "firma": null
+      "password": "601156",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "601730",
@@ -907,8 +996,9 @@
       "legajo": "601730",
       "dni": "22971981",
       "username": "gonzalezs",
-      "password": "gonzalezs",
-      "firma": null
+      "password": "601730",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "600320",
@@ -917,8 +1007,9 @@
       "legajo": "600320",
       "dni": "23118015",
       "username": "graffr",
-      "password": "graffr",
-      "firma": null
+      "password": "600320",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "600284",
@@ -927,8 +1018,9 @@
       "legajo": "600284",
       "dni": "21924750",
       "username": "guerram",
-      "password": "guerram",
-      "firma": null
+      "password": "600284",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "601598",
@@ -937,8 +1029,9 @@
       "legajo": "601598",
       "dni": "31259593",
       "username": "guerrame",
-      "password": "guerrame",
-      "firma": null
+      "password": "601598",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "guerrap",
@@ -947,7 +1040,7 @@
       "legajo": "guerrap",
       "username": "guerrap",
       "password": "guerrap",
-      "primerLogin": true,
+      "primerLogin": false,
       "firma": null
     },
     {
@@ -957,8 +1050,9 @@
       "legajo": "601153",
       "dni": "36499862",
       "username": "gutierrezmi",
-      "password": "gutierrezmi",
-      "firma": null
+      "password": "601153",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "601025",
@@ -967,8 +1061,9 @@
       "legajo": "601025",
       "dni": "18845261",
       "username": "guzmang",
-      "password": "guzmang",
-      "firma": null
+      "password": "601025",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "601026",
@@ -977,8 +1072,9 @@
       "legajo": "601026",
       "dni": "25711082",
       "username": "hidalgop",
-      "password": "hidalgop",
-      "firma": null
+      "password": "601026",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "299583",
@@ -987,8 +1083,9 @@
       "legajo": "299583",
       "dni": "22204000",
       "username": "hucedoe",
-      "password": "hucedoe",
-      "firma": null
+      "password": "299583",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "338983",
@@ -997,8 +1094,9 @@
       "legajo": "338983",
       "dni": "29227311",
       "username": "iriarteaj",
-      "password": "iriarteaj",
-      "firma": null
+      "password": "338983",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "601622",
@@ -1007,8 +1105,9 @@
       "legajo": "601622",
       "dni": "27616916",
       "username": "isasmendiga",
-      "password": "isasmendiga",
-      "firma": null
+      "password": "601622",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "jofrem",
@@ -1017,7 +1116,7 @@
       "legajo": "jofrem",
       "username": "jofrem",
       "password": "jofrem",
-      "primerLogin": true,
+      "primerLogin": false,
       "firma": null
     },
     {
@@ -1027,8 +1126,9 @@
       "legajo": "602324",
       "dni": "31153476",
       "username": "juarezm",
-      "password": "juarezm",
-      "firma": null
+      "password": "602324",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "600233",
@@ -1037,8 +1137,9 @@
       "legajo": "600233",
       "dni": "29575205",
       "username": "julianellie",
-      "password": "julianellie",
-      "firma": null
+      "password": "600233",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "602217",
@@ -1047,8 +1148,9 @@
       "legajo": "602217",
       "dni": "30169902",
       "username": "lacarbonarom",
-      "password": "lacarbonarom",
-      "firma": null
+      "password": "602217",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "600176",
@@ -1057,8 +1159,9 @@
       "legajo": "600176",
       "dni": "20036423",
       "username": "laras",
-      "password": "laras",
-      "firma": null
+      "password": "600176",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "260544",
@@ -1067,8 +1170,9 @@
       "legajo": "260544",
       "dni": "5895183",
       "username": "ledesmapb",
-      "password": "ledesmapb",
-      "firma": null
+      "password": "260544",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "leottae",
@@ -1077,7 +1181,7 @@
       "legajo": "leottae",
       "username": "leottae",
       "password": "leottae",
-      "primerLogin": true,
+      "primerLogin": false,
       "firma": null
     },
     {
@@ -1087,8 +1191,9 @@
       "legajo": "258739",
       "dni": "13898412",
       "username": "lescanos",
-      "password": "lescanos",
-      "firma": null
+      "password": "258739",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "306874",
@@ -1097,8 +1202,9 @@
       "legajo": "306874",
       "dni": "24163438",
       "username": "lessim",
-      "password": "lessim",
-      "firma": null
+      "password": "306874",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "601131",
@@ -1107,8 +1213,9 @@
       "legajo": "601131",
       "dni": "23472678",
       "username": "levandowskys",
-      "password": "levandowskys",
-      "firma": null
+      "password": "601131",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "602034",
@@ -1117,8 +1224,9 @@
       "legajo": "602034",
       "dni": "34730221",
       "username": "liberattif",
-      "password": "liberattif",
-      "firma": null
+      "password": "602034",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "284115",
@@ -1127,8 +1235,9 @@
       "legajo": "284115",
       "dni": "20017230",
       "username": "lissonil",
-      "password": "lissonil",
-      "firma": null
+      "password": "284115",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "602132",
@@ -1137,8 +1246,9 @@
       "legajo": "602132",
       "dni": "34437072",
       "username": "lococon",
-      "password": "lococon",
-      "firma": null
+      "password": "602132",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "601064",
@@ -1147,8 +1257,9 @@
       "legajo": "601064",
       "dni": "29684770",
       "username": "lomantom",
-      "password": "lomantom",
-      "firma": null
+      "password": "601064",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "602487",
@@ -1157,8 +1268,9 @@
       "legajo": "602487",
       "dni": "40706093",
       "username": "lombardogt",
-      "password": "lombardogt",
-      "firma": null
+      "password": "602487",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "259275",
@@ -1167,8 +1279,9 @@
       "legajo": "259275",
       "dni": "16026115",
       "username": "lopezguerreiror",
-      "password": "lopezguerreiror",
-      "firma": null
+      "password": "259275",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "262596",
@@ -1177,8 +1290,9 @@
       "legajo": "262596",
       "dni": "13975489",
       "username": "lopezd",
-      "password": "lopezd",
-      "firma": null
+      "password": "262596",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "602348",
@@ -1187,8 +1301,9 @@
       "legajo": "602348",
       "dni": "31215866",
       "username": "lopezf",
-      "password": "lopezf",
-      "firma": null
+      "password": "602348",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "342364",
@@ -1197,8 +1312,9 @@
       "legajo": "342364",
       "dni": "28296675",
       "username": "lopezmolinavm",
-      "password": "lopezmolinavm",
-      "firma": null
+      "password": "342364",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "600223",
@@ -1207,8 +1323,9 @@
       "legajo": "600223",
       "dni": "25309829",
       "username": "lopezr",
-      "password": "lopezr",
-      "firma": null
+      "password": "600223",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "601074",
@@ -1217,8 +1334,9 @@
       "legajo": "601074",
       "dni": "30958028",
       "username": "lopezrumif",
-      "password": "lopezrumif",
-      "firma": null
+      "password": "601074",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "601149",
@@ -1227,8 +1345,9 @@
       "legajo": "601149",
       "dni": "29650574",
       "username": "lozanos",
-      "password": "lozanos",
-      "firma": null
+      "password": "601149",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "magallanesj",
@@ -1237,7 +1356,7 @@
       "legajo": "magallanesj",
       "username": "magallanesj",
       "password": "magallanesj",
-      "primerLogin": true,
+      "primerLogin": false,
       "firma": null
     },
     {
@@ -1247,8 +1366,9 @@
       "legajo": "123460",
       "dni": "31750289",
       "username": "maggia",
-      "password": "maggia",
-      "firma": null
+      "password": "123460",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "297278",
@@ -1257,8 +1377,9 @@
       "legajo": "297278",
       "dni": "12964705",
       "username": "malcunj",
-      "password": "malcunj",
-      "firma": null
+      "password": "297278",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "602325",
@@ -1267,8 +1388,9 @@
       "legajo": "602325",
       "dni": "32594809",
       "username": "malinr",
-      "password": "malinr",
-      "firma": null
+      "password": "602325",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "601160",
@@ -1277,8 +1399,9 @@
       "legajo": "601160",
       "dni": "20585450",
       "username": "mansillam",
-      "password": "mansillam",
-      "firma": null
+      "password": "601160",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "340084",
@@ -1287,8 +1410,9 @@
       "legajo": "340084",
       "dni": "25262680",
       "username": "marcatellivm",
-      "password": "marcatellivm",
-      "firma": null
+      "password": "340084",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "284119",
@@ -1297,8 +1421,9 @@
       "legajo": "284119",
       "dni": "18055501",
       "username": "marchim",
-      "password": "marchim",
-      "firma": null
+      "password": "284119",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "707358",
@@ -1307,8 +1432,9 @@
       "legajo": "707358",
       "dni": "16603857",
       "username": "marzillig",
-      "password": "marzillig",
-      "firma": null
+      "password": "707358",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "342365",
@@ -1317,8 +1443,9 @@
       "legajo": "342365",
       "dni": "29510825",
       "username": "matarazzom",
-      "password": "matarazzom",
-      "firma": null
+      "password": "342365",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "mendezc",
@@ -1327,7 +1454,7 @@
       "legajo": "mendezc",
       "username": "mendezc",
       "password": "mendezc",
-      "primerLogin": true,
+      "primerLogin": false,
       "firma": null
     },
     {
@@ -1337,8 +1464,9 @@
       "legajo": "601791",
       "dni": "19053903",
       "username": "mendietagl",
-      "password": "mendietagl",
-      "firma": null
+      "password": "601791",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "602123",
@@ -1347,8 +1475,9 @@
       "legajo": "602123",
       "dni": "26183703",
       "username": "mendozal",
-      "password": "mendozal",
-      "firma": null
+      "password": "602123",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "601105",
@@ -1357,8 +1486,9 @@
       "legajo": "601105",
       "dni": "25583835",
       "username": "merlom",
-      "password": "merlom",
-      "firma": null
+      "password": "601105",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "600242",
@@ -1367,8 +1497,9 @@
       "legajo": "600242",
       "dni": "18220885",
       "username": "millav",
-      "password": "millav",
-      "firma": null
+      "password": "600242",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "601152",
@@ -1377,8 +1508,9 @@
       "legajo": "601152",
       "dni": "34730329",
       "username": "molinaan",
-      "password": "molinaan",
-      "firma": null
+      "password": "601152",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "900212",
@@ -1387,8 +1519,9 @@
       "legajo": "900212",
       "dni": "22032397",
       "username": "moranoa",
-      "password": "moranoa",
-      "firma": null
+      "password": "900212",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "602378",
@@ -1397,8 +1530,9 @@
       "legajo": "602378",
       "dni": "23064895",
       "username": "moranom",
-      "password": "moranom",
-      "firma": null
+      "password": "602378",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "340060",
@@ -1407,8 +1541,9 @@
       "legajo": "340060",
       "dni": "24041312",
       "username": "morenomp",
-      "password": "morenomp",
-      "firma": null
+      "password": "340060",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "601562",
@@ -1417,8 +1552,9 @@
       "legajo": "601562",
       "dni": "31195820",
       "username": "navarrom",
-      "password": "navarrom",
-      "firma": null
+      "password": "601562",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "340089",
@@ -1427,8 +1563,9 @@
       "legajo": "340089",
       "dni": "25579079",
       "username": "negreg",
-      "password": "negreg",
-      "firma": null
+      "password": "340089",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "602238",
@@ -1437,8 +1574,9 @@
       "legajo": "602238",
       "dni": "37356755",
       "username": "neiramartina",
-      "password": "neiramartina",
-      "firma": null
+      "password": "602238",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "602330",
@@ -1447,8 +1585,9 @@
       "legajo": "602330",
       "dni": "42101038",
       "username": "nicosiay",
-      "password": "nicosiay",
-      "firma": null
+      "password": "602330",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "258377",
@@ -1457,8 +1596,9 @@
       "legajo": "258377",
       "dni": "13758585",
       "username": "nietol",
-      "password": "nietol",
-      "firma": null
+      "password": "258377",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "263840",
@@ -1467,8 +1607,9 @@
       "legajo": "263840",
       "dni": "16100143",
       "username": "nogueraj",
-      "password": "nogueraj",
-      "firma": null
+      "password": "263840",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "601789",
@@ -1477,8 +1618,9 @@
       "legajo": "601789",
       "dni": "33113851",
       "username": "notarn",
-      "password": "notarn",
-      "firma": null
+      "password": "601789",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "601138",
@@ -1487,8 +1629,9 @@
       "legajo": "601138",
       "dni": "27810006",
       "username": "nunezh",
-      "password": "nunezh",
-      "firma": null
+      "password": "601138",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "600230",
@@ -1497,8 +1640,9 @@
       "legajo": "600230",
       "dni": "13750021",
       "username": "nunezi",
-      "password": "nunezi",
-      "firma": null
+      "password": "600230",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "602637",
@@ -1507,8 +1651,9 @@
       "legajo": "602637",
       "dni": "28514787",
       "username": "ortegaj",
-      "password": "ortegaj",
-      "firma": null
+      "password": "602637",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "602103",
@@ -1517,8 +1662,9 @@
       "legajo": "602103",
       "dni": "38827138",
       "username": "ovejeroa",
-      "password": "ovejeroa",
-      "firma": null
+      "password": "602103",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "602484",
@@ -1527,8 +1673,9 @@
       "legajo": "602484",
       "dni": "34250591",
       "username": "pachecob",
-      "password": "pachecob",
-      "firma": null
+      "password": "602484",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "342369",
@@ -1537,8 +1684,9 @@
       "legajo": "342369",
       "dni": "28113498",
       "username": "paglialungal",
-      "password": "paglialungal",
-      "firma": null
+      "password": "342369",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "313056",
@@ -1547,8 +1695,9 @@
       "legajo": "313056",
       "dni": "20015807",
       "username": "palermog",
-      "password": "palermog",
-      "firma": null
+      "password": "313056",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "601067",
@@ -1557,8 +1706,9 @@
       "legajo": "601067",
       "dni": "24999172",
       "username": "panozom",
-      "password": "panozom",
-      "firma": null
+      "password": "601067",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "601575",
@@ -1567,8 +1717,9 @@
       "legajo": "601575",
       "dni": "20296476",
       "username": "pardoj",
-      "password": "pardoj",
-      "firma": null
+      "password": "601575",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "601029",
@@ -1577,8 +1728,9 @@
       "legajo": "601029",
       "dni": "31531587",
       "username": "paredesf",
-      "password": "paredesf",
-      "firma": null
+      "password": "601029",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "306618",
@@ -1587,8 +1739,9 @@
       "legajo": "306618",
       "dni": "20312027",
       "username": "parram",
-      "password": "parram",
-      "firma": null
+      "password": "306618",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "601567",
@@ -1597,8 +1750,9 @@
       "legajo": "601567",
       "dni": "30338032",
       "username": "pasuchion",
-      "password": "pasuchion",
-      "firma": null
+      "password": "601567",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "801240",
@@ -1607,8 +1761,9 @@
       "legajo": "801240",
       "dni": "27824638",
       "username": "paviskovd",
-      "password": "paviskovd",
-      "firma": null
+      "password": "801240",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "281343",
@@ -1617,8 +1772,9 @@
       "legajo": "281343",
       "dni": "16211103",
       "username": "pedicinoc",
-      "password": "pedicinoc",
-      "firma": null
+      "password": "281343",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "707285",
@@ -1627,8 +1783,9 @@
       "legajo": "707285",
       "dni": "21056577",
       "username": "perezm",
-      "password": "perezm",
-      "firma": null
+      "password": "707285",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "600328",
@@ -1637,8 +1794,9 @@
       "legajo": "600328",
       "dni": "23494554",
       "username": "perezn",
-      "password": "perezn",
-      "firma": null
+      "password": "600328",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "601569",
@@ -1647,8 +1805,9 @@
       "legajo": "601569",
       "dni": "30996787",
       "username": "podaschevskyn",
-      "password": "podaschevskyn",
-      "firma": null
+      "password": "601569",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "601144",
@@ -1657,8 +1816,9 @@
       "legajo": "601144",
       "dni": "27815016",
       "username": "poleroa",
-      "password": "poleroa",
-      "firma": null
+      "password": "601144",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "602133",
@@ -1667,8 +1827,9 @@
       "legajo": "602133",
       "dni": "25355877",
       "username": "quinterosramirezg",
-      "password": "quinterosramirezg",
-      "firma": null
+      "password": "602133",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "340182",
@@ -1677,8 +1838,9 @@
       "legajo": "340182",
       "dni": "23960918",
       "username": "raggiom",
-      "password": "raggiom",
-      "firma": null
+      "password": "340182",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "601114",
@@ -1687,8 +1849,9 @@
       "legajo": "601114",
       "dni": "32014101",
       "username": "ramirezav",
-      "password": "ramirezav",
-      "firma": null
+      "password": "601114",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "602100",
@@ -1697,8 +1860,9 @@
       "legajo": "602100",
       "dni": "37669005",
       "username": "reinaudoc",
-      "password": "reinaudoc",
-      "firma": null
+      "password": "602100",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "600322",
@@ -1707,8 +1871,9 @@
       "legajo": "600322",
       "dni": "25789874",
       "username": "ricciardim",
-      "password": "ricciardim",
-      "firma": null
+      "password": "600322",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "601802",
@@ -1717,8 +1882,9 @@
       "legajo": "601802",
       "dni": "29031279",
       "username": "richardellom",
-      "password": "richardellom",
-      "firma": null
+      "password": "601802",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "601793",
@@ -1727,8 +1893,9 @@
       "legajo": "601793",
       "dni": "26708701",
       "username": "rochal",
-      "password": "rochal",
-      "firma": null
+      "password": "601793",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "602143",
@@ -1737,8 +1904,9 @@
       "legajo": "602143",
       "dni": "32773135",
       "username": "rocham",
-      "password": "rocham",
-      "firma": null
+      "password": "602143",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "600283",
@@ -1747,8 +1915,9 @@
       "legajo": "600283",
       "dni": "28483868",
       "username": "rodriguesf",
-      "password": "rodriguesf",
-      "firma": null
+      "password": "600283",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "600411",
@@ -1757,8 +1926,9 @@
       "legajo": "600411",
       "dni": "21529690",
       "username": "rodriguezdm",
-      "password": "rodriguezdm",
-      "firma": null
+      "password": "600411",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "311804",
@@ -1767,8 +1937,9 @@
       "legajo": "311804",
       "dni": "16048936",
       "username": "rodriguezf",
-      "password": "rodriguezf",
-      "firma": null
+      "password": "311804",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "560240",
@@ -1777,8 +1948,9 @@
       "legajo": "560240",
       "dni": "34032692",
       "username": "rolhaiserm",
-      "password": "rolhaiserm",
-      "firma": null
+      "password": "560240",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "301914",
@@ -1787,8 +1959,9 @@
       "legajo": "301914",
       "dni": "23916473",
       "username": "romann",
-      "password": "romann",
-      "firma": null
+      "password": "301914",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "284076",
@@ -1797,8 +1970,9 @@
       "legajo": "284076",
       "dni": "20961160",
       "username": "romeroc",
-      "password": "romeroc",
-      "firma": null
+      "password": "284076",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "285376",
@@ -1807,8 +1981,9 @@
       "legajo": "285376",
       "dni": "14997864",
       "username": "rubinog",
-      "password": "rubinog",
-      "firma": null
+      "password": "285376",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "443524",
@@ -1817,8 +1992,9 @@
       "legajo": "443524",
       "dni": "34645670",
       "username": "salvot",
-      "password": "salvot",
-      "firma": null
+      "password": "443524",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "601151",
@@ -1827,8 +2003,9 @@
       "legajo": "601151",
       "dni": "30196216",
       "username": "sanmillanf",
-      "password": "sanmillanf",
-      "firma": null
+      "password": "601151",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "602114",
@@ -1837,8 +2014,9 @@
       "legajo": "602114",
       "dni": "28728393",
       "username": "sanmillanm",
-      "password": "sanmillanm",
-      "firma": null
+      "password": "602114",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "342372",
@@ -1847,8 +2025,9 @@
       "legajo": "342372",
       "dni": "27873212",
       "username": "sanchezb",
-      "password": "sanchezb",
-      "firma": null
+      "password": "342372",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "283826",
@@ -1857,8 +2036,9 @@
       "legajo": "283826",
       "dni": "14249195",
       "username": "sanchezc",
-      "password": "sanchezc",
-      "firma": null
+      "password": "283826",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "601147",
@@ -1867,8 +2047,9 @@
       "legajo": "601147",
       "dni": "35995010",
       "username": "seрichi",
-      "password": "seрichi",
-      "firma": null
+      "password": "601147",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "600248",
@@ -1877,8 +2058,9 @@
       "legajo": "600248",
       "dni": "27547359",
       "username": "solalindej",
-      "password": "solalindej",
-      "firma": null
+      "password": "600248",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "261553",
@@ -1887,8 +2069,9 @@
       "legajo": "261553",
       "dni": "16243663",
       "username": "spatarof",
-      "password": "spatarof",
-      "firma": null
+      "password": "261553",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "602212",
@@ -1897,8 +2080,9 @@
       "legajo": "602212",
       "dni": "27162273",
       "username": "squagliar",
-      "password": "squagliar",
-      "firma": null
+      "password": "602212",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "601155",
@@ -1907,8 +2091,9 @@
       "legajo": "601155",
       "dni": "32330658",
       "username": "tarsettiа",
-      "password": "tarsettiа",
-      "firma": null
+      "password": "601155",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "123461",
@@ -1917,8 +2102,9 @@
       "legajo": "123461",
       "dni": "16415608",
       "username": "teyeldins",
-      "password": "teyeldins",
-      "firma": null
+      "password": "123461",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "342373",
@@ -1927,8 +2113,9 @@
       "legajo": "342373",
       "dni": "28573133",
       "username": "tisorierop",
-      "password": "tisorierop",
-      "firma": null
+      "password": "342373",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "488872",
@@ -1937,8 +2124,9 @@
       "legajo": "488872",
       "dni": "27650563",
       "username": "toledom",
-      "password": "toledom",
-      "firma": null
+      "password": "488872",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "601154",
@@ -1947,8 +2135,9 @@
       "legajo": "601154",
       "dni": "32992381",
       "username": "tortossaj",
-      "password": "tortossaj",
-      "firma": null
+      "password": "601154",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "443547",
@@ -1957,8 +2146,9 @@
       "legajo": "443547",
       "dni": "30575057",
       "username": "toucedah",
-      "password": "toucedah",
-      "firma": null
+      "password": "443547",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "601144",
@@ -1967,8 +2157,9 @@
       "legajo": "601144",
       "dni": "32666411",
       "username": "traversag",
-      "password": "traversag",
-      "firma": null
+      "password": "601144",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "601770",
@@ -1977,8 +2168,9 @@
       "legajo": "601770",
       "dni": "29930696",
       "username": "urquiasalac",
-      "password": "urquiasalac",
-      "firma": null
+      "password": "601770",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "258735",
@@ -1987,8 +2179,9 @@
       "legajo": "258735",
       "dni": "12707545",
       "username": "venturaj",
-      "password": "venturaj",
-      "firma": null
+      "password": "258735",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "602076",
@@ -1997,8 +2190,9 @@
       "legajo": "602076",
       "dni": "29723828",
       "username": "verdong",
-      "password": "verdong",
-      "firma": null
+      "password": "602076",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "602674",
@@ -2007,8 +2201,9 @@
       "legajo": "602674",
       "dni": "24042411",
       "username": "villegasf",
-      "password": "villegasf",
-      "firma": null
+      "password": "602674",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "601043",
@@ -2017,8 +2212,9 @@
       "legajo": "601043",
       "dni": "28447313",
       "username": "vinuelad",
-      "password": "vinuelad",
-      "firma": null
+      "password": "601043",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "601795",
@@ -2027,8 +2223,9 @@
       "legajo": "601795",
       "dni": "26746295",
       "username": "vivasd",
-      "password": "vivasd",
-      "firma": null
+      "password": "601795",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "300362",
@@ -2037,8 +2234,9 @@
       "legajo": "300362",
       "dni": "21664568",
       "username": "wallaceg",
-      "password": "wallaceg",
-      "firma": null
+      "password": "300362",
+      "firma": null,
+      "primerLogin": false
     },
     {
       "id": "601576",
@@ -2047,8 +2245,9 @@
       "legajo": "601576",
       "dni": "30927367",
       "username": "zarlengac",
-      "password": "zarlengac",
-      "firma": null
+      "password": "601576",
+      "firma": null,
+      "primerLogin": false
     }
   ],
   "admins": [

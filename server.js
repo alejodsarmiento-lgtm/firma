@@ -213,7 +213,15 @@ app.get('/protocolo', (req,res) => res.sendFile(require('path').join(__dirname,'
 app.get('/privacidad',(req,res) => res.sendFile(require('path').join(__dirname,'public','privacidad.html')));
 
 app.use(express.static(PUBLIC_DIR));
+// Sesiones persistentes en disco — sobreviven reinicios del servidor
+const FileStore = require('session-file-store')(session);
 app.use(session({
+  store: new FileStore({
+    path: '/var/www/firmared/data/sessions-store',
+    ttl: 86400 * 7,  // 7 días
+    retries: 1,
+    logFn: () => {},
+  }),
   secret: 'firmared-subsecretaria-pba-2026',
   resave: false,
   saveUninitialized: false,
@@ -1816,7 +1824,7 @@ app.post('/api/webauthn/auth-verificar', requireAuth, (req, res) => {
 });
 
 // ── 5. Estado de biométrico del usuario ───────────────────────
-app.get('/api/webauthn/estado', requireAuth, requirePrimerLoginCompletado, (req, res) => {
+app.get('/api/webauthn/estado', requireAuth, (req, res) => {
   const userObjE = req.session.user;
   const user  = userObjE?.username || userObjE?.id || String(userObjE);
   const creds = waReadCreds();

@@ -316,7 +316,7 @@ canvas.sp{display:block;width:100%;touch-action:none;cursor:crosshair}
           <div class="step" id="s3"><div class="sdot">3</div><div class="slbl">Firmar</div></div>
           <div class="step" id="s4"><div class="sdot">4</div><div class="slbl">Listo</div></div>
         </div>
-        <!-- Ver planilla: link directo al servidor — el browser lo muestra nativamente -->
+        <!-- Ver planilla: link directo al servidor -->
         <a id="linkVerPlanilla" href="#" target="_blank" class="btn-ver" onclick="verPlanilla(event)">
           👁️ Ver planilla completa
         </a>
@@ -337,29 +337,39 @@ canvas.sp{display:block;width:100%;touch-action:none;cursor:crosshair}
   </div>
 
   <!-- CONFIRMAR Y FIRMAR -->
+  <!-- CONFIRMAR Y FIRMAR — panel unificado -->
   <div class="fp" id="fpPanel">
     <div class="fpin">
-
       <!-- Info del inspector -->
-      <div class="fpr" style="margin-bottom:16px">
+      <div class="fpr" style="margin-bottom:14px">
         <div class="fiw"><canvas id="fConf" width="150" height="46"></canvas></div>
         <div>
           <div style="font-weight:700;font-size:14px;color:#003366" id="fPNom">—</div>
           <div style="font-size:12px;color:#888;margin-top:3px;line-height:1.6" id="fPMeta">—</div>
         </div>
       </div>
-
-      <!-- Botón biométrico (solo mobile con biométrico registrado) -->
-      <div id="bioFirmaCard" style="display:none;margin-bottom:10px">
-        <button onclick="firmarConBiometrico()" style="width:100%;padding:14px;background:#1A5E2A;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;letter-spacing:.01em">👆 Firmar con huella / Face ID</button>
-        <div id="bioFirmaMsg" style="font-size:11px;margin-top:6px;display:none;text-align:center;color:#555"></div>
-        <div style="text-align:center;margin:10px 0 4px;font-size:11px;color:#bbb;letter-spacing:.04em">— o —</div>
+      <!-- Título unificado -->
+      <div style="font-size:13px;font-weight:700;color:#003366;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid #E8EDF2;text-align:center">
+        ✅ Revisé la planilla — ¿Cómo querés firmar?
       </div>
-
-      <!-- Botón firma manuscrita -->
+      <!-- OPCIÓN 1: Botón biométrico (solo si tiene biométrico registrado) -->
+      <div id="bioFirmaCard" style="display:block;margin-bottom:10px">
+        <button onclick="firmarConBiometrico()" style="width:100%;padding:16px;background:linear-gradient(135deg,#1A5E2A,#2E7D32);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px">
+          <span style="font-size:22px">👆</span>
+          <span>Firmar con huella / Face ID</span>
+        </button>
+        <div id="bioFirmaMsg" style="font-size:11px;margin-top:6px;display:none;text-align:center;color:#555"></div>
+        <div style="display:flex;align-items:center;gap:8px;margin:12px 0">
+          <div style="flex:1;height:1px;background:#E8EDF2"></div>
+          <span style="font-size:11px;color:#bbb;letter-spacing:.04em">— o —</span>
+          <div style="flex:1;height:1px;background:#E8EDF2"></div>
+        </div>
+      </div>
+      <!-- OPCIÓN 2: Firma manuscrita -->
       <button class="btn-f" id="btnF" onclick="firmar()">
-        <span id="fIco">✍️</span><span id="fTxt">Confirmar y firmar planilla</span>
+        <span id="fIco">✍️</span><span id="fTxt">Firmar con mi firma manuscrita</span>
       </button>
+      <p style="font-size:11px;color:#aaa;text-align:center;margin-top:8px;margin-bottom:0">Tu firma quedará registrada con sello de tiempo blockchain</p>
       <div class="pw" id="pw"><div class="pl" id="pl">Firmando…</div><div class="pbar"><div class="pfill" id="pfill"></div></div></div>
       <div class="st" id="stF"></div>
     </div>
@@ -977,14 +987,85 @@ async function buildInsp(){
 }
 
 function verPlanilla(e){
-  // Mostrar panel de firma después de que el inspector abre la planilla
-  setTimeout(()=>{
+  e && e.preventDefault();
+  const link = document.getElementById('linkVerPlanilla');
+  const href = link?.href;
+  if(!href || href.endsWith('#') || href.includes('undefined')){
+    alert('La planilla aún no está disponible.'); return;
+  }
+  window._onPdfModalClose = function(){
     document.getElementById('fpPanel').style.display='block';
     initBioUI().catch(()=>{});
     setStep(3);
     document.getElementById('fpPanel').scrollIntoView({behavior:'smooth',block:'start'});
-  },500);
-  // El link ya tiene href correcto — el browser lo abre nativamente
+  };
+  // Usar openPdfModal con arrayBuffer → PDF.js (funciona en todos los dispositivos)
+  const modal=document.getElementById('pdfModal');
+  const spinner=document.getElementById('pdfSpinner');
+  const container=document.getElementById('pdfCanvasContainer');
+  const navBar=document.getElementById('pdfNavBar');
+  const paginas=document.getElementById('pdfPaginas');
+  const dlBtn=document.getElementById('pdfDlBtn');
+  if(!modal) return;
+  if(container){container.innerHTML='';container.style.display='none';}
+  if(spinner) spinner.style.display='flex';
+  if(navBar) navBar.style.display='none';
+  if(paginas) paginas.textContent='';
+  modal.style.display='flex';
+  document.body.style.overflow='hidden';
+  fetch(href,{credentials:'include'})
+    .then(r=>{ if(!r.ok) throw new Error('HTTP '+r.status); return r.arrayBuffer(); })
+    .then(async buf=>{
+      const blobUrl = URL.createObjectURL(new Blob([buf],{type:'application/pdf'}));
+      if(dlBtn){dlBtn.href=blobUrl;dlBtn.download='planilla.pdf';}
+      const pdfJsOk = await _cargarPdfJs().catch(()=>false);
+      if(pdfJsOk){
+        const pdfDoc = await window.pdfjsLib.getDocument({data:buf.slice()}).promise;
+        const total = pdfDoc.numPages;
+        if(paginas) paginas.textContent=total+(total===1?' página':' páginas');
+        if(spinner) spinner.style.display='none';
+        if(container){container.style.display='flex';}
+        const visorW = document.getElementById('pdfVisorWrap').clientWidth-24;
+        for(let n=1;n<=total;n++){
+          const page=await pdfDoc.getPage(n);
+          const vpBase=page.getViewport({scale:1});
+          const scale=Math.min(visorW/vpBase.width,3);
+          const viewport=page.getViewport({scale});
+          const canvas=document.createElement('canvas');
+          const dpr=window.devicePixelRatio||1;
+          canvas.width=viewport.width*dpr;
+          canvas.height=viewport.height*dpr;
+          canvas.style.cssText='width:100%;max-width:'+viewport.width+'px;border-radius:4px;box-shadow:0 2px 8px rgba(0,0,0,.4);display:block';
+          const ctx=canvas.getContext('2d');
+          ctx.scale(dpr,dpr);
+          if(container) container.appendChild(canvas);
+          await page.render({canvasContext:ctx,viewport}).promise;
+        }
+      } else {
+        if(spinner) spinner.style.display='none';
+        if(container){
+          container.style.display='flex';
+          const obj=document.createElement('object');
+          obj.data=blobUrl;obj.type='application/pdf';
+          obj.style.cssText='width:100%;min-height:400px;border:none';
+          obj.innerHTML='<p style="color:#fff;padding:20px;text-align:center">'+
+            '<a href="'+blobUrl+'" target="_blank" style="background:#003366;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:700">📄 Ver planilla</a></p>';
+          container.appendChild(obj);
+        }
+      }
+      const origClose=window._onPdfModalClose;
+      window._onPdfModalClose=function(){URL.revokeObjectURL(blobUrl);if(origClose)origClose();};
+    })
+    .catch(err=>{
+      console.error(err);
+      if(spinner) spinner.style.display='none';
+      if(container){
+        container.style.display='flex';
+        container.innerHTML='<div style="color:#fff;padding:20px;text-align:center;width:100%">'+
+          '<p style="margin-bottom:16px">No se pudo cargar el PDF.</p>'+
+          '<a href="'+href+'" target="_blank" style="background:#003366;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:700">📄 Abrir planilla</a></div>';
+      }
+    });
 }
 
 async function guardarFirma(){
@@ -1441,6 +1522,12 @@ function closePdfModal() {
   const modal = document.getElementById('pdfModal');
   modal.style.display = 'none';
   document.body.style.overflow = '';
+  // Si hay callback pendiente (ej: mostrar panel de firma), ejecutarlo
+  if(typeof window._onPdfModalClose === 'function'){
+    const cb = window._onPdfModalClose;
+    window._onPdfModalClose = null;
+    setTimeout(cb, 200);
+  }
   document.getElementById('pdfCanvasContainer').innerHTML = '';
   document.getElementById('pdfPaginas').textContent = '';
   if (_pdfBlobUrl) { URL.revokeObjectURL(_pdfBlobUrl); _pdfBlobUrl = null; }
@@ -1992,7 +2079,7 @@ async function initBioUI() {
     if (regCard && !r.tieneBiometrico) regCard.style.display = 'block';
     // Mostrar opción de firma biométrica si tiene biométrico (complementaria a la manuscrita)
     const firmaCard = document.getElementById('bioFirmaCard');
-    if (firmaCard && r.tieneBiometrico) firmaCard.style.display = 'block';
+    if (firmaCard) firmaCard.style.display = 'block'; // siempre visible — registro o uso
   } catch(e) {}
 }
 
@@ -2065,83 +2152,50 @@ async function registrarBiometrico() {
 // Firmar planilla con biométrico
 async function firmarConBiometrico() {
   const msg = document.getElementById('bioFirmaMsg');
-  msg.style.display = 'block';
-  msg.style.color = '#888';
-  msg.textContent = 'Esperando verificación biométrica...';
-
+  if(msg){msg.style.display='block';msg.style.color='#555';msg.textContent='⏳ Verificando...';}
   try {
-    // 1. Obtener challenge
-    const opts = await api('POST', '/api/webauthn/auth-inicio');
-    if (opts.error) { msg.textContent = opts.error; msg.style.color='#C62828'; return; }
-
-    // 2. Preparar opciones
-    if (!opts.challenge) throw new Error('El servidor no devolvió un challenge válido');
-    const optsForBrowser = {
-      ...opts,
-      challenge: base64urlToBuffer(opts.challenge),
-      allowCredentials: (opts.allowCredentials || []).map(c => ({
-        ...c, id: base64urlToBuffer(c.id),
-      })),
-    };
-
-    // 3. Autenticar (dispara huella/Face ID)
-    const assertion = await navigator.credentials.get({ publicKey: optsForBrowser });
-
-    // 4. Verificar en servidor
-    const assertJSON = {
-      id:       assertion.id,
-      rawId:    bufferToBase64url(assertion.rawId),
-      type:     assertion.type,
-      response: {
-        clientDataJSON:    bufferToBase64url(assertion.response.clientDataJSON),
-        authenticatorData: bufferToBase64url(assertion.response.authenticatorData),
-        signature:         bufferToBase64url(assertion.response.signature),
-        userHandle:        assertion.response.userHandle
-          ? bufferToBase64url(assertion.response.userHandle) : null,
-      },
-    };
-
-    const r = await api('POST', '/api/webauthn/auth-verificar', assertJSON);
-    if (r.verificado) {
-      msg.style.color = '#1A5E2A';
-      msg.textContent = '✅ Identidad verificada. Procesando firma...';
-      // Marcar que la firma fue verificada biométricamente
+    const estado = await api('GET','/api/webauthn/estado').catch(()=>({tieneBiometrico:false}));
+    if(!estado.tieneBiometrico){
+      // Sin biométrico — registrar ahora y firmar con manuscrita
+      if(msg) msg.textContent='👆 Registrá tu huella o Face ID...';
+      await registrarBiometrico();
+      if(msg) msg.textContent='✅ Biométrico registrado. Firmando...';
+      await firmar();
+    } else {
+      // Tiene biométrico — autenticar y firmar
+      if(msg) msg.textContent='👆 Verificá tu identidad...';
+      const ini = await api('POST','/api/webauthn/auth-inicio',{});
+      if(ini.error) throw new Error(ini.error);
+      const opts = ini.publicKeyCredentialRequestOptions || ini;
+      // Convertir challenge de array a Uint8Array
+      if(opts.challenge && Array.isArray(opts.challenge))
+        opts.challenge = new Uint8Array(opts.challenge);
+      if(opts.allowCredentials) opts.allowCredentials.forEach(c=>{
+        if(Array.isArray(c.id)) c.id = new Uint8Array(c.id);
+      });
+      const assertion = await navigator.credentials.get({publicKey:opts});
+      const ver = await api('POST','/api/webauthn/auth-verificar',{
+        id:assertion.id,
+        rawId:Array.from(new Uint8Array(assertion.rawId)),
+        type:assertion.type,
+        response:{
+          authenticatorData:Array.from(new Uint8Array(assertion.response.authenticatorData)),
+          clientDataJSON:Array.from(new Uint8Array(assertion.response.clientDataJSON)),
+          signature:Array.from(new Uint8Array(assertion.response.signature)),
+          userHandle:assertion.response.userHandle?Array.from(new Uint8Array(assertion.response.userHandle)):null
+        }
+      });
+      if(!ver.verificado) throw new Error('Verificación fallida');
       window._bioVerificado = true;
-      // Ejecutar el proceso de firma normal
+      if(msg) msg.textContent='✅ Identidad verificada. Firmando...';
       await firmar();
     }
   } catch(e) {
-    msg.style.color = '#C62828';
-    msg.textContent = e.name === 'NotAllowedError'
-      ? 'Verificación cancelada.'
-      : 'Error: ' + (e.message || e.name);
+    console.error('[Bio]',e);
+    if(msg){msg.textContent='❌ '+e.message;msg.style.color='#e53935';}
+    window._bioVerificado = false;
   }
 }
-
-// Helpers base64url ↔ ArrayBuffer
-function base64urlToBuffer(b64url) {
-  if (!b64url) throw new Error('base64url value is empty or undefined');
-  const str = typeof b64url === 'string' ? b64url : String(b64url);
-  const b64 = str.replace(/-/g,'+').replace(/_/g,'/');
-  const padded = b64.padEnd(b64.length + (4 - b64.length % 4) % 4, '=');
-  const binary = atob(padded);
-  const buf = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) buf[i] = binary.charCodeAt(i);
-  return buf.buffer;
-}
-
-function bufferToBase64url(buf) {
-  const bytes = new Uint8Array(buf instanceof ArrayBuffer ? buf : buf);
-  let binary = '';
-  for (const b of bytes) binary += String.fromCharCode(b);
-  return btoa(binary).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
-}
-
-
-
-// ── Obras Irregulares ─────────────────────────────────────────
-let _obrasData = [];
-let _obrasFiltro = 'todos';
 
 async function cargarObras(){
   document.getElementById('obrasList').innerHTML='<div class="spin-dark"></div>';
