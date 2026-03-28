@@ -2150,49 +2150,97 @@ async function registrarBiometrico() {
 }
 
 // Firmar planilla con biométrico
+function base64urlToBuffer(b64url){
+  const b64=b64url.replace(/-/g,'+').replace(/_/g,'/');
+  const bin=atob(b64);
+  const buf=new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++) buf[i]=bin.charCodeAt(i);
+  return buf.buffer;
+}
+function bufferToBase64url(buf){
+  const bytes=new Uint8Array(buf instanceof ArrayBuffer?buf:buf.buffer||buf);
+  let bin='';
+  for(const b of bytes) bin+=String.fromCharCode(b);
+  return btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
+}
 async function firmarConBiometrico() {
   const msg = document.getElementById('bioFirmaMsg');
-  if(msg){msg.style.display='block';msg.style.color='#555';msg.textContent='⏳ Verificando...';}
+  const btn = document.getElementById('btnBioFirmar');
+  function setMsg(txt, color){
+    if(msg){msg.style.display='block';msg.style.color=color||'#555';msg.textContent=txt;}
+  }
+  if(btn) btn.disabled=true;
+  setMsg('⏳ Verificando...','#555');
   try {
     const estado = await api('GET','/api/webauthn/estado').catch(()=>({tieneBiometrico:false}));
     if(!estado.tieneBiometrico){
-      // Sin biométrico — registrar ahora y firmar con manuscrita
-      if(msg) msg.textContent='👆 Registrá tu huella o Face ID...';
-      await registrarBiometrico();
-      if(msg) msg.textContent='✅ Biométrico registrado. Firmando...';
+      // Registrar biométrico inline (sin depender de bioRegMsg)
+      setMsg('👆 Registrá tu huella o Face ID para continuar...','#1A5E2A');
+      // Obtener opciones de registro
+      const opts = await api('POST','/api/webauthn/registro-inicio');
+      if(opts.error) throw new Error(opts.error);
+      const optsParaBrowser = {
+        ...opts,
+        challenge: base64urlToBuffer(opts.challenge),
+        user: { ...opts.user, id: base64urlToBuffer(opts.user.id) },
+      };
+      // Disparar sensor biométrico del dispositivo
+      const credential = await navigator.credentials.create({publicKey: optsParaBrowser});
+      if(!credential) throw new Error('No se recibió credencial biométrica');
+      // Enviar al servidor
+      const credJSON = {
+        id: credential.id,
+        rawId: bufferToBase64url(credential.rawId),
+        type: credential.type,
+        response: {
+          clientDataJSON:    bufferToBase64url(credential.response.clientDataJSON),
+          attestationObject: bufferToBase64url(credential.response.attestationObject),
+        },
+      };
+      const reg = await api('POST','/api/webauthn/registro-verificar', credJSON);
+      if(!reg.ok) throw new Error('No se pudo registrar el biométrico');
+      setMsg('✅ Biométrico registrado. Firmando...','#1A5E2A');
+      window._bioVerificado = true;
       await firmar();
     } else {
-      // Tiene biométrico — autenticar y firmar
-      if(msg) msg.textContent='👆 Verificá tu identidad...';
+      // Ya registrado — autenticar
+      setMsg('👆 Verificá tu identidad...','#555');
       const ini = await api('POST','/api/webauthn/auth-inicio',{});
       if(ini.error) throw new Error(ini.error);
       const opts = ini.publicKeyCredentialRequestOptions || ini;
-      // Convertir challenge de array a Uint8Array
       if(opts.challenge && Array.isArray(opts.challenge))
         opts.challenge = new Uint8Array(opts.challenge);
+      else if(typeof opts.challenge === 'string')
+        opts.challenge = base64urlToBuffer(opts.challenge);
       if(opts.allowCredentials) opts.allowCredentials.forEach(c=>{
         if(Array.isArray(c.id)) c.id = new Uint8Array(c.id);
+        else if(typeof c.id === 'string') c.id = base64urlToBuffer(c.id);
       });
-      const assertion = await navigator.credentials.get({publicKey:opts});
+      const assertion = await navigator.credentials.get({publicKey: opts});
+      if(!assertion) throw new Error('No se recibió credencial');
       const ver = await api('POST','/api/webauthn/auth-verificar',{
-        id:assertion.id,
-        rawId:Array.from(new Uint8Array(assertion.rawId)),
-        type:assertion.type,
+        id: assertion.id,
+        rawId: bufferToBase64url(assertion.rawId),
+        type: assertion.type,
         response:{
-          authenticatorData:Array.from(new Uint8Array(assertion.response.authenticatorData)),
-          clientDataJSON:Array.from(new Uint8Array(assertion.response.clientDataJSON)),
-          signature:Array.from(new Uint8Array(assertion.response.signature)),
-          userHandle:assertion.response.userHandle?Array.from(new Uint8Array(assertion.response.userHandle)):null
+          authenticatorData: bufferToBase64url(assertion.response.authenticatorData),
+          clientDataJSON:    bufferToBase64url(assertion.response.clientDataJSON),
+          signature:         bufferToBase64url(assertion.response.signature),
+          userHandle: assertion.response.userHandle ? bufferToBase64url(assertion.response.userHandle) : null,
         }
       });
-      if(!ver.verificado) throw new Error('Verificación fallida');
+      if(!ver.verificado) throw new Error('Verificación biométrica fallida');
       window._bioVerificado = true;
-      if(msg) msg.textContent='✅ Identidad verificada. Firmando...';
+      setMsg('✅ Identidad verificada. Firmando...','#1A5E2A');
       await firmar();
     }
   } catch(e) {
     console.error('[Bio]',e);
-    if(msg){msg.textContent='❌ '+e.message;msg.style.color='#e53935';}
+    const errMsg = e.name==='NotAllowedError' ? 'Verificación cancelada o no autorizada.' :
+                   e.name==='InvalidStateError' ? 'Este dispositivo ya está registrado.' :
+                   '❌ '+e.message;
+    setMsg(errMsg,'#e53935');
+    if(btn) btn.disabled=false;
     window._bioVerificado = false;
   }
 }
