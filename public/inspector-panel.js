@@ -44,6 +44,7 @@
             <span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;background:${tieneOts?'#E8F5E9':'#FFF8E1'};color:${tieneOts?'#2E7D32':'#F57F17'}">${tieneOts?'⛓ Bitcoin OTS':'⏳ OTS pendiente'}</span>
           </div>
           <div style="display:flex;gap:8px">
+            <button onclick="verPdfFirmado('${f.signedFile}')" style="flex:1;padding:9px;background:#003366;color:#fff;border:none;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer">📄 Ver PDF</button>
             <button onclick="window.open('/?h=${f.hash}','_blank')" style="flex:1;padding:9px;background:#E8F0F7;color:#003366;border:none;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer">🔍 Verificar</button>
             <button onclick="copiarHash('${f.hash}')" style="flex:1;padding:9px;background:#f0f4f8;color:#555;border:none;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer">📋 Copiar hash</button>
           </div>
@@ -173,3 +174,66 @@
   };
 
 })();
+
+window.verPdfFirmado = async function(filename) {
+  if(!filename) return alert('PDF no disponible');
+  const url = '/api/inspector/descargar/' + filename;
+  try {
+    const r = await fetch(url, {credentials:'include'});
+    if(!r.ok) throw new Error('HTTP ' + r.status);
+    const buf = await r.arrayBuffer();
+    const blob = new Blob([buf], {type:'application/pdf'});
+    const blobUrl = URL.createObjectURL(blob);
+    // Abrir en el modal PDF existente
+    const modal = document.getElementById('pdfModal');
+    const container = document.getElementById('pdfCanvasContainer');
+    const spinner = document.getElementById('pdfSpinner');
+    const dlBtn = document.getElementById('pdfDlBtn');
+    const paginas = document.getElementById('pdfPaginas');
+    if(!modal) { window.open(blobUrl,'_blank'); return; }
+    if(container){container.innerHTML='';container.style.display='none';}
+    if(spinner) spinner.style.display='flex';
+    if(dlBtn){dlBtn.href=blobUrl;dlBtn.download=filename;}
+    if(paginas) paginas.textContent='';
+    modal.style.display='flex';
+    document.body.style.overflow='hidden';
+    window._onPdfModalClose = null;
+    // Renderizar con PDF.js
+    const pdfJsOk = typeof window._cargarPdfJs === 'function' ? await window._cargarPdfJs().catch(()=>false) : false;
+    if(pdfJsOk){
+      const pdfDoc = await window.pdfjsLib.getDocument({data:buf.slice()}).promise;
+      const total = pdfDoc.numPages;
+      if(paginas) paginas.textContent = total + (total===1?' página':' páginas');
+      if(spinner) spinner.style.display='none';
+      if(container){container.style.display='flex';}
+      const visorW = (document.getElementById('pdfVisorWrap')?.clientWidth||300) - 24;
+      for(let n=1;n<=total;n++){
+        const page = await pdfDoc.getPage(n);
+        const vpBase = page.getViewport({scale:1});
+        const scale = Math.min(visorW/vpBase.width, 3);
+        const viewport = page.getViewport({scale});
+        const canvas = document.createElement('canvas');
+        const dpr = window.devicePixelRatio||1;
+        canvas.width = viewport.width*dpr;
+        canvas.height = viewport.height*dpr;
+        canvas.style.cssText = 'width:100%;max-width:'+viewport.width+'px;border-radius:4px;box-shadow:0 2px 8px rgba(0,0,0,.4);display:block';
+        const ctx = canvas.getContext('2d');
+        ctx.scale(dpr,dpr);
+        if(container) container.appendChild(canvas);
+        await page.render({canvasContext:ctx,viewport}).promise;
+      }
+    } else {
+      if(spinner) spinner.style.display='none';
+      if(container){
+        container.style.display='flex';
+        const iframe = document.createElement('iframe');
+        iframe.src = blobUrl;
+        iframe.style.cssText='width:100%;height:65vh;border:none;border-radius:4px';
+        container.appendChild(iframe);
+      }
+    }
+    setTimeout(()=>URL.revokeObjectURL(blobUrl), 60000);
+  } catch(e) {
+    alert('No se pudo cargar el PDF: ' + e.message);
+  }
+};
