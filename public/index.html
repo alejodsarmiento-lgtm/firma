@@ -1391,43 +1391,145 @@ async function renderAdminInsp(){
 }
 function filtrarInsp(){renderAdminInsp();}
 
+
+function actualizarContadorPeriodo(list){
+  const el=document.getElementById('contadorPeriodo');
+  if(!el) return;
+  if(!list||!list.length){el.innerHTML='';return;}
+  const porPeriodo={};
+  list.forEach(h=>{
+    const key=h.mesNombre+' '+h.year;
+    if(!porPeriodo[key]) porPeriodo[key]={count:0,mes:h.mes,year:h.year,nombre:key};
+    porPeriodo[key].count++;
+  });
+  const periodos=Object.values(porPeriodo).sort((a,b)=>Number(b.year)-Number(a.year)||b.mes-a.mes);
+  el.innerHTML=`<div style="background:#fff;border:1px solid #D0DCE8;border-radius:12px;padding:14px 16px;margin-bottom:14px">
+    <div style="font-size:12px;font-weight:700;color:#003366;margin-bottom:10px;text-transform:uppercase;letter-spacing:.05em">📊 Viáticos por período</div>
+    ${periodos.map(p=>{
+      const archivado=localStorage.getItem('periodo_archivado_'+p.mes+'_'+p.year)==='1';
+      return `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f0f0">
+        <div>
+          <span style="font-weight:700;color:#003366">${p.nombre}</span>
+          <span style="margin-left:8px;font-size:12px;background:${archivado?'#E8F5E9':'#E8F0F7'};color:${archivado?'#2E7D32':'#003366'};padding:2px 8px;border-radius:10px;font-weight:700">${archivado?'✓ Archivado':p.count+' firmados'}</span>
+        </div>
+        ${!archivado?`<button onclick="cerrarPeriodo(${p.mes},'${p.year}','${p.nombre}')" style="font-size:11px;padding:5px 10px;background:#FFF8E1;color:#F57F17;border:1px solid #FFE082;border-radius:7px;cursor:pointer;font-weight:700">🔒 Cerrar</button>`:`<button onclick="reabrirPeriodo(${p.mes},'${p.year}')" style="font-size:11px;padding:5px 10px;background:#f5f7fa;color:#999;border:1px solid #ddd;border-radius:7px;cursor:pointer">Reabrir</button>`}
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+function cerrarPeriodo(mes,year,nombre){
+  if(!confirm('¿Cerrar el período '+nombre+'?')) return;
+  localStorage.setItem('periodo_archivado_'+mes+'_'+year,'1');
+  renderAdminHist();
+}
+function reabrirPeriodo(mes,year){
+  localStorage.removeItem('periodo_archivado_'+mes+'_'+year);
+  renderAdminHist();
+}
+
 async function renderAdminHist(){
   const el=document.getElementById('listHist');
-  const mes   = document.getElementById('hFiltMes')?.value  ?? '';
-  const year  = document.getElementById('hFiltYear')?.value ?? '';
-  const q     = document.getElementById('hFiltQ')?.value    ?? '';
-  const params= new URLSearchParams();
-  if(mes!=='')   params.set('mes',mes);
-  if(year!=='')  params.set('year',year);
-  if(q.trim()!=='') params.set('q',q.trim());
-  const hist=await api('GET','/api/admin/historial?'+params.toString());
-  if(hist.error){el.innerHTML='<div class="empty">'+hist.error+'</div>';return;}
-  document.getElementById('cHist').textContent=hist.length;
-  if(!hist.length){el.innerHTML='<div class="empty">No hay registros con esos filtros.</div>';return;}
-  el.innerHTML='<table class="ht"><thead><tr><th>Inspector</th><th>DNI · Legajo</th><th>Período</th><th>Firmado</th><th></th></tr></thead><tbody>'+
-    hist.map(h=>`<tr>
-      <td><b>${h.inspNombre}</b></td>
-      <td style="font-size:11px">${h.inspDni} · Leg. ${h.inspLegajo}</td>
-      <td><b>${h.mesNombre}</b> ${h.year}</td>
-      <td>${fmtDt(new Date(h.firmadoTs))} ${h.firmaMetodo==='biometrico'?'<span style="background:#E8F5E9;color:#1A5E2A;font-size:9px;padding:1px 5px;border-radius:8px;font-weight:700">👆</span>':''}</td>
-      <td><a href="/api/admin/descargar/${h.signedFile}" class="bdg" style="text-decoration:none" download>⬇️</a></td>
-    </tr>`).join('')+'</tbody></table>';
+  if(!el) return;
+  // Cargar datos si no están
+  if(!window.allHistAdm||!window.allHistAdm.length){
+    window.allHistAdm=await api('GET','/api/admin/historial').catch(()=>[]);
+  }
+  const year=document.getElementById('hFiltYear')?.value||'';
+  const mes=document.getElementById('hFiltMes')?.value||'';
+  const q=(document.getElementById('hFiltQ')?.value||'').toLowerCase().trim();
+  const filtro=window.filtroHistActual||'todos';
+  let list=(window.allHistAdm||[]).slice();
+  if(year) list=list.filter(h=>String(h.year)===String(year));
+  if(mes&&mes!=='') list=list.filter(h=>Number(h.mes)===Number(mes));
+  if(filtro&&filtro!=='todos') list=list.filter(h=>h.firmaMetodo===filtro);
+  if(q) list=list.filter(h=>(h.inspNombre||'').toLowerCase().includes(q)||(h.inspLegajo||'').includes(q)||(h.inspDni||'').includes(q));
+  const cEl=document.getElementById('cHist');
+  if(cEl) cEl.textContent=list.length;
+  // Actualizar contador de período
+  actualizarContadorPeriodo(list);
+  if(!list.length){el.innerHTML='<div class="empty">No hay registros con esos filtros.</div>';return;}
+  el.innerHTML=list.map(h=>{
+    const esBio=h.firmaMetodo==='biometrico';
+    const fecha=h.firmadoTs?new Date(h.firmadoTs).toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—';
+    const descargado=localStorage.getItem('desc_'+h.id)==='1';
+    return `<div class="ar" data-hist-id="${h.id}" style="opacity:${descargado?'0.6':'1'};transition:opacity .2s">
+      <div style="display:flex;align-items:flex-start;gap:8px;width:100%">
+        <input type="checkbox" ${descargado?'checked':''} 
+          onclick="event.stopPropagation();toggleDescarga(this,'${h.id}')"
+          title="${descargado?'Descargado — clic para desmarcar':'Marcar como descargado'}"
+          style="margin-top:4px;width:16px;height:16px;accent-color:#003366;flex-shrink:0;cursor:pointer">
+        <div style="flex:1;min-width:0">
+          <div class="ar-name">${h.inspNombre||'—'}${descargado?' <span style="font-size:10px;background:#E8F5E9;color:#2E7D32;padding:2px 6px;border-radius:10px;font-weight:700;vertical-align:middle">✓ Descargado</span>':''}</div>
+          <div class="ar-meta">Leg. ${h.inspLegajo} · ${h.mesNombre} ${h.year} · ${fecha}</div>
+          <div class="ar-meta">${esBio?'👆 Biométrica':'✍️ Manuscrita'} · <span style="font-family:monospace;font-size:10px">${(h.hash||'').substring(0,20)}…</span></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px;flex-shrink:0">
+          <button onclick="verPdfAdmin('${h.signedFile}','${h.id}')" 
+            style="padding:6px 10px;background:#003366;color:#fff;border:none;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">📄 PDF</button>
+          <button onclick="window.open('/verificar/${h.hash}','_blank')" 
+            style="padding:6px 10px;background:#E8F0F7;color:#003366;border:none;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">🔍 QR</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
-// ══════════════════════════════════════════
-//  VISOR PDF INLINE
-// ══════════════════════════════════════════
-
-function b64toBlob(b64url) {
-  const base64 = b64url.split(',')[1];
-  const bytes  = atob(base64);
-  const arr    = new Uint8Array(bytes.length);
-  for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
-  return new Blob([arr], { type: 'application/pdf' });
+// Marcar descarga SIN re-renderizar — solo modifica el item específico
+function toggleDescarga(checkbox, id){
+  // Garantizar que el scroll nunca se rompa
+  document.body.style.overflow='';
+  document.documentElement.style.overflow='';
+  const val = checkbox.checked ? '1' : '0';
+  localStorage.setItem('desc_'+id, val);
+  const row = document.querySelector('[data-hist-id="'+id+'"]');
+  if(!row) return;
+  row.style.opacity = checkbox.checked ? '0.6' : '1';
+  // Actualizar badge sin re-renderizar
+  const name = row.querySelector('.ar-name');
+  if(!name) return;
+  const badge = name.querySelector('span');
+  if(checkbox.checked && !badge){
+    const s = document.createElement('span');
+    s.style.cssText='font-size:10px;background:#E8F5E9;color:#2E7D32;padding:2px 6px;border-radius:10px;font-weight:700;vertical-align:middle;margin-left:4px';
+    s.textContent='✓ Descargado';
+    name.appendChild(s);
+  } else if(!checkbox.checked && badge){
+    badge.remove();
+  }
 }
 
-// ── Visor PDF — PDF.js con fallback a <object> ──────────────────
-let _pdfBlobUrl = null;
+// Ver PDF firmado desde admin (abre en modal)
+async function verPdfAdmin(filename, id){
+  if(!filename){alert('PDF no disponible');return;}
+  try{
+    const r=await fetch('/api/admin/descargar/'+filename,{credentials:'include'});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const buf=await r.arrayBuffer();
+    const blob=new Blob([buf],{type:'application/pdf'});
+    const blobUrl=URL.createObjectURL(blob);
+    // Abrir en nueva pestaña — sin tocar el overflow del body
+    window.open(blobUrl,'_blank');
+    // Marcar como descargado sin re-renderizar
+    if(id){
+      localStorage.setItem('desc_'+id,'1');
+      const row=document.querySelector('[data-hist-id="'+id+'"]');
+      if(row){
+        row.style.opacity='0.6';
+        const cb=row.querySelector('input[type="checkbox"]');
+        if(cb) cb.checked=true;
+        const name=row.querySelector('.ar-name');
+        if(name&&!name.querySelector('.desc-badge')){
+          const sp=document.createElement('span');
+          sp.className='desc-badge';
+          sp.style.cssText='font-size:10px;background:#E8F5E9;color:#2E7D32;padding:2px 6px;border-radius:10px;font-weight:700;vertical-align:middle;margin-left:4px';
+          sp.textContent='✓ Descargado';
+          name.appendChild(sp);
+        }
+      }
+    }
+    setTimeout(()=>URL.revokeObjectURL(blobUrl),30000);
+  }catch(e){alert('Error al abrir PDF: '+e.message);}
+}
 
 async function _cargarPdfJs() {
   if (window.pdfjsLib) return true;
